@@ -65,7 +65,7 @@
       </div>
       <div class="space-y-2 flex-1 text-sm">
         <p class="font-semibold text-slate-200">Welcome to your Private AI Workstation!</p>
-        <p class="text-slate-400">Connect your Google Colab backend URL in Settings (⚙️) to start chatting with <b>DeepSeek-R1 (7B)</b> or <b>Qwen 2.5</b>.</p>
+        <p class="text-slate-400">Connected to <b>DeepSeek-R1 (7B)</b> running on Google Colab T4 GPU.</p>
         <div class="flex gap-2 pt-1 flex-wrap">
           <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">🔒 100% Private</span>
           <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">⚡ 0% Laptop Load</span>
@@ -125,7 +125,7 @@
   <!-- Application Logic -->
   <script>
     // State
-    let backendUrl = localStorage.getItem("ai_backend_url") || "https://your-domain.ngrok-free.app";
+    let backendUrl = localStorage.getItem("ai_backend_url") || "https://latticed-amount-doorknob.ngrok-free.dev";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
 
     document.getElementById("backend-url-input").value = backendUrl;
@@ -159,12 +159,25 @@
 
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
+      if (!backendUrl || backendUrl.includes("your-domain")) {
+        badge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20";
+        badge.textContent = "URL Not Set";
+        return false;
+      }
       try {
-        const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(4000) });
+        const res = await fetch(`${backendUrl}/api/tags`, {
+          method: "GET",
+          headers: {
+            "ngrok-skip-browser-warning": "69420"
+          },
+          signal: AbortSignal.timeout(6000)
+        });
         if (res.ok) {
           badge.className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
           badge.textContent = "Colab Online (T4 GPU)";
           return true;
+        } else {
+          throw new Error("Bad response");
         }
       } catch (e) {
         badge.className = "text-xs px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20";
@@ -222,7 +235,10 @@
       try {
         const response = await fetch(`${backendUrl}/api/generate`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "69420"
+          },
           body: JSON.stringify({
             model: modelName,
             prompt: finalPrompt,

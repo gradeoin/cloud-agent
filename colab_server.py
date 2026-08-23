@@ -29,10 +29,9 @@ print(f"📥 Loading {MODEL} from Google Drive...")
 
 # ==============================================================================
 # 4. EXPOSE PUBLIC TUNNEL VIA NGROK
-# Get your free token and 1 free static domain from: https://dashboard.ngrok.com
 # ==============================================================================
-NGROK_AUTH_TOKEN = "3IKKvEZXCZ4a9TWHkDIWdt7BDR4_5RhQUAikDCYvBSynDCFfA"  # 👈 Paste your token here
-STATIC_DOMAIN = ""  # 👈 (Optional) e.g., "my-ai-gpu.ngrok-free.app"
+NGROK_AUTH_TOKEN = "3IKKvEZXCZ4a9TWHkDIWdt7BDR4_5RhQUAikDCYvBSynDCFfA"
+STATIC_DOMAIN = ""  # (Optional) e.g., "my-ai-gpu.ngrok-free.app"
 
 ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
