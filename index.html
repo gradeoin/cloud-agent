@@ -271,26 +271,26 @@
   <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-m3-surface relative overflow-hidden">
     
     <!-- Main Header -->
-    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-8 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
-      <div class="flex items-center gap-2.5 sm:gap-3">
+    <header class="bg-[#131314]/90 backdrop-blur-xl px-3 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-white/[0.07] shrink-0">
+      <div class="flex items-center gap-2">
         <!-- Hamburger Button -->
-        <button id="main-hamburger-btn" onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition hidden" title="Expand sidebar">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        <button id="main-hamburger-btn" onclick="toggleSidebar()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition hidden" title="Expand sidebar">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
 
         <!-- INTERACTIVE MODEL SELECTOR DROPDOWN -->
         <div class="relative" onclick="event.stopPropagation()">
-          <button onclick="toggleModelDropdown()" id="model-selector-btn" class="flex items-center gap-2 bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3.5 py-1.5 rounded-full text-xs font-medium text-m3-onSurface transition shadow-sm hover:scale-[1.02] active:scale-95">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="current-model-display">DeepSeek-R1 (7B)</span>
-            <svg class="w-3.5 h-3.5 text-m3-onSurfaceVariant transition-transform" id="model-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          <button onclick="toggleModelDropdown()" id="model-selector-btn" class="flex items-center gap-2 bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] hover:border-white/[0.16] h-8 px-3 rounded-xl text-xs font-medium text-white transition shadow-sm active:scale-95 cursor-pointer">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="current-model-display" class="font-medium">DeepSeek-R1 (7B)</span>
+            <svg class="w-3 h-3 text-m3-onSurfaceVariant transition-transform duration-200" id="model-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </button>
 
           <!-- Model Menu Options -->
-          <div id="model-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-72 bg-m3-surfaceContainer border border-m3-outline/40 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1 backdrop-blur-xl">
+          <div id="model-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-72 bg-[#1e1f20] border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1 backdrop-blur-xl">
             <div class="text-[10px] uppercase font-bold text-m3-onSurfaceVariant/70 px-3 pt-2 pb-1 tracking-wider">Select AI Model</div>
             
-            <button onclick="selectModel('deepseek-r1:7b', 'DeepSeek-R1 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+            <button onclick="selectModel('deepseek-r1:7b', 'DeepSeek-R1 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
                   <span>DeepSeek-R1 (7B)</span>
@@ -300,7 +300,7 @@
               </div>
             </button>
 
-            <button onclick="selectModel('qwen2.5:7b', 'Qwen 2.5 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+            <button onclick="selectModel('qwen2.5:7b', 'Qwen 2.5 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
                   <span>Qwen 2.5 (7B)</span>
@@ -310,7 +310,7 @@
               </div>
             </button>
 
-            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
                   <span>DeepSeek-R1 (1.5B)</span>
@@ -320,7 +320,7 @@
               </div>
             </button>
 
-            <button onclick="selectModel('llama3.1:8b', 'Llama 3.1 (8B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+            <button onclick="selectModel('llama3.1:8b', 'Llama 3.1 (8B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
                   <span>Llama 3.1 (8B)</span>
@@ -332,33 +332,37 @@
           </div>
         </div>
 
-        <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU</span>
+        <!-- GPU / System Health Badge -->
+        <span id="status-badge" class="text-[11px] h-8 px-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium hidden sm:inline-flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>T4 GPU</span>
+        </span>
       </div>
 
-      <!-- Controls -->
+      <!-- Unified Controls Toolbar -->
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- Live Search Pill -->
-        <label class="flex items-center gap-2 cursor-pointer bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full transition text-xs select-none shadow-sm hover:scale-[1.02] active:scale-95">
-          <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-          <span class="hidden sm:inline font-medium text-m3-onSurfaceVariant">Search</span>
-          <input type="checkbox" id="websearch-toggle" class="sr-only peer">
-          <div class="w-6 h-3.5 bg-m3-surfaceContainerHighest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-m3-primary relative"></div>
-        </label>
+        <!-- Live Search Toggle Button -->
+        <button id="websearch-btn" onclick="toggleWebSearch()" class="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-onSurfaceVariant hover:text-white border border-white/[0.08] transition active:scale-95 cursor-pointer" title="Toggle Live Web Grounding">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <span class="hidden sm:inline">Search</span>
+        </button>
 
-        <!-- Artifacts Drawer Quick Toggle -->
-        <button onclick="toggleArtifactDrawerQuick()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-m3-primary font-medium transition flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm" title="Open Artifact Studio">
+        <!-- Artifacts Studio Button -->
+        <button onclick="toggleArtifactDrawerQuick()" class="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-primary border border-m3-primary/25 hover:border-m3-primary/50 transition active:scale-95 shadow-sm cursor-pointer" title="Open Artifact Studio">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
           <span class="hidden sm:inline">Artifacts</span>
         </button>
 
+        <div class="h-4 w-px bg-white/10 mx-0.5 hidden sm:block"></div>
+
         <!-- Export Chat as HTML -->
-        <button onclick="exportChatAsHTML()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition hover:scale-105 active:scale-95" title="Export conversation as HTML document">
+        <button onclick="exportChatAsHTML()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer" title="Export conversation as HTML document">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
 
         <!-- Settings Button -->
-        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface hover:scale-105 active:scale-95" title="Settings">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer" title="Settings">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
     </header>
@@ -541,6 +545,22 @@
       sql: 'sql', bash: 'sh', sh: 'sh', shell: 'sh', svg: 'svg', xml: 'xml',
       c: 'c', cpp: 'cpp', rust: 'rs', rs: 'rs', java: 'java', go: 'go', csv: 'csv', text: 'txt'
     };
+
+    let isWebSearchEnabled = false;
+
+    function toggleWebSearch() {
+      isWebSearchEnabled = !isWebSearchEnabled;
+      const btn = document.getElementById("websearch-btn");
+      if (isWebSearchEnabled) {
+        btn.className = "flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-m3-primary/20 text-m3-primary border border-m3-primary/50 shadow-[0_0_12px_rgba(168,199,250,0.25)] transition active:scale-95 cursor-pointer";
+        btn.title = "Live Web Search Grounding: Active";
+        showToast("Live Web Search Enabled");
+      } else {
+        btn.className = "flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-onSurfaceVariant hover:text-white border border-white/[0.08] transition active:scale-95 cursor-pointer";
+        btn.title = "Live Web Search Grounding: Disabled";
+        showToast("Live Web Search Disabled");
+      }
+    }
 
     function toggleModelDropdown() {
       const menu = document.getElementById("model-dropdown-menu");
@@ -1436,7 +1456,7 @@
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
 
-      const isWebSearch = document.getElementById("websearch-toggle").checked;
+      const isWebSearch = isWebSearchEnabled;
       promptInput.value = "";
       promptInput.style.height = "auto";
 
