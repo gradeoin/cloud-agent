@@ -121,7 +121,7 @@
       font-weight: 600;
     }
     
-    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 14px 0; border-radius: 16px; }
+    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 14px 0; border-radius: 16px; overflow-x: auto; }
     .prose code { color: #a8c7fa; font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
     .cursor-blink { display: inline-block; width: 6px; height: 15px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -329,6 +329,12 @@
           <div class="w-6 h-3.5 bg-m3-surfaceContainerHighest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-m3-primary relative"></div>
         </label>
 
+        <!-- Artifacts Drawer Quick Toggle -->
+        <button onclick="toggleArtifactDrawerQuick()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-m3-primary font-medium transition flex items-center gap-1.5 hover:scale-105 active:scale-95 shadow-sm" title="Open Artifact Studio">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          <span class="hidden sm:inline">Artifacts</span>
+        </button>
+
         <!-- Export Chat -->
         <button onclick="exportChatAsMarkdown()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition hover:scale-105 active:scale-95" title="Export conversation as Markdown">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -385,7 +391,7 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
-          <textarea id="prompt-input" rows="1" placeholder="Ask anything..."
+          <textarea id="prompt-input" rows="1" placeholder="Ask anything, build web apps, or generate files..."
             class="flex-1 bg-transparent text-sm text-m3-onSurface placeholder-m3-onSurfaceVariant focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
 
           <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40">
@@ -412,7 +418,7 @@
           <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white">Code</button>
         </div>
 
-        <button onclick="downloadArtifactHTML()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Download HTML">
+        <button onclick="downloadArtifactCurrentFile()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Download File">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
         <button onclick="copyArtifactCode()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Copy code">
@@ -426,7 +432,7 @@
 
     <div class="flex-1 relative overflow-hidden bg-white">
       <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
-      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-m3-surfaceContainerLow font-mono text-xs text-m3-onSurface">
+      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#18181a] font-mono text-xs text-m3-onSurface">
         <pre class="m-0 border-none bg-transparent p-0"><code id="artifact-code-raw"></code></pre>
       </div>
     </div>
@@ -490,6 +496,16 @@
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
     let currentAttachedFile = null;
     let activeArtifactCode = "";
+    let activeArtifactTitle = "Artifact Preview";
+    let activeArtifactLang = "html";
+    const rawMessageStore = {};
+
+    const EXT_MAP = {
+      python: 'py', py: 'py', javascript: 'js', js: 'js', jsx: 'jsx', typescript: 'ts', ts: 'ts', tsx: 'tsx',
+      html: 'html', htm: 'html', css: 'css', json: 'json', markdown: 'md', md: 'md',
+      sql: 'sql', bash: 'sh', sh: 'sh', shell: 'sh', svg: 'svg', xml: 'xml',
+      c: 'c', cpp: 'cpp', rust: 'rs', rs: 'rs', java: 'java', go: 'go', csv: 'csv', text: 'txt'
+    };
 
     function toggleModelDropdown() {
       const menu = document.getElementById("model-dropdown-menu");
@@ -720,13 +736,89 @@
       document.getElementById("file-upload-input").value = "";
     }
 
-    // CLAUDE ARTIFACTS PREVIEW SYSTEM
-    function openArtifactDrawer(title, code) {
+    // CLAUDE ARTIFACTS & FULL PREVIEW SYSTEM
+    function toggleArtifactDrawerQuick() {
+      const drawer = document.getElementById("artifact-drawer");
+      if (drawer.classList.contains("hidden")) {
+        if (!activeArtifactCode) {
+          // Open with welcome preview
+          openArtifactDrawer("Interactive Canvas", `
+            <div style="font-family: sans-serif; padding: 30px; text-align: center; color: #1e1f20;">
+              <h2>🎨 BuckBuck Live Artifact Canvas</h2>
+              <p>Ask the AI to generate code, web apps, diagrams, or components, and preview them live here!</p>
+            </div>
+          `, "html");
+        } else {
+          drawer.classList.remove("hidden", "pointer-events-none");
+          setTimeout(() => drawer.classList.remove("translate-x-full"), 10);
+        }
+      } else {
+        closeArtifactDrawer();
+      }
+    }
+
+    function openArtifactDrawer(title, code, lang = "html") {
       activeArtifactCode = code;
-      document.getElementById("artifact-title").textContent = title || "Artifact Preview";
+      activeArtifactTitle = title || "Artifact Preview";
+      activeArtifactLang = lang.toLowerCase();
+
+      document.getElementById("artifact-title").textContent = activeArtifactTitle;
       
       const iframe = document.getElementById("artifact-iframe");
-      iframe.srcdoc = code;
+      
+      if (['html', 'htm', 'svg', 'xml', 'javascript', 'js', 'jsx'].includes(activeArtifactLang)) {
+        let previewHtml = code;
+        if (activeArtifactLang === 'svg') {
+          previewHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;margin:0;">${code}</div>`;
+        } else if (!code.toLowerCase().includes('<html') && !code.toLowerCase().includes('<!doctype')) {
+          previewHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <script src="https://cdn.tailwindcss.com"><\/script>
+              <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"><\/script>
+              <style>body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }</style>
+            </head>
+            <body>
+              ${code}
+              <script>if(window.lucide) lucide.createIcons();<\/script>
+            </body>
+            </html>
+          `;
+        }
+        iframe.srcdoc = previewHtml;
+      } else if (activeArtifactLang === 'markdown' || activeArtifactLang === 'md') {
+        iframe.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
+            <style>body { padding: 30px; font-family: sans-serif; line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto; }</style>
+          </head>
+          <body>
+            <div id="content"></div>
+            <script>document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(code)});<\/script>
+          </body>
+          </html>
+        `;
+      } else {
+        iframe.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
+            <style>body { margin: 0; padding: 20px; background: #1e1f20; color: #e3e3e3; font-family: monospace; }</style>
+          </head>
+          <body>
+            <pre><code class="language-${lang}">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+            <script>hljs.highlightAll();<\/script>
+          </body>
+          </html>
+        `;
+      }
 
       document.getElementById("artifact-code-raw").textContent = code;
       hljs.highlightElement(document.getElementById("artifact-code-raw"));
@@ -762,27 +854,67 @@
       }
     }
 
-    function downloadArtifactHTML() {
+    function downloadArtifactCurrentFile() {
       if (!activeArtifactCode) return;
-      const blob = new Blob([activeArtifactCode], { type: "text/html" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "artifact-preview.html";
-      a.click();
+      const ext = EXT_MAP[activeArtifactLang] || 'txt';
+      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`);
     }
 
     function copyArtifactCode() {
       if (!activeArtifactCode) return;
       navigator.clipboard.writeText(activeArtifactCode);
-      alert("Artifact code copied to clipboard.");
+      showToast("Artifact code copied to clipboard!");
+    }
+
+    function downloadFileContent(content, filename) {
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename || "download.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast(`Downloaded ${filename}!`);
     }
 
     function copyCodeText(buttonEl, text) {
       navigator.clipboard.writeText(text);
       const span = buttonEl.querySelector("span");
-      const orig = span.textContent;
-      span.textContent = "Copied";
-      setTimeout(() => { span.textContent = orig; }, 2000);
+      if (span) {
+        const orig = span.textContent;
+        span.textContent = "Copied!";
+        setTimeout(() => { span.textContent = orig; }, 2000);
+      }
+      showToast("Code copied to clipboard!");
+    }
+
+    function copyFullMessage(msgId) {
+      const rawText = rawMessageStore[msgId];
+      if (!rawText) return;
+      const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+      navigator.clipboard.writeText(clean);
+      showToast("Message copied to clipboard!");
+    }
+
+    function downloadMessageFile(msgId) {
+      const rawText = rawMessageStore[msgId];
+      if (!rawText) return;
+      const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+      downloadFileContent(clean, `response_${Date.now()}.md`);
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById("app-toast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "app-toast";
+        toast.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-m3-surfaceContainerHighest text-m3-onSurface border border-m3-outline/40 px-4 py-2 rounded-full text-xs font-medium shadow-2xl z-50 transition-all duration-300 pointer-events-none opacity-0 translate-y-2";
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.classList.remove("opacity-0", "translate-y-2");
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+      }, 2400);
     }
 
     function exportChatAsMarkdown() {
@@ -794,11 +926,7 @@
         md += `### ${m.role === 'user' ? 'User' : 'Assistant'}\n\n${m.content}\n\n`;
       });
 
-      const blob = new Blob([md], { type: "text/markdown" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
-      a.click();
+      downloadFileContent(md, `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`);
     }
 
     function generateUniqueChatId() {
@@ -953,7 +1081,7 @@
       } catch (err) { return ""; }
     }
 
-    // ULTRA-OPTIMIZED MULTI-TURN CONVERSATIONAL ENGINE
+    // MULTI-TURN CONVERSATIONAL CHAT ENGINE
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -975,7 +1103,6 @@
         removeAttachedFile();
       }
 
-      // Compact Sliding Window: Last 4 turns only (Cuts TTFT by 60%)
       const existingHistory = conversations[currentChatId]?.messages || [];
       const recentHistory = existingHistory.slice(-4);
 
@@ -1030,9 +1157,12 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an ultra-fast, intelligent, and concise neural assistant.
+          content: `You are BuckBuck AI, an intelligent, helpful, and concise neural assistant.
 Current Date: ${dateString}, ${timeString} (${timezone}).
-Directives: Answer directly, clearly, and concisely without unnecessary filler. Format math in LaTeX and code in markdown.`
+Directives:
+- Respond directly and helpfully.
+- When generating code, HTML, Python, components or files, always enclose them in clean fenced code blocks with language identifiers.
+- Format formulas in LaTeX ($...$ and $$...$$).`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
       }
@@ -1040,7 +1170,6 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
       try {
         updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Streaming tokens...</span><span class="cursor-blink"></span>');
 
-        // MAXIMUM SPEED INFERENCE OPTIONS (100% GPU VRAM LOCKING)
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1049,12 +1178,12 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
             messages: messagesPayload,
             stream: true,
             options: {
-              num_gpu: 99,       // Lock 100% layers to GPU VRAM (0% slow CPU)
-              num_ctx: 2048,      // 2K context fits completely in high-speed GPU cache
-              num_batch: 512,     // Fast parallel batching
+              num_gpu: 99,
+              num_ctx: 2048,
+              num_batch: 512,
               temperature: 0.6,
               top_p: 0.9,
-              num_predict: 1024   // Prevent infinite rambling
+              num_predict: 1024
             }
           })
         });
@@ -1077,14 +1206,16 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
               const parsed = JSON.parse(line);
               if (parsed.message && parsed.message.content) {
                 accumulatedText += parsed.message.content;
-                updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText) + '<span class="cursor-blink"></span>');
+                rawMessageStore[aiMsgId] = accumulatedText;
+                updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText, aiMsgId) + '<span class="cursor-blink"></span>');
                 scrollToBottom(false);
               }
             } catch (e) {}
           }
         }
 
-        updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText));
+        rawMessageStore[aiMsgId] = accumulatedText;
+        updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText, aiMsgId));
         const aiMsgElement = document.getElementById(aiMsgId);
         enhanceCodeBlocksInElement(aiMsgElement);
         renderMathInMsg(aiMsgElement);
@@ -1109,6 +1240,7 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
       });
     }
 
+    // ENHANCE ALL CODE BLOCKS (WITH PREVIEW, DOWNLOAD FILE & COPY)
     function enhanceCodeBlocksInElement(containerEl) {
       if (!containerEl) return;
       const preElements = containerEl.querySelectorAll('pre');
@@ -1123,27 +1255,31 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
         const lang = langMatch ? langMatch[1] : 'code';
         const rawCode = codeEl.innerText;
         const encodedCode = encodeURIComponent(rawCode);
+        const ext = EXT_MAP[lang.toLowerCase()] || 'txt';
+        const filename = `snippet_${Date.now()}.${ext}`;
 
         const header = document.createElement('div');
         header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
         
-        let previewBtn = '';
-        if (['html', 'xml', 'svg', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase())) {
-          previewBtn = `
-            <button onclick="openArtifactDrawer('${lang.toUpperCase()} Preview', decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition">
-              <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Preview</span>
-            </button>
-          `;
-        }
+        let previewBtn = `
+          <button onclick="openArtifactDrawer('${lang.toUpperCase()} Canvas', decodeURIComponent('${encodedCode}'), '${lang}')" 
+            class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition" title="Preview / Run in Sandbox">
+            <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Preview</span>
+          </button>
+        `;
 
         header.innerHTML = `
           <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
-          <div class="flex items-center gap-3.5">
+          <div class="flex items-center gap-3">
             ${previewBtn}
+            <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${filename}')" 
+              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition" title="Download as ${filename}">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <span>Download</span>
+            </button>
             <button onclick="copyCodeText(this, decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-white flex items-center gap-1.5 text-xs font-sans font-medium text-m3-onSurfaceVariant transition">
+              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition" title="Copy code">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
@@ -1156,8 +1292,8 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
       });
     }
 
-    // REAL-TIME LIVE STREAMING THINKING ACCORDION
-    function renderResponseWithArtifacts(text) {
+    // REAL-TIME LIVE STREAMING THINKING ACCORDION & ARTIFACT CARDS
+    function renderResponseWithArtifacts(text, msgId = "") {
       let thinkHtml = "";
       let mainText = text;
 
@@ -1208,26 +1344,58 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
 
       let parsedHtml = marked.parse(normalized);
 
-      const codeMatch = mainText.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
-      if (codeMatch && codeMatch[1].trim().length > 50) {
-        const rawCode = codeMatch[1].trim();
+      // CLAUDE ARTIFACT INTERACTIVE CARD
+      const codeMatch = mainText.match(/```(\w+)?\n([\s\S]*?)```/);
+      if (codeMatch && codeMatch[2].trim().length > 40) {
+        const lang = (codeMatch[1] || 'code').toLowerCase();
+        const rawCode = codeMatch[2].trim();
         const encodedCode = encodeURIComponent(rawCode);
+        const ext = EXT_MAP[lang] || 'txt';
+        const autoFilename = `generated_file_${Date.now()}.${ext}`;
+
         const artifactPill = `
-          <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm">
+          <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
             <div class="flex items-center gap-2.5">
               <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
               </div>
-              <div class="font-medium text-xs text-m3-onSurface">Interactive Artifact Available</div>
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface">${autoFilename}</div>
+                <div class="text-[10px] text-m3-onSurfaceVariant">${lang.toUpperCase()} • ${(rawCode.length / 1024).toFixed(1)} KB</div>
+              </div>
             </div>
-            <button onclick="openArtifactDrawer('Preview', decodeURIComponent('${encodedCode}'))" 
-              class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm">
-              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Preview
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${autoFilename}')" 
+                class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Download
+              </button>
+              <button onclick="openArtifactDrawer('${autoFilename}', decodeURIComponent('${encodedCode}'), '${lang}')" 
+                class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Live Preview
+              </button>
+            </div>
           </div>
         `;
         parsedHtml += artifactPill;
+      }
+
+      // MESSAGE ACTION TOOLBAR (Copy, Download, Preview Drawer)
+      if (msgId) {
+        const actionToolbar = `
+          <div class="flex items-center gap-2 mt-3 pt-2 text-xs text-m3-onSurfaceVariant border-t border-m3-outline/10">
+            <button onclick="copyFullMessage('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Copy full response">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+            <button onclick="downloadMessageFile('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Download response as Markdown file">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <span>Download .md</span>
+            </button>
+          </div>
+        `;
+        parsedHtml += actionToolbar;
       }
 
       return thinkHtml + parsedHtml;
@@ -1238,6 +1406,8 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
       const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
       const isUser = role === "user";
 
+      rawMessageStore[msgId] = content;
+
       const html = `
         <div id="${msgId}" class="flex gap-3.5 sm:gap-4 items-start msg-fade-in ${isUser ? 'flex-row-reverse' : ''}">
           <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary shadow-sm'}">
@@ -1246,7 +1416,7 @@ Directives: Answer directly, clearly, and concisely without unnecessary filler. 
               `<svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none"><path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
           </div>
           <div class="max-w-[88%] ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-3xl px-4 py-2.5 text-[15px] font-medium' : 'prose-readable max-w-none text-m3-onSurface leading-relaxed'}">
-            ${isMarkdown ? renderResponseWithArtifacts(content) : content}
+            ${isMarkdown ? renderResponseWithArtifacts(content, msgId) : content}
           </div>
         </div>
       `;
