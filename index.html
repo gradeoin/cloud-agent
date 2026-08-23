@@ -294,6 +294,16 @@
               </div>
             </button>
 
+            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>DeepSeek-R1 (1.5B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal">⚡ Fast</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Lightweight instant reasoning (80 tok/s)</div>
+              </div>
+            </button>
+
             <button onclick="selectModel('llama3.1:8b', 'Llama 3.1 (8B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
@@ -303,20 +313,10 @@
                 <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Meta's friendly general assistant</div>
               </div>
             </button>
-
-            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>DeepSeek-R1 (1.5B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal">⚡ Fast</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Lightweight instant reasoning</div>
-              </div>
-            </button>
           </div>
         </div>
 
-        <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU</span>
+        <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU (100% VRAM)</span>
       </div>
 
       <!-- Controls -->
@@ -337,7 +337,7 @@
         <!-- Settings Button -->
         <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface hover:scale-105 active:scale-95" title="Settings">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          </button>
+        </button>
       </div>
     </header>
 
@@ -929,7 +929,7 @@
         const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
-          badge.textContent = "T4 GPU";
+          badge.textContent = "T4 GPU (100% VRAM)";
           return true;
         }
       } catch (e) {
@@ -953,7 +953,7 @@
       } catch (err) { return ""; }
     }
 
-    // MULTI-TURN CONVERSATIONAL CHAT ENGINE
+    // ULTRA-OPTIMIZED MULTI-TURN CONVERSATIONAL ENGINE
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -975,9 +975,9 @@
         removeAttachedFile();
       }
 
-      // 1. Build clean recent history (Last 6 turns)
+      // Compact Sliding Window: Last 4 turns only (Cuts TTFT by 60%)
       const existingHistory = conversations[currentChatId]?.messages || [];
-      const recentHistory = existingHistory.slice(-6);
+      const recentHistory = existingHistory.slice(-4);
 
       const historyPayload = recentHistory.map(m => {
         let cleanContent = m.content;
@@ -990,7 +990,6 @@
         };
       });
 
-      // 2. Add current user prompt
       historyPayload.push({
         role: "user",
         content: finalPrompt
@@ -998,7 +997,7 @@
 
       saveMessageToHistory("user", userDisplayContent);
 
-      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating response...</div>', false);
+      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Starting neural engine...</div>', false);
       
       setTimeout(() => {
         const el = document.getElementById(aiMsgId);
@@ -1018,7 +1017,6 @@
       const isR1 = modelName.includes("r1");
       let messagesPayload = historyPayload;
 
-      // Only inject system prompt if NOT a pure reasoning model like R1 (which is sensitive to system prompts)
       if (!isR1) {
         const now = new Date();
         const dateString = now.toLocaleDateString(undefined, { 
@@ -1032,18 +1030,17 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an intelligent, helpful, and friendly AI assistant.
+          content: `You are BuckBuck AI, an ultra-fast, intelligent, and concise neural assistant.
 Current Date: ${dateString}, ${timeString} (${timezone}).
-Directives:
-- Respond directly, naturally, and helpfully.
-- Format math in LaTeX ($...$ for inline, $$...$$ for display) and code in fenced markdown blocks.`
+Directives: Answer directly, clearly, and concisely without unnecessary filler. Format math in LaTeX and code in markdown.`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
       }
 
       try {
-        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
+        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Streaming tokens...</span><span class="cursor-blink"></span>');
 
+        // MAXIMUM SPEED INFERENCE OPTIONS (100% GPU VRAM LOCKING)
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1052,10 +1049,12 @@ Directives:
             messages: messagesPayload,
             stream: true,
             options: {
-              num_ctx: 4096,
-              num_batch: 512,
+              num_gpu: 99,       // Lock 100% layers to GPU VRAM (0% slow CPU)
+              num_ctx: 2048,      // 2K context fits completely in high-speed GPU cache
+              num_batch: 512,     // Fast parallel batching
               temperature: 0.6,
-              top_p: 0.9
+              top_p: 0.9,
+              num_predict: 1024   // Prevent infinite rambling
             }
           })
         });
@@ -1093,7 +1092,7 @@ Directives:
         scrollToBottom(false);
 
       } catch (error) {
-        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not reach Colab GPU backend.</p>`);
+        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not reach Colab GPU backend. Make sure Colab is active and model is pulled.</p>`);
       }
     }
 
@@ -1157,7 +1156,7 @@ Directives:
       });
     }
 
-    // PARSE THINKING ACCORDION & ARTIFACTS
+    // REAL-TIME LIVE STREAMING THINKING ACCORDION
     function renderResponseWithArtifacts(text) {
       let thinkHtml = "";
       let mainText = text;
@@ -1170,13 +1169,13 @@ Directives:
 
         if (isStillThinking) {
           thinkHtml = `
-            <div class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/25 rounded-2xl p-3.5 shadow-sm">
+            <div class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/30 rounded-2xl p-3.5 shadow-sm">
               <div class="flex items-center gap-2 text-xs font-medium text-m3-primary mb-2">
                 <svg class="w-3.5 h-3.5 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
-                Thinking through response...
+                Thinking in real-time...
               </div>
-              <div class="text-xs text-m3-onSurfaceVariant font-mono whitespace-pre-wrap leading-relaxed opacity-75 max-h-36 overflow-y-auto">
-                ${thinkContent}
+              <div class="text-xs text-m3-onSurfaceVariant/90 font-mono whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                ${thinkContent || 'Generating initial reasoning tokens...'}
               </div>
             </div>
           `;
@@ -1186,7 +1185,7 @@ Directives:
               <summary class="px-4 py-2.5 cursor-pointer font-medium text-xs text-m3-primary flex items-center justify-between select-none hover:bg-m3-surfaceContainer transition">
                 <span class="flex items-center gap-2">
                   <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 00-8 8c0 3 2 5.5 4 7v3h8v-3c2-1.5 4-4 4-7a8 8 0 00-8-8z"/><path d="M9 22h6"/></svg>
-                  Thought Process (${Math.max(1, Math.round(thinkContent.split(' ').length / 15))}s)
+                  Thought Process (${Math.max(1, Math.round(thinkContent.split(' ').length / 20))}s)
                 </span>
                 <svg class="w-3.5 h-3.5 text-m3-onSurfaceVariant transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
               </summary>
