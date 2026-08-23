@@ -332,7 +332,7 @@
           </div>
         </div>
 
-        <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU</span>
+        <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU</span>
       </div>
 
       <!-- Controls -->
@@ -407,7 +407,7 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
-          <textarea id="prompt-input" rows="1" placeholder="Ask anything, build interactive apps, or generate code..."
+          <textarea id="prompt-input" rows="1" placeholder="Ask anything, build interactive apps, or execute Python code..."
             class="flex-1 bg-transparent text-sm text-m3-onSurface placeholder-m3-onSurfaceVariant focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
 
           <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40 shadow-sm">
@@ -418,7 +418,7 @@
     </footer>
   </div>
 
-  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (With Multi-File & Combined Support) -->
+  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER -->
   <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden">
     <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -469,7 +469,7 @@
 
       <div class="space-y-4">
         <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">Google Colab Tunnel URL</label>
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">Google Colab Backend URL</label>
           <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
             class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
@@ -783,7 +783,6 @@
         baseHtml = `<div class="p-8 text-center"><h1 class="text-2xl font-bold">Interactive Web App</h1></div>`;
       }
 
-      // Check if it already has full HTML structure
       const hasDoctype = baseHtml.toLowerCase().includes('<!doctype') || baseHtml.toLowerCase().includes('<html');
 
       if (!hasDoctype) {
@@ -923,7 +922,6 @@
       const item = window.codeRegistry[snipId];
       if (!item) return;
       
-      // If snippet has an associated multi-file compiled bundle, preview the combined bundle!
       if (item.bundleId && window.codeRegistry[item.bundleId]) {
         const bundle = window.codeRegistry[item.bundleId];
         openArtifactDrawer(bundle.filename || "Full Web App", bundle.code, "html");
@@ -950,6 +948,82 @@
         setTimeout(() => { span.textContent = orig; }, 2000);
       }
       showToast("Code copied to clipboard!");
+    }
+
+    // LIVE PYTHON GPU EXECUTION ON COLAB BACKEND
+    async function runPythonOnBackend(snipId, buttonEl) {
+      const item = window.codeRegistry[snipId];
+      if (!item) return;
+
+      const preEl = buttonEl.closest('.code-header-bar')?.nextElementSibling;
+      if (!preEl) return;
+
+      let termBox = preEl.nextElementSibling;
+      if (!termBox || !termBox.classList.contains('python-terminal-box')) {
+        termBox = document.createElement('div');
+        termBox.className = 'python-terminal-box mb-4 p-4 rounded-2xl bg-[#0e1015] border border-emerald-500/30 font-mono text-xs shadow-xl space-y-3';
+        preEl.parentNode.insertBefore(termBox, preEl.nextSibling);
+      }
+
+      termBox.innerHTML = `
+        <div class="flex items-center justify-between border-b border-white/10 pb-2 text-emerald-400 font-semibold">
+          <span class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
+            Executing on Colab T4 GPU...
+          </span>
+          <span class="text-[10px] text-m3-onSurfaceVariant">/api/exec</span>
+        </div>
+      `;
+
+      try {
+        const res = await fetch(`${backendUrl}/api/exec`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: item.code })
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        let plotsHtml = "";
+        if (data.plots && data.plots.length > 0) {
+          plotsHtml = `<div class="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">`;
+          data.plots.forEach(b64 => {
+            plotsHtml += `
+              <div class="rounded-xl overflow-hidden border border-white/10 bg-white p-2 shadow-lg">
+                <img src="data:image/png;base64,${b64}" class="w-full h-auto object-contain rounded-lg">
+              </div>
+            `;
+          });
+          plotsHtml += `</div>`;
+        }
+
+        const statusColor = data.success ? "text-emerald-400" : "text-rose-400";
+        const statusText = data.success ? `Execution Succeeded (${data.execution_time_seconds}s)` : "Execution Error";
+
+        termBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="font-semibold text-xs flex items-center gap-1.5 ${statusColor}">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+              ${statusText}
+            </span>
+            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs">Close</button>
+          </div>
+          ${data.stdout ? `<div class="text-slate-200 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">${data.stdout}</div>` : ''}
+          ${data.stderr ? `<div class="text-rose-300 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-rose-950/20 p-2 rounded-lg border border-rose-500/20">${data.stderr}</div>` : ''}
+          ${(!data.stdout && !data.stderr && data.success) ? `<div class="text-gray-400 italic">Script executed with no console output.</div>` : ''}
+          ${plotsHtml}
+        `;
+
+      } catch (err) {
+        termBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-white/10 pb-2 text-rose-400 font-semibold text-xs">
+            <span>Execution Failed</span>
+            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs">Close</button>
+          </div>
+          <div class="text-rose-300 text-xs">Could not reach Colab Python executor. Ensure the updated backend is running.</div>
+        `;
+      }
     }
 
     function downloadArtifactCurrentFile() {
@@ -1272,20 +1346,31 @@
       }
     }
 
+    // QUERY FASTAPI HEALTHCHECK FOR LIVE VRAM STATS
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
       try {
-        const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
+        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
-          badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
-          badge.textContent = "T4 GPU";
+          const data = await res.json();
+          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
+          badge.textContent = `T4 (${data.vram_free || '15GB'} Free)`;
           return true;
         }
       } catch (e) {
-        badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium hidden sm:inline";
-        badge.textContent = "Offline";
-        return false;
+        try {
+          const res2 = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(4000) });
+          if (res2.ok) {
+            badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
+            badge.textContent = "T4 GPU";
+            return true;
+          }
+        } catch (err) {}
       }
+
+      badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium hidden sm:inline";
+      badge.textContent = "Offline";
+      return false;
     }
 
     async function searchDuckDuckGo(query) {
@@ -1321,6 +1406,14 @@
       let finalPrompt = text;
       if (currentAttachedFile) {
         finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
+        
+        // Asynchronously ingest document into Colab RAG Vector engine
+        fetch(`${backendUrl}/api/rag/ingest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ document_id: currentAttachedFile.name, text: currentAttachedFile.content })
+        }).catch(() => {});
+        
         removeAttachedFile();
       }
 
@@ -1378,14 +1471,13 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant.
+          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant with GPU Execution support.
 Current Date: ${dateString}, ${timeString} (${timezone}).
 
-Directives for Coding & Web Apps:
-- Always write modern, production-grade, single-file HTML/JS applications.
-- Always include Tailwind CSS CDN (<script src="https://cdn.tailwindcss.com"><\/script>) and Lucide Icons (<script src="https://unpkg.com/lucide@latest"><\/script>) for modern UI design.
-- Always implement working interactive features (modals, real-time live preview, sliders, carts, state management).
-- Enclose all code blocks in standard triple-backtick markdown blocks with the language identifier (e.g. \`\`\`html, \`\`\`python, \`\`\`javascript).`
+Directives:
+- For Web Apps: Always write modern, production-grade single-file HTML/JS with Tailwind CSS & Lucide Icons.
+- For Python / Data Science: Write complete executable Python scripts (using matplotlib, numpy, pandas) as they can be run directly on the Colab GPU.
+- Enclose all code in triple backtick markdown blocks with the exact language identifier (\`\`\`html, \`\`\`python, \`\`\`javascript).`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
       }
@@ -1490,14 +1582,27 @@ Directives for Coding & Web Apps:
         };
 
         const isWebLang = ['html', 'htm', 'css', 'javascript', 'js', 'jsx', 'svg'].includes(lang.toLowerCase());
+        const isPython = ['python', 'py'].includes(lang.toLowerCase());
         const previewBtnLabel = (isWebLang && hasBundle) ? 'Preview App' : 'Preview';
 
         const header = document.createElement('div');
         header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
         
+        let runPythonBtn = "";
+        if (isPython) {
+          runPythonBtn = `
+            <button type="button" onclick="runPythonOnBackend('${snipId}', this)" 
+              class="hover:text-emerald-400 flex items-center gap-1 text-xs font-sans font-medium text-emerald-400 transition cursor-pointer" title="Execute script on Google Colab T4 GPU">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Run GPU</span>
+            </button>
+          `;
+        }
+
         header.innerHTML = `
           <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
           <div class="flex items-center gap-3">
+            ${runPythonBtn}
             <button type="button" onclick="previewSnippet('${snipId}')" 
               class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition cursor-pointer" title="Preview / Run in Sandbox">
               <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1638,7 +1743,6 @@ Directives for Coding & Web Apps:
         parsedHtml += bundleCard;
 
       } else {
-        // SINGLE SNIPPET CARD
         const codeMatch = mainText.match(/```(\w+)?\n([\s\S]*?)```/);
         if (codeMatch && codeMatch[2].trim().length > 40) {
           const lang = (codeMatch[1] || 'code').toLowerCase();
@@ -1653,6 +1757,8 @@ Directives for Coding & Web Apps:
             filename: autoFilename
           };
 
+          const isPython = ['python', 'py'].includes(lang);
+
           const artifactPill = `
             <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
               <div class="flex items-center gap-2.5">
@@ -1665,6 +1771,13 @@ Directives for Coding & Web Apps:
                 </div>
               </div>
               <div class="flex items-center gap-1.5">
+                ${isPython ? `
+                  <button type="button" onclick="runPythonOnBackend('${cardId}', this)" 
+                    class="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Run on GPU</span>
+                  </button>
+                ` : ''}
                 <button type="button" onclick="downloadSnippet('${cardId}')" 
                   class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
