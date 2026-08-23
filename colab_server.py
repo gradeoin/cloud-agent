@@ -1,30 +1,25 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED v3)
-# PROCESS-SANDBOXED EXEC · AUTH · AUDIT LOG · WEEKLY QUOTA BUDGET GUARD
+# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED v4)
+# VISION AI · DATA SCIENCE SUITE · AUTO-PIP · WHISPER GPU · HARDENED SANDBOX
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # ⚙️ CONFIG — customize as needed
 # ------------------------------------------------------------------------------
-SESSION_LIMIT_MINUTES = 120        # Hard cap for THIS session (also shrinks automatically, see below)
-AUTO_SHUTDOWN_ON_IDLE = True       # Auto-stop if you leave without closing
-IDLE_TIMEOUT_MINUTES = 20          # Shut down after N mins of zero *real* activity
+SESSION_LIMIT_MINUTES = 120        # Hard cap for THIS session
+AUTO_SHUTDOWN_ON_IDLE = True       # Auto-stop if inactive
+IDLE_TIMEOUT_MINUTES = 20          # Shut down after N mins of zero real activity
 AUTO_RELEASE_GPU = True            # Release Colab VM on expiry to preserve daily quota
-EXEC_TIMEOUT_SECONDS = 30          # Hard cap on any single /api/exec call
-EXEC_MAX_CONCURRENT = 1            # How many /api/exec calls can run at once
-EXEC_MAX_PER_MINUTE = 20           # Simple rate limit per API key
-ALLOWED_ORIGIN = "https://buckbuck.pages.dev"  # Lock CORS to your actual frontend
+EXEC_TIMEOUT_SECONDS = 35          # Hard cap on any single /api/exec call
+EXEC_MAX_CONCURRENT = 1            # Max concurrent /api/exec calls
+EXEC_MAX_PER_MINUTE = 25           # Rate limit per API key
+ALLOWED_ORIGIN = "https://buckbuck.pages.dev"  # Lock CORS to your frontend
 
-# --- Colab weekly-quota protection -------------------------------------------
-# Google doesn't publish a fixed weekly GPU quota, but community-observed
-# free-tier access tends to land somewhere around 15-30 GPU-hours/week.
-# We track cumulative usage across sessions (persisted to Drive) and refuse
-# to let ourselves exceed a conservative self-imposed weekly budget, so we
-# stop *before* Colab's own undocumented limit kicks in and locks us out.
-WEEKLY_BUDGET_MINUTES = 12 * 60     # 12 hours/week — conservative, leaves headroom
+# --- Colab 7-day quota protection --------------------------------------------
+WEEKLY_BUDGET_MINUTES = 12 * 60     # 12 hours/week budget
 USAGE_LOG_PATH_DRIVE = '/content/drive/MyDrive/buckbuck_usage_log.json'
 USAGE_LOG_PATH_LOCAL = '/content/buckbuck_usage_log.json'
-GPU_TRUE_IDLE_UTIL_PCT = 3          # nvidia-smi util% below which we consider GPU truly idle
+GPU_TRUE_IDLE_UTIL_PCT = 3          # nvidia-smi util% below which GPU is idle
 # ------------------------------------------------------------------------------
 
 import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile
@@ -32,14 +27,12 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 SERVER_START_TIME = time.time()
-LAST_REAL_ACTIVITY_TIME = time.time()   # only bumped by /api/exec and proxy calls, NOT /api/health polling
+LAST_REAL_ACTIVITY_TIME = time.time()
 
-# ------------------------------------------------------------------------------
-# 🔑 API KEY — generated fresh each run, printed once.
-# ------------------------------------------------------------------------------
+# 🔑 API KEY
 API_KEY = secrets.token_urlsafe(32)
 
-# [1/6] MOUNT GOOGLE DRIVE FOR PERMANENT MODEL PERSISTENCE + USAGE LOG
+# [1/6] MOUNT GOOGLE DRIVE
 DRIVE_AVAILABLE = False
 try:
     from google.colab import drive
@@ -49,13 +42,11 @@ try:
     os.environ['OLLAMA_MODELS'] = '/content/drive/MyDrive/ollama_models'
     DRIVE_AVAILABLE = True
 except Exception:
-    print("⚠️ Running outside Colab or Drive skipped. Using local disk. (Weekly usage tracking will reset every session.)")
+    print("⚠️ Running outside Colab or Drive skipped. Using local disk.")
 
 USAGE_LOG_PATH = USAGE_LOG_PATH_DRIVE if DRIVE_AVAILABLE else USAGE_LOG_PATH_LOCAL
 
-# ------------------------------------------------------------------------------
-# 📊 WEEKLY USAGE BUDGET — read history, compute how much runway is left
-# ------------------------------------------------------------------------------
+# 📊 WEEKLY USAGE BUDGET
 def load_usage_log():
     try:
         with open(USAGE_LOG_PATH, 'r') as f:
@@ -89,26 +80,16 @@ _usage_entries = load_usage_log()
 _minutes_used_this_week = minutes_used_last_7_days(_usage_entries)
 _minutes_remaining_this_week = max(0, WEEKLY_BUDGET_MINUTES - _minutes_used_this_week)
 
-print(f"📊 Colab quota guard: {_minutes_used_this_week:.0f}/{WEEKLY_BUDGET_MINUTES} mins used in the last 7 days "
-      f"({_minutes_remaining_this_week:.0f} mins remaining in self-imposed weekly budget).")
+print(f"📊 Colab quota guard: {_minutes_used_this_week:.0f}/{WEEKLY_BUDGET_MINUTES} mins used in last 7 days "
+      f"({_minutes_remaining_this_week:.0f} mins remaining).")
 
 if _minutes_remaining_this_week <= 0:
     print("\n" + "=" * 65)
     print("🛑 WEEKLY BUDGET EXHAUSTED — refusing to start a new GPU session.")
-    print(f"   You've used {_minutes_used_this_week:.0f} minutes in the last 7 days,")
-    print(f"   at or above your {WEEKLY_BUDGET_MINUTES}-minute self-imposed budget.")
-    print("   This is here to stop YOU from tripping Colab's own undocumented")
-    print("   quota and getting rate-limited or locked out for longer.")
-    print("   Raise WEEKLY_BUDGET_MINUTES if you're confident you have headroom,")
-    print("   or just wait for older usage to roll off the 7-day window.")
     print("=" * 65)
     raise SystemExit(1)
 
-# Shrink this session's limit so it can't blow through the remaining weekly budget.
 EFFECTIVE_SESSION_LIMIT_MINUTES = int(min(SESSION_LIMIT_MINUTES, _minutes_remaining_this_week))
-if EFFECTIVE_SESSION_LIMIT_MINUTES < SESSION_LIMIT_MINUTES:
-    print(f"⚠️ Session cap reduced from {SESSION_LIMIT_MINUTES} to {EFFECTIVE_SESSION_LIMIT_MINUTES} mins "
-          f"to stay within your weekly budget.")
 
 # [2/6] CONFIGURE HIGH-PERFORMANCE GPU ENVIRONMENT
 os.environ['OLLAMA_ORIGINS'] = '*'
@@ -117,22 +98,25 @@ os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
 os.environ['OLLAMA_NUM_PARALLEL'] = '2'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 
-# [3/6] INSTALL SYSTEM DEPENDENCIES & PACKAGES
-print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel & AI Python Suite...")
+# [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
+print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
 os.system("curl -fsSL https://ollama.com/install.sh | sh > /dev/null 2>&1")
 os.system(
     "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
     "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
 )
-os.system("pip install -q fastapi uvicorn httpx pydantic matplotlib numpy torch > /dev/null 2>&1")
+os.system(
+    "pip install -q fastapi uvicorn httpx pydantic matplotlib numpy pandas scipy "
+    "scikit-learn seaborn sympy pillow torch torchaudio openai-whisper > /dev/null 2>&1"
+)
 
 # [4/6] START OLLAMA ENGINE IN BACKGROUND
 print("⚡ [3/6] Starting Ollama Engine with FlashAttention & GPU Locking...")
 subprocess.Popen(["ollama", "serve"], env=dict(os.environ))
 time.sleep(3)
 
-print("📥 [4/6] Ensuring core models are cached in Google Drive...")
-REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "deepseek-r1:1.5b"]
+print("📥 [4/6] Ensuring core & Vision models are cached in Google Drive...")
+REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llava:7b", "deepseek-r1:1.5b"]
 
 def already_pulled(model: str) -> bool:
     try:
@@ -150,16 +134,16 @@ for model in REQUIRED_MODELS:
     if result.returncode != 0:
         print(f"   ⚠️ Failed to pull {model} (exit code {result.returncode}) — continuing anyway.")
 
-# [5/6] FASTAPI GATEWAY WITH SANDBOXED CODE EXECUTION & WATCHDOG
-print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + GPU Executor)...")
+# [5/6] FASTAPI GATEWAY WITH MULTIMODAL, VOICE, AND AUTO-PIP EXECUTION
+print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + Vision + GPU Audio)...")
 
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi import FastAPI, Request, HTTPException, Depends, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 import httpx, uvicorn
 
-app = FastAPI(title="BuckBuck Neural Backend Gateway")
+app = FastAPI(title="BuckBuck Neural Multimodal Gateway")
 
 app.add_middleware(
     CORSMiddleware,
@@ -171,6 +155,7 @@ app.add_middleware(
 
 OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
 http_client: httpx.AsyncClient | None = None
+whisper_model = None
 
 @app.on_event("startup")
 async def _startup():
@@ -185,7 +170,7 @@ async def _shutdown():
 exec_semaphore = asyncio.Semaphore(EXEC_MAX_CONCURRENT)
 exec_pool = ThreadPoolExecutor(max_workers=EXEC_MAX_CONCURRENT + 1)
 
-# Simple per-minute rate limiter
+# Rate limiter
 _rate_lock = threading.Lock()
 _rate_window_start = time.time()
 _rate_count = 0
@@ -220,7 +205,6 @@ def record_real_activity():
     LAST_REAL_ACTIVITY_TIME = time.time()
 
 def require_api_key(authorization: str = Header(default=""), x_api_key: str = Header(default="")):
-    """Validates Authorization: Bearer <key> or X-API-Key: <key>"""
     supplied = ""
     if authorization.startswith("Bearer "):
         supplied = authorization[7:].strip()
@@ -235,7 +219,7 @@ class CodeExecutionRequest(BaseModel):
     code: str
 
 # ------------------------------------------------------------------------------
-# 🧪 PROCESS-SANDBOXED EXECUTION (GENUINE OS PROCESS KILL ON TIMEOUT)
+# 🧪 PROCESS-SANDBOXED EXECUTION WITH DYNAMIC PIP AUTO-INSTALLATION
 # ------------------------------------------------------------------------------
 _RUNNER_TEMPLATE = r"""
 import sys, io, json, base64, traceback
@@ -284,7 +268,7 @@ def _main():
 _main()
 """
 
-def _run_code_in_subprocess(code: str, timeout: float) -> dict:
+def _run_code_in_subprocess(code: str, timeout: float, allow_pip_retry: bool = True) -> dict:
     start = time.time()
     with tempfile.NamedTemporaryFile("w", suffix="_runner.py", delete=False) as f:
         f.write(_RUNNER_TEMPLATE)
@@ -327,11 +311,21 @@ def _run_code_in_subprocess(code: str, timeout: float) -> dict:
         try:
             result = json.loads(payload)
         except Exception:
-            result = {"success": False, "stdout": stdout, "stderr": stderr,
-                       "error": "Failed to parse sandbox result", "plots": []}
+            result = {"success": False, "stdout": stdout, "stderr": stderr, "error": "Failed to parse result", "plots": []}
     else:
-        result = {"success": False, "stdout": stdout, "stderr": stderr,
-                   "error": "Sandbox produced no result", "plots": []}
+        result = {"success": False, "stdout": stdout, "stderr": stderr, "error": "No output produced", "plots": []}
+
+    # DYNAMIC PIP AUTO-INSTALLER: If missing module, auto-install and retry!
+    if not result.get("success") and allow_pip_retry:
+        err_text = result.get("stderr", "") + result.get("error", "")
+        missing_match = re.search(r"No module named '([a-zA-Z0-9_-]+)'", err_text)
+        if missing_match:
+            pkg = missing_match.group(1)
+            print(f"📦 [AUTO-PIP] Detected missing package '{pkg}', auto-installing on GPU...")
+            pip_res = subprocess.run([sys.executable, "-m", "pip", "install", "-q", pkg], capture_output=True, timeout=40)
+            if pip_res.returncode == 0:
+                print(f"✅ [AUTO-PIP] Successfully installed '{pkg}'! Re-running code...")
+                return _run_code_in_subprocess(code, timeout, allow_pip_retry=False)
 
     result["execution_time_seconds"] = round(time.time() - start, 3)
     return result
@@ -353,6 +347,31 @@ async def execute_python_code(req: CodeExecutionRequest, _=Depends(require_api_k
         "code_length": len(req.code),
     })
     return result
+
+# 🎙️ GPU WHISPER AUDIO TRANSCRIPTION ENDPOINT
+@app.post("/api/transcribe")
+async def transcribe_audio(file: UploadFile = File(...), _=Depends(require_api_key)):
+    global whisper_model
+    record_real_activity()
+    try:
+        import whisper
+        if whisper_model is None:
+            whisper_model = whisper.load_model("base", device="cuda" if os.path.exists('/dev/nvidia0') else "cpu")
+            
+        with tempfile.NamedTemporaryFile("wb", suffix=".webm", delete=False) as f:
+            content = await file.read()
+            f.write(content)
+            tmp_audio_path = f.name
+            
+        transcription = whisper_model.transcribe(tmp_audio_path)
+        try:
+            os.unlink(tmp_audio_path)
+        except Exception:
+            pass
+            
+        return {"success": True, "text": transcription.get("text", "").strip()}
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
 # 2. SYSTEM HEALTH & GPU VRAM STATS
 try:
@@ -383,6 +402,7 @@ async def get_system_health(_=Depends(require_api_key)):
         "status": "healthy",
         "gpu": gpu_name,
         "vram_free": vram_free,
+        "features": ["vision_llava", "whisper_audio_gpu", "auto_pip_install", "pandas_seaborn_ml"],
         "session_remaining_minutes": remaining_minutes,
         "idle_minutes": idle_minutes,
         "weekly_budget_remaining_minutes": max(
@@ -444,7 +464,7 @@ threading.Thread(target=watch_tunnel_output, daemon=True).start()
 if tunnel_url_found.wait(timeout=30):
     url = tunnel_url_holder["url"]
     print("\n" + "=" * 68)
-    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v3 HARDENED)!")
+    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v4 MULTIMODAL)!")
     print(f"🔗 BACKEND URL   : {url}")
     print(f"🔑 API KEY       : {API_KEY}")
     print(f"⏱️ SESSION LIMIT  : {EFFECTIVE_SESSION_LIMIT_MINUTES} mins (weekly-budget adjusted)")
@@ -452,7 +472,7 @@ if tunnel_url_found.wait(timeout=30):
     print(f"📊 WEEKLY BUDGET : {_minutes_remaining_this_week:.0f} / {WEEKLY_BUDGET_MINUTES} mins remaining")
     print("=" * 68)
     print("👉 Paste both the URL and API key into Settings (⚙️) on https://buckbuck.pages.dev")
-    print("🛡️ Security Active: Process-isolated sandbox, audit logging & weekly quota guard.")
+    print("⚡ New: Vision AI (LLaVA), Auto-Pip, Whisper GPU Voice & ML pre-installed!")
     print("=" * 68)
 else:
     print("⚠️ Cloudflare tunnel did not report a URL within 30s. Check logs.")
@@ -506,8 +526,7 @@ def session_watchdog():
 
         if elapsed >= EFFECTIVE_SESSION_LIMIT_MINUTES:
             print("\n" + "=" * 68)
-            print(f"🛑 [WATCHDOG] Session cap of {EFFECTIVE_SESSION_LIMIT_MINUTES} mins reached "
-                  f"(weekly-budget adjusted).")
+            print(f"🛑 [WATCHDOG] Session cap of {EFFECTIVE_SESSION_LIMIT_MINUTES} mins reached.")
             print("💾 Models safely preserved in Google Drive.")
             print("🛡️ Releasing Colab GPU to protect your weekly compute quota...")
             print("=" * 68)

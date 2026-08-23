@@ -310,6 +310,16 @@
               </div>
             </button>
 
+            <button onclick="selectModel('llava:7b', 'LLaVA (Vision 7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>LLaVA (Vision 7B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 font-normal">👁️ Vision</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Image analysis, screenshots & diagram to code</div>
+              </div>
+            </button>
+
             <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
@@ -395,26 +405,43 @@
     <!-- M3 Floating Pill Input Bar -->
     <footer class="p-3 sm:p-5 bg-gradient-to-t from-m3-surface via-m3-surface to-transparent">
       <div class="max-w-5xl mx-auto space-y-2">
-        <!-- File Attachment Chip -->
-        <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-xs w-fit text-m3-primary">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-          <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
-          <button onclick="removeAttachedFile()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
+        <!-- Attachment Chips Container -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Text/Code File Attachment Chip -->
+          <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-xs text-m3-primary shadow-sm">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
+            <button onclick="removeAttachedFile()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1 cursor-pointer">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Image Attachment Chip (Vision / Screenshots) -->
+          <div id="image-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-pink-500/30 px-2.5 py-1 rounded-2xl text-xs text-pink-300 shadow-sm">
+            <img id="attached-image-thumb" src="" class="w-6 h-6 object-cover rounded-lg border border-pink-500/40">
+            <span id="attached-image-name" class="font-medium truncate max-w-xs">screenshot.png</span>
+            <button onclick="removeAttachedImage()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1 cursor-pointer">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
         </div>
 
         <!-- M3 Surface Container Pill -->
-        <div class="bg-m3-surfaceContainer border border-m3-outline/30 rounded-[28px] px-4 py-3 flex items-center gap-3 focus-within:border-m3-primary/60 focus-within:bg-m3-surfaceContainerHigh transition shadow-sm">
-          <input type="file" id="file-upload-input" class="hidden" onchange="handleFileUpload(event)">
-          <button onclick="document.getElementById('file-upload-input').click()" class="text-m3-onSurfaceVariant hover:text-m3-primary p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition shrink-0" title="Attach file">
+        <div class="bg-m3-surfaceContainer border border-m3-outline/30 rounded-[28px] px-4 py-2.5 flex items-center gap-2 sm:gap-3 focus-within:border-m3-primary/60 focus-within:bg-m3-surfaceContainerHigh transition shadow-sm">
+          <input type="file" id="file-upload-input" class="hidden" accept="image/*,.txt,.csv,.json,.py,.js,.html,.css,.md" onchange="handleFileUpload(event)">
+          <button onclick="document.getElementById('file-upload-input').click()" class="text-m3-onSurfaceVariant hover:text-m3-primary p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition shrink-0 cursor-pointer" title="Attach file or screenshot">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
-          <textarea id="prompt-input" rows="1" placeholder="Ask anything, build interactive apps, or execute Python code..."
+          <textarea id="prompt-input" rows="1" placeholder="Ask anything, paste screenshots (Ctrl+V), or speak..."
             class="flex-1 bg-transparent text-sm text-m3-onSurface placeholder-m3-onSurfaceVariant focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
 
-          <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40 shadow-sm">
+          <!-- Voice Input Button -->
+          <button id="voice-input-btn" onclick="toggleVoiceRecording()" class="w-8 h-8 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-primary flex items-center justify-center transition shrink-0 active:scale-95 shadow-sm cursor-pointer" title="Voice Input (Speech-to-Text)">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+
+          <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40 shadow-sm cursor-pointer">
             <svg class="w-4 h-4 text-m3-surface" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
@@ -594,6 +621,7 @@
       const map = {
         "deepseek-r1:7b": "DeepSeek-R1 (7B)",
         "qwen2.5:7b": "Qwen 2.5 (7B)",
+        "llava:7b": "LLaVA (Vision 7B)",
         "llama3.1:8b": "Llama 3.1 (8B)",
         "deepseek-r1:1.5b": "DeepSeek-R1 (1.5B)"
       };
@@ -771,27 +799,187 @@
       checkBackendStatus();
     }
 
+    let currentAttachedImage = null;
+
     function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        currentAttachedFile = {
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + " KB",
-          content: evt.target.result
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          currentAttachedImage = {
+            name: file.name,
+            dataUrl: evt.target.result,
+            base64: evt.target.result.split(",")[1]
+          };
+          document.getElementById("attached-image-thumb").src = currentAttachedImage.dataUrl;
+          document.getElementById("attached-image-name").textContent = currentAttachedImage.name;
+          document.getElementById("image-attachment-chip").classList.remove("hidden");
+          showToast(`Attached image ${file.name}`);
         };
-        document.getElementById("attached-file-name").textContent = `${currentAttachedFile.name} (${currentAttachedFile.size})`;
-        document.getElementById("file-attachment-chip").classList.remove("hidden");
-      };
-      reader.readAsText(file);
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          currentAttachedFile = {
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + " KB",
+            content: evt.target.result
+          };
+          document.getElementById("attached-file-name").textContent = `${currentAttachedFile.name} (${currentAttachedFile.size})`;
+          document.getElementById("file-attachment-chip").classList.remove("hidden");
+          showToast(`Attached file ${file.name}`);
+        };
+        reader.readAsText(file);
+      }
     }
 
     function removeAttachedFile() {
       currentAttachedFile = null;
       document.getElementById("file-attachment-chip").classList.add("hidden");
       document.getElementById("file-upload-input").value = "";
+    }
+
+    function removeAttachedImage() {
+      currentAttachedImage = null;
+      document.getElementById("image-attachment-chip").classList.add("hidden");
+      document.getElementById("file-upload-input").value = "";
+    }
+
+    // CLIPBOARD SCREENSHOT PASTE LISTENER (Ctrl + V)
+    window.addEventListener("paste", function(e) {
+      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            currentAttachedImage = {
+              name: `screenshot_${Date.now()}.png`,
+              dataUrl: evt.target.result,
+              base64: evt.target.result.split(",")[1]
+            };
+            document.getElementById("attached-image-thumb").src = currentAttachedImage.dataUrl;
+            document.getElementById("attached-image-name").textContent = currentAttachedImage.name;
+            document.getElementById("image-attachment-chip").classList.remove("hidden");
+            showToast("Screenshot attached from clipboard!");
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    });
+
+    // REAL-TIME VOICE INPUT (Speech-to-Text)
+    let speechRecognition = null;
+    let isRecordingVoice = false;
+
+    function toggleVoiceRecording() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Brave.");
+        return;
+      }
+
+      const voiceBtn = document.getElementById("voice-input-btn");
+
+      if (!isRecordingVoice) {
+        speechRecognition = new SpeechRecognition();
+        speechRecognition.continuous = true;
+        speechRecognition.interimResults = true;
+        speechRecognition.lang = 'en-US';
+
+        speechRecognition.onstart = function() {
+          isRecordingVoice = true;
+          voiceBtn.className = "w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center transition font-bold shrink-0 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.5)] cursor-pointer";
+          showToast("Listening... speak naturally.");
+        };
+
+        speechRecognition.onresult = function(event) {
+          let transcript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+          }
+          const promptInput = document.getElementById("prompt-input");
+          promptInput.value = (promptInput.value.trim() ? promptInput.value.trim() + " " : "") + transcript;
+          promptInput.style.height = "auto";
+          promptInput.style.height = promptInput.scrollHeight + "px";
+        };
+
+        speechRecognition.onerror = function(event) {
+          console.warn("Speech recognition note:", event.error);
+          stopVoiceRecording();
+        };
+
+        speechRecognition.onend = function() {
+          stopVoiceRecording();
+        };
+
+        speechRecognition.start();
+      } else {
+        stopVoiceRecording();
+      }
+    }
+
+    function stopVoiceRecording() {
+      isRecordingVoice = false;
+      if (speechRecognition) {
+        try { speechRecognition.stop(); } catch(e){}
+      }
+      const voiceBtn = document.getElementById("voice-input-btn");
+      if (voiceBtn) {
+        voiceBtn.className = "w-8 h-8 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-primary flex items-center justify-center transition shrink-0 active:scale-95 shadow-sm cursor-pointer";
+      }
+    }
+
+    // TEXT-TO-SPEECH (READ ALOUD)
+    function readAloudMessage(msgId, btnEl) {
+      if (!window.speechSynthesis) return alert("Text-to-speech not supported in this browser.");
+
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        if (btnEl) {
+          const span = btnEl.querySelector("span");
+          if (span) span.textContent = "Speak";
+        }
+        return;
+      }
+
+      const rawText = rawMessageStore[msgId];
+      if (!rawText) return;
+      const clean = rawText
+        .replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "")
+        .replace(/```[\s\S]*?```/g, "Code block omitted.")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/[\*#_]/g, "")
+        .trim();
+
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        if (btnEl) {
+          const span = btnEl.querySelector("span");
+          if (span) span.textContent = "Stop";
+        }
+      };
+      utterance.onend = () => {
+        if (btnEl) {
+          const span = btnEl.querySelector("span");
+          if (span) span.textContent = "Speak";
+        }
+      };
+      utterance.onerror = () => {
+        if (btnEl) {
+          const span = btnEl.querySelector("span");
+          if (span) span.textContent = "Speak";
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
     }
 
     // CLAUDE ARTIFACTS & FULL PREVIEW SYSTEM
@@ -1454,18 +1642,28 @@
     // MULTI-TURN CONVERSATIONAL CHAT ENGINE
     async function handleSend() {
       const text = promptInput.value.trim();
-      if (!text && !currentAttachedFile) return;
+      if (!text && !currentAttachedFile && !currentAttachedImage) return;
 
       const isWebSearch = isWebSearchEnabled;
       promptInput.value = "";
       promptInput.style.height = "auto";
 
       let userDisplayContent = text;
+      let userImageHtml = "";
+      let attachedBase64Images = [];
+
+      if (currentAttachedImage) {
+        userImageHtml = `<div class="mb-2"><img src="${currentAttachedImage.dataUrl}" class="max-w-xs max-h-48 rounded-xl border border-white/10 shadow-md object-contain"></div>`;
+        attachedBase64Images.push(currentAttachedImage.base64);
+        removeAttachedImage();
+      }
+
       if (currentAttachedFile) {
         userDisplayContent = `[Attached File: ${currentAttachedFile.name}]\n\n${text}`;
       }
 
-      appendMessageUI("user", userDisplayContent, true);
+      const userFullHtml = userImageHtml + escapeHtml(userDisplayContent || "Analyze this image.");
+      appendMessageUI("user", userFullHtml, false);
 
       let finalPrompt = text;
       if (currentAttachedFile) {
@@ -1479,6 +1677,10 @@
         }).catch(() => {});
         
         removeAttachedFile();
+      }
+
+      if (attachedBase64Images.length > 0 && !finalPrompt) {
+        finalPrompt = "Please analyze this image, extract key details or code/diagrams, and explain thoroughly.";
       }
 
       const existingHistory = conversations[currentChatId]?.messages || [];
@@ -1495,12 +1697,16 @@
         };
       });
 
-      historyPayload.push({
+      const userMsgPayload = {
         role: "user",
         content: finalPrompt
-      });
+      };
+      if (attachedBase64Images.length > 0) {
+        userMsgPayload.images = attachedBase64Images;
+      }
+      historyPayload.push(userMsgPayload);
 
-      saveMessageToHistory("user", userDisplayContent);
+      saveMessageToHistory("user", userDisplayContent || "Image Query");
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Starting neural engine...</div>', false);
       
@@ -1535,12 +1741,12 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant with GPU Execution support.
+          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant with GPU Execution & Multimodal Vision support.
 Current Date: ${dateString}, ${timeString} (${timezone}).
 
 Directives:
 - For Web Apps: Always write modern, production-grade single-file HTML/JS with Tailwind CSS & Lucide Icons.
-- For Python / Data Science: Write complete executable Python scripts (using matplotlib, numpy, pandas) as they can be run directly on the Colab GPU.
+- For Python / Data Science: Write complete executable Python scripts (using matplotlib, numpy, pandas, seaborn, scikit-learn) as they can be run directly on the Colab GPU.
 - Enclose all code in triple backtick markdown blocks with the exact language identifier (\`\`\`html, \`\`\`python, \`\`\`javascript).`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
@@ -1549,11 +1755,16 @@ Directives:
       try {
         updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Streaming tokens...</span><span class="cursor-blink"></span>');
 
+        let activeModelForChat = modelName;
+        if (attachedBase64Images.length > 0 && !modelName.includes("llava") && !modelName.includes("vl")) {
+          activeModelForChat = "llava:7b";
+        }
+
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            model: modelName,
+            model: activeModelForChat,
             messages: messagesPayload,
             stream: true,
             options: {
@@ -1862,6 +2073,10 @@ Directives:
       if (msgId) {
         const actionToolbar = `
           <div class="flex items-center gap-1 mt-2 text-[11px] text-m3-onSurfaceVariant/80">
+            <button type="button" onclick="readAloudMessage('${msgId}', this)" class="px-2 py-1 rounded-md hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1 cursor-pointer" title="Read response aloud">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              <span>Speak</span>
+            </button>
             <button type="button" onclick="copyFullMessage('${msgId}')" class="px-2 py-1 rounded-md hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1 cursor-pointer" title="Copy response">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
