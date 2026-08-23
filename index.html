@@ -292,46 +292,17 @@
     <!-- Chat Messages Scroll Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-7 max-w-3xl w-full mx-auto relative">
       
-      <!-- Gemini-Style Welcome Header -->
-      <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
-        <div class="space-y-2">
-          <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
-            <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
-              <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-            <span class="text-m3-primary">Hello,</span>
-          </h2>
-          <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
+      <!-- Minimal Gemini-Style Welcome Header (No Suggestion Text) -->
+      <div id="welcome-banner" class="space-y-4 pt-16 pb-6 msg-fade-in">
+        <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
+          <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
+            <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-
-        <!-- M3 Suggestion Chips -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          <div onclick="injectPrompt('Explain the Self-Attention mechanism in Transformers with mathematical formulas and step-by-step intuition.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
-            <span class="text-xs text-m3-onSurface font-medium">Explain Self-Attention math & matrices</span>
-            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
-            <span class="text-xs text-m3-onSurface font-medium">Build an interactive web app with Artifacts</span>
-            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <div onclick="injectPrompt('Write a full marketing launch strategy and go-to-market plan for a new software product.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
-            <span class="text-xs text-m3-onSurface font-medium">Write a senior marketing & launch plan</span>
-            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <div onclick="injectPrompt('What are the newest breakthrough developments in AI and tech this week?')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
-            <span class="text-xs text-m3-onSurface font-medium">Search real-time tech news & updates</span>
-            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
+        <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
+          <span class="text-m3-primary">Hello,</span>
+        </h2>
+        <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
       </div>
     </main>
 
@@ -633,12 +604,6 @@
       checkBackendStatus();
     }
 
-    function injectPrompt(text) {
-      promptInput.value = text;
-      promptInput.focus();
-      promptInput.dispatchEvent(new Event('input'));
-    }
-
     function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -752,18 +717,16 @@
       if (updateHistoryState) updateChatURL(null);
       isUserScrolledUp = false;
       document.getElementById("chat-container").innerHTML = `
-        <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
-          <div class="space-y-2">
-            <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
-              <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
-                <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-              <span class="text-m3-primary">Hello,</span>
-            </h2>
-            <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
+        <div id="welcome-banner" class="space-y-4 pt-16 pb-6 msg-fade-in">
+          <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
+            <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
+              <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
+          <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
+            <span class="text-m3-primary">Hello,</span>
+          </h2>
+          <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
         </div>
       `;
       renderSidebarHistory();
@@ -937,7 +900,6 @@
         }
       }
 
-      // CURRENT REAL-TIME TEMPORAL CONTEXT INJECTION
       const now = new Date();
       const dateString = now.toLocaleDateString(undefined, { 
         weekday: 'long', 
