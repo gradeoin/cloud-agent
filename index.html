@@ -72,7 +72,6 @@
     .katex-display { margin: 0.8em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
     .katex { font-size: 1.05em; color: #e3e3e3; }
     
-    /* Smooth Animations */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes float-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
@@ -83,7 +82,6 @@
     .anim-float { animation: float-slow 4s ease-in-out infinite; }
     .anim-glow { animation: pulse-glow 3s ease-in-out infinite; }
 
-    /* Clean Sidebar Transitions Without Ghost Borders */
     #sidebar {
       width: 260px;
       min-width: 260px;
@@ -134,23 +132,24 @@
   <!-- COLLAPSIBLE GOOGLE MATERIAL 3 SIDEBAR -->
   <aside id="sidebar" class="bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden">
     
-    <div class="px-4 py-3.5 flex items-center justify-between min-w-[260px]">
-      <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary shrink-0 shadow-sm">
-          <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+    <!-- Unified Sidebar Header with Hamburger Menu -->
+    <div class="px-3.5 py-3 flex items-center gap-2.5 min-w-[260px]">
+      <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Collapse sidebar">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary shrink-0 shadow-sm">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none">
             <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <span class="font-semibold text-sm tracking-tight text-m3-onSurface whitespace-nowrap">BuckBuck</span>
       </div>
-      <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-1.5 rounded-full hover:bg-m3-surfaceContainer transition">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
     </div>
 
     <!-- M3 Pill "New Chat" Action -->
-    <div class="px-3 py-2 min-w-[260px]">
-      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-3 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98 whitespace-nowrap">
+    <div class="px-3 py-1.5 min-w-[260px]">
+      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-2.5 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98 whitespace-nowrap">
         <svg class="w-4 h-4 text-m3-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         <span>New chat</span>
       </button>
@@ -185,11 +184,11 @@
   <!-- MAIN CHAT & WORKSPACE AREA -->
   <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative overflow-hidden">
     
-    <!-- Header -->
-    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10">
+    <!-- Main Header -->
+    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
       <div class="flex items-center gap-3">
-        <!-- Hamburger Button -->
-        <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Toggle sidebar">
+        <!-- Hamburger Button appears in main header ONLY when sidebar is collapsed on desktop -->
+        <button id="main-hamburger-btn" onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition hidden" title="Expand sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
         <div class="flex items-center gap-2">
@@ -494,13 +493,20 @@
       }
     });
 
-    // COLLAPSIBLE SIDEBAR TOGGLE
+    // UNIFIED SIDEBAR TOGGLE (Like Google Gemini)
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
+      const mainHamburger = document.getElementById("main-hamburger-btn");
       
       if (window.innerWidth >= 768) {
         sidebar.classList.toggle("sidebar-hidden");
+        const isHidden = sidebar.classList.contains("sidebar-hidden");
+        if (isHidden) {
+          mainHamburger.classList.remove("hidden");
+        } else {
+          mainHamburger.classList.add("hidden");
+        }
       } else {
         sidebar.classList.toggle("-translate-x-full");
         overlay.classList.toggle("hidden");
