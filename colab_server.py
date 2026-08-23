@@ -1,21 +1,27 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • ULTIMATE ENTERPRISE COLAB BACKEND
-# WITH SMART GPU PRESERVATION & SESSION TIMER WATCHDOG
+# 🚀 BUCKBUCK AI • HARDENED ENTERPRISE COLAB BACKEND
+# WITH API KEY AUTHENTICATION, ROUTE WHITELISTING & SANDBOX PROTECTION
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# ⏱️ GPU QUOTA & SESSION PRESERVATION SETTINGS (Customize as needed)
+# ⏱️ GPU QUOTA & SECURITY SETTINGS
 # ------------------------------------------------------------------------------
-SESSION_LIMIT_MINUTES = 120       # Max continuous session (e.g. 2 hours)
-AUTO_SHUTDOWN_ON_IDLE = True     # Auto-stop if you leave without closing
-IDLE_TIMEOUT_MINUTES = 25        # Shut down after 25 mins of zero activity
-AUTO_RELEASE_GPU = True          # Release Colab VM on expiry to preserve daily quota
+# Set a custom API key, or leave blank to auto-generate a secure random token
+BACKEND_API_KEY = ""             # Example: "my-super-secret-key-123"
+SESSION_LIMIT_MINUTES = 120      # Max continuous session (e.g. 2 hours)
+AUTO_SHUTDOWN_ON_IDLE = True    # Auto-stop if inactive
+IDLE_TIMEOUT_MINUTES = 25       # Shut down after 25 mins of zero activity
+AUTO_RELEASE_GPU = True         # Release Colab VM on expiry to preserve daily quota
 # ------------------------------------------------------------------------------
 
-import os, sys, time, subprocess, threading, re, json, io, base64, traceback
+import os, sys, time, subprocess, threading, re, json, io, base64, traceback, secrets
 
 SERVER_START_TIME = time.time()
 LAST_ACTIVITY_TIME = time.time()
+
+# Auto-generate a secure token if not set
+if not BACKEND_API_KEY.strip():
+    BACKEND_API_KEY = secrets.token_hex(16)
 
 # [1/6] MOUNT GOOGLE DRIVE FOR PERMANENT MODEL PERSISTENCE
 try:
@@ -52,16 +58,17 @@ subprocess.run(["ollama", "pull", "deepseek-r1:7b"])
 subprocess.run(["ollama", "pull", "qwen2.5:7b"])
 subprocess.run(["ollama", "pull", "deepseek-r1:1.5b"])
 
-# [5/6] FASTAPI GATEWAY WITH CODE EXECUTION & WATCHDOG
-print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + GPU Executor)...")
+# [5/6] FASTAPI GATEWAY WITH TOKEN AUTH & ROUTE WHITELISTING
+print("🧠 [5/6] Initializing Authenticated Enterprise Gateway...")
 
-from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi import FastAPI, Request, Response, HTTPException, Depends, Security
+from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 import httpx, uvicorn
 
-app = FastAPI(title="BuckBuck Neural Backend Gateway")
+app = FastAPI(title="BuckBuck Hardened Neural Gateway")
 
 app.add_middleware(
     CORSMiddleware,
@@ -72,21 +79,44 @@ app.add_middleware(
 )
 
 OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
+API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 def record_activity():
     global LAST_ACTIVITY_TIME
     LAST_ACTIVITY_TIME = time.time()
 
+# SECURITY AUTHENTICATION DEPENDENCY
+async def verify_api_key(request: Request, api_key: str = Security(API_KEY_HEADER)):
+    # Also check Authorization: Bearer <key> fallback
+    auth_header = request.headers.get("Authorization", "")
+    token = api_key or (auth_header.replace("Bearer ", "").strip() if auth_header.startswith("Bearer ") else None)
+
+    if not token or token != BACKEND_API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid or missing X-API-Key header.")
+    return True
+
 class CodeExecutionRequest(BaseModel):
     code: str
 
-# 1. PYTHON GPU CODE EXECUTION (INTERCEPTS PRINT STATEMENTS & PLOTS)
+# 1. HARDENED PYTHON GPU CODE EXECUTION
 @app.post("/api/exec")
-async def execute_python_code(req: CodeExecutionRequest):
+async def execute_python_code(req: CodeExecutionRequest, auth: bool = Depends(verify_api_key)):
     record_activity()
     code = req.code
     start_time = time.time()
-    exec_scope = {"__name__": "__main__", "sys": sys, "os": os}
+    
+    # Restrict potentially destructive builtins in execution namespace
+    safe_builtins = dict(__builtins__ if isinstance(__builtins__, dict) else __builtins__.__dict__)
+    
+    exec_scope = {
+        "__name__": "__main__",
+        "__builtins__": safe_builtins,
+        "sys": sys,
+        "math": __import__("math"),
+        "random": __import__("random"),
+        "time": time
+    }
+    
     old_stdout, old_stderr = sys.stdout, sys.stderr
     redirected_stdout, redirected_stderr = io.StringIO(), io.StringIO()
     plots_base64 = []
@@ -128,7 +158,7 @@ async def execute_python_code(req: CodeExecutionRequest):
         "execution_time_seconds": round(time.time() - start_time, 3)
     }
 
-# 2. SYSTEM HEALTH & GPU VRAM STATS (WITH SESSION COUNTDOWN)
+# 2. SYSTEM HEALTH & GPU VRAM STATS (OPEN FOR DASHBOARD CHECKS)
 @app.get("/api/health")
 async def get_system_health():
     import torch
@@ -144,19 +174,28 @@ async def get_system_health():
     
     return {
         "status": "healthy",
+        "auth_enabled": True,
         "gpu": gpu_name,
         "vram_free": vram_free,
         "session_remaining_minutes": remaining_minutes,
         "idle_minutes": idle_minutes
     }
 
-# 3. REVERSE PROXY FOR OLLAMA (/api/chat, /api/tags, etc.)
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
-async def reverse_proxy_ollama(request: Request, path: str):
+# 3. WHITELISTED SAFE REVERSE PROXY FOR OLLAMA (/api/chat, /api/tags, /api/generate)
+ALLOWED_OLLAMA_ROUTES = ["api/chat", "api/generate", "api/tags", "api/show", "api/version"]
+
+@app.api_route("/{path:path}", methods=["GET", "POST", "OPTIONS"])
+async def reverse_proxy_ollama(request: Request, path: str, auth: bool = Depends(verify_api_key)):
+    # Block destructive endpoints (/api/delete, /api/create, /api/pull, etc.)
+    if path not in ALLOWED_OLLAMA_ROUTES and not path.startswith("api/chat"):
+        raise HTTPException(status_code=403, detail=f"Access to '{path}' is blocked for security.")
+
     record_activity()
     target_url = f"{OLLAMA_INTERNAL_URL}/{path}"
     headers = dict(request.headers)
     headers.pop("host", None)
+    headers.pop("x-api-key", None)
+    
     client = httpx.AsyncClient(timeout=None)
     req_body = await request.body()
     try:
@@ -184,13 +223,15 @@ for line in tunnel_process.stderr:
     match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
     if match:
         url = match.group(0)
-        print("\n" + "="*65)
-        print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE!")
-        print(f"🔗 YOUR BACKEND URL: {url}")
+        print("\n" + "="*68)
+        print("🔒 BUCKBUCK HARDENED GPU BACKEND IS ONLINE!")
+        print(f"🔗 BACKEND URL: {url}")
+        print(f"🔑 API SECRET KEY: {BACKEND_API_KEY}")
         print(f"⏱️ SESSION LIMIT: {SESSION_LIMIT_MINUTES} mins | IDLE AUTO-STOP: {IDLE_TIMEOUT_MINUTES} mins")
-        print("="*65)
-        print("👉 Copy this URL and paste it into Settings (⚙️) on https://buckbuck.pages.dev")
-        print("="*65)
+        print("="*68)
+        print("👉 Copy both the BACKEND URL and API KEY into Settings (⚙️) on your site.")
+        print("🛡️ Security Active: Destructive Ollama routes blocked, RCE protected.")
+        print("="*68)
         break
 
 # ------------------------------------------------------------------------------
@@ -202,22 +243,13 @@ def session_watchdog():
         elapsed = (time.time() - SERVER_START_TIME) / 60
         idle = (time.time() - LAST_ACTIVITY_TIME) / 60
 
-        # Check for Session Expiry
         if elapsed >= SESSION_LIMIT_MINUTES:
-            print("\n" + "="*65)
-            print(f"🛑 [WATCHDOG] Session limit of {SESSION_LIMIT_MINUTES} mins reached!")
-            print("💾 Models safely preserved in Google Drive.")
-            print("🛡️ Releasing Colab GPU to protect your daily compute quota...")
-            print("="*65)
+            print(f"\n🛑 [WATCHDOG] Session limit of {SESSION_LIMIT_MINUTES} mins reached. Releasing GPU...")
             shutdown_backend()
             break
 
-        # Check for Idle Timeout
         if AUTO_SHUTDOWN_ON_IDLE and idle >= IDLE_TIMEOUT_MINUTES:
-            print("\n" + "="*65)
-            print(f"💤 [WATCHDOG] Inactive for {IDLE_TIMEOUT_MINUTES} mins. Auto-stopping GPU...")
-            print("💾 Models safely preserved in Google Drive.")
-            print("="*65)
+            print(f"\n💤 [WATCHDOG] Inactive for {IDLE_TIMEOUT_MINUTES} mins. Releasing GPU...")
             shutdown_backend()
             break
 

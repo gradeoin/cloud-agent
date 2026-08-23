@@ -474,6 +474,11 @@
             class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
         <div class="space-y-1.5">
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">API Secret Key (from Colab Output)</label>
+          <input type="password" id="backend-key-input" placeholder="Paste generated key (e.g. a8f7...)" 
+            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
+        </div>
+        <div class="space-y-1.5">
           <label class="text-xs font-medium text-m3-onSurfaceVariant">Active Model Tag</label>
           <input type="text" id="model-name-input" value="deepseek-r1:7b" 
             class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
@@ -505,6 +510,7 @@
     };
 
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
+    let backendApiKey = localStorage.getItem("ai_backend_key") || "";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
     let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
     let currentChatId = getChatIdFromURL() || "chat_" + Date.now();
@@ -514,6 +520,15 @@
     let activeArtifactCode = "";
     let activeArtifactTitle = "Artifact Preview";
     let activeArtifactLang = "html";
+    
+    function getAuthHeaders(extra = {}) {
+      const headers = { "Content-Type": "application/json", ...extra };
+      if (backendApiKey) {
+        headers["X-API-Key"] = backendApiKey;
+        headers["Authorization"] = `Bearer ${backendApiKey}`;
+      }
+      return headers;
+    }
     
     // SAFE IN-MEMORY REGISTRY TO PREVENT QUOTE/ESCAPING BUGS & SUPPORT MULTI-FILE BUNDLING
     window.codeRegistry = {};
@@ -622,6 +637,7 @@
     }
 
     document.getElementById("backend-url-input").value = backendUrl;
+    document.getElementById("backend-key-input").value = backendApiKey;
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("allowed-email-input").value = allowedEmail;
     updateModelDisplayFromStorage();
@@ -721,10 +737,12 @@
 
     function saveSettings() {
       backendUrl = document.getElementById("backend-url-input").value.trim().replace(/\/$/, "");
+      backendApiKey = document.getElementById("backend-key-input").value.trim();
       modelName = document.getElementById("model-name-input").value.trim();
       allowedEmail = document.getElementById("allowed-email-input").value.trim().toLowerCase();
 
       localStorage.setItem("ai_backend_url", backendUrl);
+      localStorage.setItem("ai_backend_key", backendApiKey);
       localStorage.setItem("ai_model_name", modelName);
       localStorage.setItem("ai_allowed_email", allowedEmail);
 
@@ -978,7 +996,7 @@
       try {
         const res = await fetch(`${backendUrl}/api/exec`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ code: item.code })
         });
 
@@ -1350,7 +1368,7 @@
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
       try {
-        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", signal: AbortSignal.timeout(5000) });
+        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           const data = await res.json();
           let label = "T4 GPU";
@@ -1378,7 +1396,7 @@
         }
       } catch (e) {
         try {
-          const res2 = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(4000) });
+          const res2 = await fetch(`${backendUrl}/api/tags`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(4000) });
           if (res2.ok) {
             badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
             badge.textContent = "T4 GPU";
@@ -1432,7 +1450,7 @@
         // Asynchronously ingest document into Colab RAG Vector engine
         fetch(`${backendUrl}/api/rag/ingest`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ document_id: currentAttachedFile.name, text: currentAttachedFile.content })
         }).catch(() => {});
         
@@ -1509,7 +1527,7 @@ Directives:
 
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             model: modelName,
             messages: messagesPayload,
