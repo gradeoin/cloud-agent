@@ -193,7 +193,7 @@ os.system(
     "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
 )
 os.system(
-    "pip install -q fastapi uvicorn httpx pydantic matplotlib numpy pandas scipy "
+    "pip install -q fastapi uvicorn httpx pydantic nest_asyncio matplotlib numpy pandas scipy "
     "scikit-learn seaborn sympy pillow torch torchaudio openai-whisper > /dev/null 2>&1"
 )
 
@@ -258,6 +258,12 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import httpx, uvicorn
+
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+except Exception:
+    pass
 
 OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
 http_client: httpx.AsyncClient | None = None
@@ -672,5 +678,13 @@ def session_watchdog():
 
 threading.Thread(target=session_watchdog, daemon=True).start()
 
-# Run FastAPI gateway directly on the main event loop to keep Jupyter kernel active
-uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
+# Run FastAPI gateway seamlessly inside Jupyter/Colab event loop
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
+except Exception:
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="warning")
+    server = uvicorn.Server(config)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.serve())
