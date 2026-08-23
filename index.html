@@ -34,21 +34,19 @@
   </script>
 
   <style>
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #070a11; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    .prose pre { background: #060910 !important; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin: 12px 0; }
+    .prose pre { background: #060910 !important; border: 1px solid #1e293b; padding: 14px; margin: 0 0 12px 0; }
     .prose code { color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
     .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #38bdf8; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     .glass-panel { background: rgba(13, 18, 30, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    /* Animated SVGs */
     @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes dash { 0% { stroke-dashoffset: 100; } 100% { stroke-dashoffset: 0; } }
     .anim-pulse { animation: pulse-slow 3s ease-in-out infinite; }
     .anim-spin { animation: spin-slow 12s linear infinite; }
   </style>
@@ -58,7 +56,6 @@
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
   <div id="auth-overlay" class="fixed inset-0 bg-[#070a11]/95 backdrop-blur-2xl z-50 flex items-center justify-center p-4">
     <div class="glass-panel w-full max-w-md rounded-3xl p-8 shadow-2xl text-center space-y-6 border border-slate-800/90">
-      <!-- Animated Logo SVG -->
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center mx-auto shadow-2xl shadow-cyan-500/20 anim-pulse">
         <svg class="w-8 h-8 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -91,7 +88,6 @@
 
   <!-- SIDEBAR (Chat History & Workspace Management) -->
   <aside id="sidebar" class="w-72 bg-[#0a0e1a] border-r border-slate-800/80 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
-    <!-- Brand Header -->
     <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
@@ -159,7 +155,7 @@
             Workstation
             <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">Connecting GPU...</span>
           </h1>
-          <p class="text-[10px] text-slate-400 font-medium">DeepSeek-R1 (7B) • Context Memory Enabled • Live Artifacts</p>
+          <p class="text-[10px] text-slate-400 font-medium">DeepSeek-R1 (7B) • Smart Auto-Scroll • Code Preview & Copy</p>
         </div>
       </div>
 
@@ -187,14 +183,14 @@
     </header>
 
     <!-- Chat Messages Scroll Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto">
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto relative">
       
       <!-- Welcome Hero -->
       <div id="welcome-banner" class="space-y-6 py-6">
         <div class="text-center space-y-3 max-w-lg mx-auto">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-            Interactive Artifacts & Context Memory Active
+            Interactive Code Previews & Smart Scrolling Ready
           </div>
           <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">What shall we build today?</h2>
           <p class="text-sm text-slate-400 leading-relaxed">
@@ -204,7 +200,7 @@
 
         <!-- Quick Starter Action Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto pt-2">
-          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS, hero section, and responsive design.')" 
+          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS, hero section, pricing table, and responsive design.')" 
             class="glass-panel hover:border-cyan-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-cyan-500/5 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-cyan-400">
               <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
@@ -243,6 +239,14 @@
       </div>
     </main>
 
+    <!-- Floating Scroll-To-Bottom Indicator -->
+    <div id="scroll-bottom-container" class="absolute bottom-24 right-8 z-20 hidden">
+      <button onclick="scrollToBottom(true)" class="glass-panel hover:bg-slate-800 text-cyan-400 p-2.5 rounded-full shadow-2xl border border-cyan-500/30 flex items-center gap-2 text-xs font-bold transition hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        <span class="pr-1 text-[11px] text-slate-200">Scroll to bottom</span>
+      </button>
+    </div>
+
     <!-- Bottom Input & Attachment Bar -->
     <footer class="glass-panel border-t border-slate-800/80 p-3 sm:p-4">
       <div class="max-w-4xl mx-auto space-y-2">
@@ -279,7 +283,6 @@
 
   <!-- CLAUDE-STYLE ARTIFACTS / PREVIEW PANEL -->
   <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-[#090d16] border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
-    <!-- Artifact Top Bar -->
     <div class="p-3.5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
@@ -291,7 +294,6 @@
         </div>
       </div>
 
-      <!-- Tab & Action Controls -->
       <div class="flex items-center gap-2">
         <div class="flex bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-xs font-semibold">
           <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold">Preview</button>
@@ -310,11 +312,10 @@
       </div>
     </div>
 
-    <!-- Artifact Content Area -->
     <div class="flex-1 relative overflow-hidden bg-slate-950">
       <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
       <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#070a13] font-mono text-xs text-slate-200">
-        <pre><code id="artifact-code-raw"></code></pre>
+        <pre class="m-0 border-none bg-transparent p-0"><code id="artifact-code-raw"></code></pre>
       </div>
     </div>
   </div>
@@ -332,13 +333,11 @@
         </button>
       </div>
 
-      <!-- Navigation Tabs -->
       <div class="flex border-b border-slate-800 gap-4 text-xs font-semibold">
         <button onclick="switchSettingsTab('tab-backend')" id="btn-tab-backend" class="pb-2 text-cyan-400 border-b-2 border-cyan-400">Backend & GPU</button>
         <button onclick="switchSettingsTab('tab-security')" id="btn-tab-security" class="pb-2 text-slate-400 hover:text-slate-200">Security & Whitelist</button>
       </div>
 
-      <!-- Tab 1: Backend Settings -->
       <div id="tab-backend" class="space-y-3.5">
         <div class="space-y-1">
           <label class="text-xs font-semibold text-slate-300">Google Colab Tunnel URL</label>
@@ -352,7 +351,6 @@
         </div>
       </div>
 
-      <!-- Tab 2: Security Settings -->
       <div id="tab-security" class="space-y-3 hidden">
         <div class="space-y-1">
           <label class="text-xs font-semibold text-slate-300">Whitelisted Administrator Email</label>
@@ -390,6 +388,35 @@
     let currentAttachedFile = null;
     let activeArtifactCode = "";
 
+    // SMART AUTO-SCROLL CONTROLS
+    let isUserScrolledUp = false;
+    const chatContainer = document.getElementById("chat-container");
+    const scrollBottomBtn = document.getElementById("scroll-bottom-container");
+
+    chatContainer.addEventListener("scroll", function() {
+      const threshold = 120;
+      const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= threshold;
+      isUserScrolledUp = !isAtBottom;
+      if (isUserScrolledUp) {
+        scrollBottomBtn.classList.remove("hidden");
+      } else {
+        scrollBottomBtn.classList.add("hidden");
+      }
+    });
+
+    function scrollToBottom(force = false) {
+      if (!isUserScrolledUp || force) {
+        chatContainer.scrollTo({
+          top: chatContainer.scrollHeight,
+          behavior: force ? 'smooth' : 'auto'
+        });
+        if (force) {
+          isUserScrolledUp = false;
+          scrollBottomBtn.classList.add("hidden");
+        }
+      }
+    }
+
     document.getElementById("backend-url-input").value = backendUrl;
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("allowed-email-input").value = allowedEmail;
@@ -423,7 +450,7 @@
           }
         });
       } catch (e) {
-        console.warn("Firebase initialization note:", e);
+        console.warn("Firebase note:", e);
       }
     }
     initFirebase();
@@ -497,7 +524,6 @@
       promptInput.dispatchEvent(new Event('input'));
     }
 
-    // File Attachment Handling
     function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -569,6 +595,14 @@
       alert("Artifact code copied to clipboard.");
     }
 
+    function copyCodeText(buttonEl, text) {
+      navigator.clipboard.writeText(text);
+      const span = buttonEl.querySelector("span");
+      const orig = span.textContent;
+      span.textContent = "Copied!";
+      setTimeout(() => { span.textContent = orig; }, 2000);
+    }
+
     function exportChatAsMarkdown() {
       const chat = conversations[currentChatId];
       if (!chat || !chat.messages.length) return alert("No messages to export.");
@@ -589,6 +623,7 @@
     function startNewChat() {
       currentChatId = "chat_" + Date.now();
       localStorage.setItem("ai_current_chat_id", currentChatId);
+      isUserScrolledUp = false;
       document.getElementById("chat-container").innerHTML = `
         <div id="welcome-banner" class="space-y-6 py-6">
           <div class="text-center space-y-3 max-w-lg mx-auto">
@@ -609,12 +644,14 @@
 
       const container = document.getElementById("chat-container");
       container.innerHTML = "";
+      isUserScrolledUp = false;
 
       chat.messages.forEach(msg => {
         appendMessageUI(msg.role, msg.content, true);
       });
 
       renderSidebarHistory();
+      scrollToBottom(true);
       if (window.innerWidth < 768) toggleSidebar();
     }
 
@@ -720,7 +757,7 @@
       } catch (err) { return ""; }
     }
 
-    // MULTI-TURN CONVERSATIONAL CONTEXT LOGIC (Like ChatGPT/Claude)
+    // MULTI-TURN CONVERSATIONAL CHAT
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -736,6 +773,7 @@
 
       appendMessageUI("user", userDisplayContent, true);
       saveMessageToHistory("user", userDisplayContent);
+      scrollToBottom(true);
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-cyan-400 font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Connecting neural engine...</div>', false);
       
@@ -753,14 +791,12 @@
         }
       }
 
-      // Build Multi-Turn History Payload (/api/chat endpoint)
       const currentHistory = conversations[currentChatId]?.messages || [];
       const messagesPayload = currentHistory.map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content
       }));
 
-      // Replace last message with finalPrompt (which might have web search / file content injected)
       if (messagesPayload.length > 0) {
         messagesPayload[messagesPayload.length - 1].content = finalPrompt;
       }
@@ -768,7 +804,6 @@
       try {
         updateMessageUI(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
 
-        // MULTI-TURN CHAT API (Maintains full conversational memory!)
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -798,21 +833,70 @@
               if (parsed.message && parsed.message.content) {
                 accumulatedText += parsed.message.content;
                 updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText) + '<span class="cursor-blink"></span>');
+                scrollToBottom(false);
               }
             } catch (e) {}
           }
         }
 
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText));
-        document.querySelectorAll('pre code').forEach(hljs.highlightElement);
+        enhanceCodeBlocksInElement(document.getElementById(aiMsgId));
         saveMessageToHistory("assistant", accumulatedText);
+        scrollToBottom(false);
 
       } catch (error) {
         updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not stream from Google Colab. Verify that your Colab GPU notebook is active.</p>`);
       }
     }
 
-    // Parse Response & Extract Claude-Style Interactive Artifacts (Custom SVGs)
+    // Enhance every rendered code block with Language Tag, Copy Button, and Preview Option
+    function enhanceCodeBlocksInElement(containerEl) {
+      if (!containerEl) return;
+      const preElements = containerEl.querySelectorAll('pre');
+      
+      preElements.forEach(pre => {
+        if (pre.previousElementSibling && pre.previousElementSibling.classList.contains('code-header-bar')) return;
+
+        const codeEl = pre.querySelector('code');
+        if (!codeEl) return;
+
+        const langMatch = codeEl.className.match(/language-(\w+)/);
+        const lang = langMatch ? langMatch[1] : 'code';
+        const rawCode = codeEl.innerText;
+        const encodedCode = encodeURIComponent(rawCode);
+
+        const header = document.createElement('div');
+        header.className = 'code-header-bar flex items-center justify-between px-3.5 py-1.5 bg-[#0e1422] border-t border-x border-slate-800 text-[11px] text-slate-400 font-mono rounded-t-xl';
+        
+        let previewBtn = '';
+        if (['html', 'xml', 'svg', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase())) {
+          previewBtn = `
+            <button onclick="openArtifactDrawer('${lang.toUpperCase()} Preview', decodeURIComponent('${encodedCode}'))" 
+              class="hover:text-cyan-400 flex items-center gap-1 text-[11px] font-sans font-semibold text-cyan-300 transition">
+              <svg class="w-3 h-3 text-cyan-400 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Preview</span>
+            </button>
+          `;
+        }
+
+        header.innerHTML = `
+          <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">${lang}</span>
+          <div class="flex items-center gap-3">
+            ${previewBtn}
+            <button onclick="copyCodeText(this, decodeURIComponent('${encodedCode}'))" 
+              class="hover:text-white flex items-center gap-1 text-[11px] font-sans font-semibold text-slate-400 transition">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+        `;
+
+        pre.parentNode.insertBefore(header, pre);
+        pre.classList.add('rounded-t-none', 'mt-0', 'border-t-0');
+        hljs.highlightElement(codeEl);
+      });
+    }
+
     function renderResponseWithArtifacts(text) {
       let html = marked.parse(text);
 
@@ -862,7 +946,9 @@
         </div>
       `;
       container.insertAdjacentHTML("beforeend", html);
-      container.scrollTop = container.scrollHeight;
+      if (isMarkdown && !isUser) {
+        enhanceCodeBlocksInElement(document.getElementById(msgId));
+      }
       return msgId;
     }
 
@@ -870,7 +956,6 @@
       const el = document.getElementById(msgId);
       if (el) {
         el.querySelector("div:last-child").innerHTML = content;
-        document.getElementById("chat-container").scrollTop = document.getElementById("chat-container").scrollHeight;
       }
     }
 
