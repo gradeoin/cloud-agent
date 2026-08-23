@@ -20,6 +20,8 @@
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
     .prose pre { background: #090d16 !important; border-radius: 8px; padding: 12px; margin: 8px 0; }
     .prose code { color: #38bdf8; }
+    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #38bdf8; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 flex flex-col h-screen overflow-hidden font-sans">
@@ -35,7 +37,7 @@
           Private Cloud AI
           <span id="status-badge" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Checking Backend...</span>
         </h1>
-        <p class="text-xs text-slate-400">DeepSeek-R1 • Google Colab T4 GPU</p>
+        <p class="text-xs text-slate-400">DeepSeek-R1 • Google Colab T4 GPU (Streaming Active ⚡)</p>
       </div>
     </div>
 
@@ -65,10 +67,10 @@
       </div>
       <div class="space-y-2 flex-1 text-sm">
         <p class="font-semibold text-slate-200">Welcome to your Private AI Workstation!</p>
-        <p class="text-slate-400">Connected to <b>DeepSeek-R1 (7B)</b> on Google Colab GPU.</p>
+        <p class="text-slate-400">Real-time word-by-word streaming is active. Responses start typing in seconds!</p>
         <div class="flex gap-2 pt-1 flex-wrap">
+          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">⚡ Real-Time Streaming</span>
           <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">🔒 100% Private</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">⚡ 0% Laptop Load</span>
           <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">🌐 Live Web Search</span>
         </div>
       </div>
@@ -113,6 +115,7 @@
         <label class="text-xs font-semibold text-slate-300">Model Name</label>
         <input type="text" id="model-name-input" value="deepseek-r1:7b" 
           class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+        <p class="text-xs text-slate-500">Tip: For instant responses without thinking delay, try <b>qwen2.5:7b</b> or <b>llama3.2:3b</b>.</p>
       </div>
 
       <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
@@ -214,48 +217,69 @@
       // Append User message
       appendMessage("user", text);
 
-      // Append AI typing indicator
-      const aiMsgId = appendMessage("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> DeepSeek-R1 is thinking...', true);
+      // Append AI bubble with cursor
+      const aiMsgId = appendMessage("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> Connecting...', true);
 
       let finalPrompt = text;
 
       // Execute live web search if toggled
       if (isWebSearch) {
-        updateMessage(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Searching the live web...');
+        updateMessage(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Searching live web...');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
           finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${text}\n\nPlease provide an accurate, up-to-date answer using the search context above.`;
         }
-        updateMessage(aiMsgId, '<i class="fa-solid fa-brain fa-spin text-cyan-400"></i> Reasoning with live data...');
       }
 
       try {
+        updateMessage(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
+
+        // STREAMING REQUEST (Instant token-by-token generation!)
         const response = await fetch(`${backendUrl}/api/generate`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: modelName,
             prompt: finalPrompt,
-            stream: false
+            stream: true
           })
         });
 
         if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-        const data = await response.json();
-        
-        // Render Markdown Response
-        const renderedHtml = marked.parse(data.response || "No response received.");
-        updateMessage(aiMsgId, renderedHtml);
 
-        // Highlight syntax
-        document.querySelectorAll('pre code').forEach((el) => {
-          hljs.highlightElement(el);
-        });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedText = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n").filter(l => l.trim().length > 0);
+
+          for (const line of lines) {
+            try {
+              const parsed = JSON.parse(line);
+              if (parsed.response) {
+                accumulatedText += parsed.response;
+                
+                // Format markdown in real-time
+                const formattedHtml = marked.parse(accumulatedText) + '<span class="cursor-blink"></span>';
+                updateMessage(aiMsgId, formattedHtml);
+              }
+            } catch (e) {
+              // Partial line chunk, continue
+            }
+          }
+        }
+
+        // Final render without cursor
+        updateMessage(aiMsgId, marked.parse(accumulatedText));
+        document.querySelectorAll('pre code').forEach(hljs.highlightElement);
 
       } catch (error) {
-        updateMessage(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not reach Google Colab. Make sure your notebook is running and your Tunnel URL in Settings is correct.</p>`);
+        updateMessage(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not stream from Google Colab. Make sure notebook is running.</p>`);
       }
     }
 
