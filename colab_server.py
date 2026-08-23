@@ -92,6 +92,7 @@ if _minutes_remaining_this_week <= 0:
 EFFECTIVE_SESSION_LIMIT_MINUTES = int(min(SESSION_LIMIT_MINUTES, _minutes_remaining_this_week))
 
 # [2/6] CONFIGURE HIGH-PERFORMANCE GPU ENVIRONMENT
+os.environ['PATH'] = f"/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
 os.environ['OLLAMA_ORIGINS'] = '*'
 os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
 os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
@@ -99,9 +100,31 @@ os.environ['OLLAMA_NUM_PARALLEL'] = '2'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 os.environ['OLLAMA_MAX_LOADED_MODELS'] = '2'
 
+import shutil
+
+def get_ollama_path() -> str:
+    for candidate in ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]:
+        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    found = shutil.which("ollama")
+    if found:
+        return found
+    print("⏳ Installing Ollama binary...")
+    os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    for candidate in ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]:
+        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    found = shutil.which("ollama")
+    if found:
+        return found
+    # Fallback to direct tar extraction
+    print("⚠️ Standard script missed, extracting direct linux-amd64 binary...")
+    os.system("curl -s -L https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz && tar -C /usr -xzf /tmp/ollama.tgz > /dev/null 2>&1")
+    return "/usr/bin/ollama" if os.path.exists("/usr/bin/ollama") else "/usr/local/bin/ollama"
+
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
 print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
-os.system("curl -fsSL https://ollama.com/install.sh | sh > /dev/null 2>&1")
+OLLAMA_BIN = get_ollama_path()
 os.system(
     "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
     "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
@@ -112,8 +135,8 @@ os.system(
 )
 
 # [4/6] START OLLAMA ENGINE IN BACKGROUND
-print("⚡ [3/6] Starting Ollama Engine with FlashAttention & GPU Locking...")
-subprocess.Popen(["ollama", "serve"], env=dict(os.environ))
+print(f"⚡ [3/6] Starting Ollama Engine ({OLLAMA_BIN}) with FlashAttention & GPU Locking...")
+subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ))
 time.sleep(3)
 
 print("📥 [4/6] Ensuring core & Vision models are cached in Google Drive...")
@@ -121,7 +144,7 @@ REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llava:7b", "deepseek-r1:1.5b
 
 def already_pulled(model: str) -> bool:
     try:
-        listed = subprocess.run(["ollama", "list"], capture_output=True, text=True, timeout=15)
+        listed = subprocess.run([OLLAMA_BIN, "list"], capture_output=True, text=True, timeout=15)
         return model.split(":")[0] in listed.stdout
     except Exception:
         return False
@@ -131,7 +154,7 @@ for model in REQUIRED_MODELS:
         print(f"   ✅ {model} already cached, skipping pull.")
         continue
     print(f"   ⬇️  Pulling {model} ...")
-    result = subprocess.run(["ollama", "pull", model])
+    result = subprocess.run([OLLAMA_BIN, "pull", model])
     if result.returncode != 0:
         print(f"   ⚠️ Failed to pull {model} (exit code {result.returncode}) — continuing anyway.")
 
