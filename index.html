@@ -13,6 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
@@ -110,7 +111,7 @@
           <p class="font-semibold text-slate-200">Welcome to your Cloud AI Workstation!</p>
           <p class="text-slate-400">Real-time token streaming & Firebase cloud history active. Start typing below!</p>
           <div class="flex gap-2 pt-1 flex-wrap">
-            <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔥 Firebase Synced</span>
+            <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 Firebase Secured</span>
             <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">⚡ Fast Streaming</span>
             <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">🌐 Live Web Search</span>
           </div>
@@ -169,7 +170,7 @@
         <p class="text-xs text-slate-400">Connected to Firebase Project: <b class="text-cyan-400">buckbuck-ab0ff</b></p>
         <textarea id="firebase-config-input" rows="5"
           class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 font-mono focus:outline-none focus:border-cyan-500"></textarea>
-        <div class="text-[11px] text-emerald-400">✅ Firebase Firestore configured and syncing across all devices.</div>
+        <div class="text-[11px] text-emerald-400">✅ Firebase Firestore configured with silent security authentication.</div>
       </div>
 
       <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
@@ -198,6 +199,7 @@
     let firebaseConfigStr = localStorage.getItem("ai_firebase_config") || JSON.stringify(defaultFirebaseConfig, null, 2);
     let currentChatId = localStorage.getItem("ai_current_chat_id") || "chat_" + Date.now();
     let db = null;
+    let auth = null;
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
 
     // Initialize UI inputs
@@ -205,7 +207,7 @@
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("firebase-config-input").value = firebaseConfigStr;
 
-    // Initialize Firebase
+    // Initialize Firebase with Anonymous Authentication
     function initFirebase() {
       try {
         const config = JSON.parse(firebaseConfigStr);
@@ -213,8 +215,17 @@
           firebase.initializeApp(config);
         }
         db = firebase.firestore();
-        document.getElementById("firebase-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Synced';
-        loadFirestoreConversations();
+        auth = firebase.auth();
+        
+        // Silently authenticate in background for secure rules
+        auth.signInAnonymously().then(() => {
+          document.getElementById("firebase-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Secured';
+          loadFirestoreConversations();
+        }).catch(err => {
+          console.warn("Auth note (Enable Anonymous in Firebase Auth console if using auth rules):", err);
+          loadFirestoreConversations();
+        });
+
       } catch (e) {
         console.warn("Firebase initialization error:", e);
       }
@@ -375,7 +386,7 @@
         localStorage.setItem("ai_conversations", JSON.stringify(conversations));
         renderSidebarHistory();
       } catch (err) {
-        console.warn("Firestore fetch note (check Firestore rules if new):", err);
+        console.warn("Firestore fetch note:", err);
       }
     }
 
