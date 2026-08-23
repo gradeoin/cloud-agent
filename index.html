@@ -11,10 +11,12 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
@@ -24,98 +26,151 @@
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 flex flex-col h-screen overflow-hidden font-sans">
+<body class="bg-slate-950 text-slate-100 flex h-screen overflow-hidden font-sans">
 
-  <!-- Header -->
-  <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-6 py-3.5 flex justify-between items-center z-10">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-        <i class="fa-solid fa-brain text-white text-lg"></i>
-      </div>
-      <div>
-        <h1 class="font-bold text-base tracking-wide flex items-center gap-2">
-          Private Cloud AI
-          <span id="status-badge" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Checking Backend...</span>
-        </h1>
-        <p class="text-xs text-slate-400">DeepSeek-R1 • Google Colab T4 GPU (Streaming Active ⚡)</p>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="flex items-center gap-3">
-      <!-- Web Search Toggle -->
-      <label class="flex items-center gap-2 cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 px-3 py-1.5 rounded-lg transition text-xs select-none">
-        <i class="fa-solid fa-globe text-cyan-400"></i>
-        <span class="font-medium text-slate-300">Live Search</span>
-        <input type="checkbox" id="websearch-toggle" class="sr-only peer">
-        <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500 relative"></div>
-      </label>
-
-      <!-- Settings Button -->
-      <button onclick="toggleSettingsModal()" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 flex items-center justify-center transition text-slate-300">
-        <i class="fa-solid fa-gear"></i>
+  <!-- Sidebar (Chat History & Management) -->
+  <aside id="sidebar" class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
+    <!-- Sidebar Header: New Chat Button -->
+    <div class="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
+      <button onclick="startNewChat()" class="flex-1 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 transition active:scale-95">
+        <i class="fa-solid fa-plus"></i> New Chat
+      </button>
+      <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-2">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-  </header>
 
-  <!-- Chat Messages Container -->
-  <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto">
-    <!-- Welcome message -->
-    <div class="flex gap-4 items-start p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60 shadow-sm">
-      <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-        <i class="fa-solid fa-robot text-sm"></i>
+    <!-- Chat History List -->
+    <div class="flex-1 overflow-y-auto p-3 space-y-1" id="chat-history-list">
+      <div class="text-[11px] font-semibold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Recent Conversations</div>
+      <div id="history-items" class="space-y-1">
+        <!-- Dynamically populated from Firestore / LocalStorage -->
       </div>
-      <div class="space-y-2 flex-1 text-sm">
-        <p class="font-semibold text-slate-200">Welcome to your Private AI Workstation!</p>
-        <p class="text-slate-400">Real-time word-by-word streaming is active. Responses start typing in seconds!</p>
-        <div class="flex gap-2 pt-1 flex-wrap">
-          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">⚡ Real-Time Streaming</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">🔒 100% Private</span>
-          <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">🌐 Live Web Search</span>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400 flex items-center justify-between">
+      <span id="firebase-status" class="flex items-center gap-1.5 text-[11px]">
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span> Local Storage
+      </span>
+      <button onclick="toggleSettingsModal('tab-firebase')" class="text-slate-400 hover:text-cyan-400 transition" title="Firebase Sync Settings">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Sync
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay for Mobile -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
+
+  <!-- Main Chat Area -->
+  <div class="flex-1 flex flex-col h-screen min-w-0">
+    
+    <!-- Top Header -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 sm:px-6 py-3 flex justify-between items-center z-10">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-2">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-brain text-white text-sm"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-sm sm:text-base flex items-center gap-2">
+            Private Cloud AI
+            <span id="status-badge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Checking...</span>
+          </h1>
+          <p class="text-[11px] text-slate-400 truncate">DeepSeek-R1 (7B) • Cloudflare GPU Tunnel</p>
         </div>
       </div>
-    </div>
-  </main>
 
-  <!-- Input Bar -->
-  <footer class="bg-slate-900/80 backdrop-blur border-t border-slate-800 p-4">
-    <div class="max-w-4xl mx-auto flex gap-2 items-end">
-      <div class="flex-1 bg-slate-800/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
-        <textarea id="prompt-input" rows="1" placeholder="Ask DeepSeek-R1 anything... (Shift+Enter for new line)"
-          class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-32"></textarea>
+      <!-- Header Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Live Search Toggle -->
+        <label class="flex items-center gap-2 cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-lg transition text-xs select-none">
+          <i class="fa-solid fa-globe text-cyan-400"></i>
+          <span class="hidden sm:inline font-medium text-slate-300">Live Search</span>
+          <input type="checkbox" id="websearch-toggle" class="sr-only peer">
+          <div class="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500 relative"></div>
+        </label>
+
+        <!-- Settings Button -->
+        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 flex items-center justify-center transition text-slate-300">
+          <i class="fa-solid fa-gear text-sm"></i>
+        </button>
       </div>
-      <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
-        <i class="fa-solid fa-paper-plane text-sm"></i>
-      </button>
-    </div>
-  </footer>
+    </header>
 
-  <!-- Settings Modal -->
+    <!-- Chat Messages Scroll Container -->
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto">
+      <!-- Default Welcome banner -->
+      <div id="welcome-banner" class="flex gap-4 items-start p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60 shadow-sm">
+        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+          <i class="fa-solid fa-robot text-sm"></i>
+        </div>
+        <div class="space-y-2 flex-1 text-sm">
+          <p class="font-semibold text-slate-200">Welcome to your Cloud AI Workstation!</p>
+          <p class="text-slate-400">Real-time token streaming & chat history active. Start typing below!</p>
+          <div class="flex gap-2 pt-1 flex-wrap">
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">💾 History Saved</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">⚡ Fast Streaming</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">🌐 Live Web Search</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Input Bar -->
+    <footer class="bg-slate-900/80 backdrop-blur border-t border-slate-800 p-3 sm:p-4">
+      <div class="max-w-4xl mx-auto flex gap-2 items-end">
+        <div class="flex-1 bg-slate-800/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
+          <textarea id="prompt-input" rows="1" placeholder="Ask DeepSeek-R1 anything... (Shift+Enter for new line)"
+            class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-32"></textarea>
+        </div>
+        <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-paper-plane text-sm"></i>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Settings & Connections Modal -->
   <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Connections
+        <h3 class="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Integrations
         </h3>
         <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-lg">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- Colab Backend URL -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-semibold text-slate-300">Google Colab Tunnel URL</label>
-        <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
-          class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
-        <p class="text-xs text-slate-500">Paste the public trycloudflare URL generated by your Colab notebook.</p>
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-800 gap-4 text-xs font-semibold">
+        <button onclick="switchSettingsTab('tab-backend')" id="btn-tab-backend" class="pb-2 text-cyan-400 border-b-2 border-cyan-400">Backend & GPU</button>
+        <button onclick="switchSettingsTab('tab-firebase')" id="btn-tab-firebase" class="pb-2 text-slate-400 hover:text-slate-200">Firebase Cloud Sync</button>
       </div>
 
-      <!-- Model Selector -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-semibold text-slate-300">Model Name</label>
-        <input type="text" id="model-name-input" value="deepseek-r1:7b" 
-          class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
-        <p class="text-xs text-slate-500">Tip: For instant responses without thinking delay, try <b>qwen2.5:7b</b> or <b>llama3.2:3b</b>.</p>
+      <!-- Tab 1: Backend Settings -->
+      <div id="tab-backend" class="space-y-3.5">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Google Colab Tunnel URL</label>
+          <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
+            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Model Name</label>
+          <input type="text" id="model-name-input" value="deepseek-r1:7b" 
+            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+        </div>
+      </div>
+
+      <!-- Tab 2: Firebase Settings -->
+      <div id="tab-firebase" class="space-y-3 hidden">
+        <p class="text-xs text-slate-400">Paste your Firebase Project Config JSON below to sync chat history across all your devices.</p>
+        <textarea id="firebase-config-input" rows="5" placeholder='{ "apiKey": "...", "projectId": "..." }'
+          class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 font-mono focus:outline-none focus:border-cyan-500"></textarea>
+        <div class="text-[11px] text-slate-500">Free Firebase Spark plan gives 50,000 free reads/day.</div>
       </div>
 
       <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
@@ -127,12 +182,36 @@
 
   <!-- Application Logic -->
   <script>
-    // State
+    // State Management
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
+    let firebaseConfigStr = localStorage.getItem("ai_firebase_config") || "";
+    let currentChatId = localStorage.getItem("ai_current_chat_id") || "chat_" + Date.now();
+    let db = null;
+    let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
 
+    // Initialize UI inputs
     document.getElementById("backend-url-input").value = backendUrl;
     document.getElementById("model-name-input").value = modelName;
+    document.getElementById("firebase-config-input").value = firebaseConfigStr;
+
+    // Initialize Firebase if config exists
+    function initFirebase() {
+      if (firebaseConfigStr) {
+        try {
+          const config = JSON.parse(firebaseConfigStr);
+          if (!firebase.apps.length) {
+            firebase.initializeApp(config);
+          }
+          db = firebase.firestore();
+          document.getElementById("firebase-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Firebase Synced';
+          loadFirestoreConversations();
+        } catch (e) {
+          console.warn("Invalid Firebase config:", e);
+        }
+      }
+    }
+    initFirebase();
 
     // Auto resize textarea
     const promptInput = document.getElementById("prompt-input");
@@ -147,46 +226,168 @@
       }
     });
 
-    function toggleSettingsModal() {
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      sidebar.classList.toggle("-translate-x-full");
+      overlay.classList.toggle("hidden");
+    }
+
+    function toggleSettingsModal(tab = 'tab-backend') {
       document.getElementById("settings-modal").classList.toggle("hidden");
+      switchSettingsTab(tab);
+    }
+
+    function switchSettingsTab(tabId) {
+      document.getElementById("tab-backend").classList.add("hidden");
+      document.getElementById("tab-firebase").classList.add("hidden");
+      document.getElementById("btn-tab-backend").className = "pb-2 text-slate-400 hover:text-slate-200";
+      document.getElementById("btn-tab-firebase").className = "pb-2 text-slate-400 hover:text-slate-200";
+
+      document.getElementById(tabId).classList.remove("hidden");
+      document.getElementById(`btn-${tabId}`).className = "pb-2 text-cyan-400 border-b-2 border-cyan-400";
     }
 
     function saveSettings() {
       backendUrl = document.getElementById("backend-url-input").value.trim().replace(/\/$/, "");
       modelName = document.getElementById("model-name-input").value.trim();
+      firebaseConfigStr = document.getElementById("firebase-config-input").value.trim();
+
       localStorage.setItem("ai_backend_url", backendUrl);
       localStorage.setItem("ai_model_name", modelName);
+      localStorage.setItem("ai_firebase_config", firebaseConfigStr);
+
       toggleSettingsModal();
+      initFirebase();
       checkBackendStatus();
+    }
+
+    // Chat Session Management
+    function startNewChat() {
+      currentChatId = "chat_" + Date.now();
+      localStorage.setItem("ai_current_chat_id", currentChatId);
+      document.getElementById("chat-container").innerHTML = `
+        <div id="welcome-banner" class="flex gap-4 items-start p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60 shadow-sm">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+            <i class="fa-solid fa-robot text-sm"></i>
+          </div>
+          <div class="space-y-1 flex-1 text-sm">
+            <p class="font-semibold text-slate-200">New Conversation Started</p>
+            <p class="text-slate-400 text-xs">Ready for new questions with DeepSeek-R1.</p>
+          </div>
+        </div>
+      `;
+      renderSidebarHistory();
+      if (window.innerWidth < 768) toggleSidebar();
+    }
+
+    function loadChatSession(chatId) {
+      currentChatId = chatId;
+      localStorage.setItem("ai_current_chat_id", currentChatId);
+      const chat = conversations[chatId];
+      if (!chat) return;
+
+      const container = document.getElementById("chat-container");
+      container.innerHTML = "";
+
+      chat.messages.forEach(msg => {
+        appendMessageUI(msg.sender, msg.content, true);
+      });
+
+      renderSidebarHistory();
+      if (window.innerWidth < 768) toggleSidebar();
+    }
+
+    function deleteChatSession(chatId, e) {
+      e.stopPropagation();
+      delete conversations[chatId];
+      localStorage.setItem("ai_conversations", JSON.stringify(conversations));
+      if (db) {
+        db.collection("conversations").doc(chatId).delete().catch(console.warn);
+      }
+      if (currentChatId === chatId) {
+        startNewChat();
+      } else {
+        renderSidebarHistory();
+      }
+    }
+
+    function saveMessageToHistory(sender, text) {
+      if (!conversations[currentChatId]) {
+        conversations[currentChatId] = {
+          id: currentChatId,
+          title: text.slice(0, 30) + (text.length > 30 ? "..." : ""),
+          timestamp: Date.now(),
+          messages: []
+        };
+      }
+      conversations[currentChatId].messages.push({ sender, content: text });
+      localStorage.setItem("ai_conversations", JSON.stringify(conversations));
+
+      // Sync with Firebase Firestore if connected
+      if (db) {
+        db.collection("conversations").doc(currentChatId).set(conversations[currentChatId]).catch(console.warn);
+      }
+
+      renderSidebarHistory();
+    }
+
+    function renderSidebarHistory() {
+      const list = document.getElementById("history-items");
+      list.innerHTML = "";
+
+      const sortedIds = Object.keys(conversations).sort((a, b) => conversations[b].timestamp - conversations[a].timestamp);
+
+      sortedIds.forEach(id => {
+        const item = conversations[id];
+        const isActive = id === currentChatId;
+        const div = document.createElement("div");
+        div.className = `group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-slate-800 text-cyan-400 font-semibold' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'}`;
+        div.onclick = () => loadChatSession(id);
+        div.innerHTML = `
+          <div class="flex items-center gap-2 truncate">
+            <i class="fa-regular fa-message text-[11px] shrink-0"></i>
+            <span class="truncate">${item.title || "Conversation"}</span>
+          </div>
+          <button onclick="deleteChatSession('${id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-400 p-1 transition shrink-0" title="Delete">
+            <i class="fa-solid fa-trash-can text-[11px]"></i>
+          </button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function loadFirestoreConversations() {
+      if (!db) return;
+      try {
+        const snapshot = await db.collection("conversations").orderBy("timestamp", "desc").get();
+        snapshot.forEach(doc => {
+          conversations[doc.id] = doc.data();
+        });
+        localStorage.setItem("ai_conversations", JSON.stringify(conversations));
+        renderSidebarHistory();
+      } catch (err) {
+        console.warn("Firestore fetch error:", err);
+      }
     }
 
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
-      if (!backendUrl || backendUrl.includes("your-domain")) {
-        badge.className = "text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20";
-        badge.textContent = "URL Not Set";
-        return false;
-      }
       try {
-        const res = await fetch(`${backendUrl}/api/tags`, {
-          method: "GET",
-          signal: AbortSignal.timeout(6000)
-        });
+        const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
-          badge.className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-          badge.textContent = "Colab Online (T4 GPU)";
+          badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          badge.textContent = "Colab Online (T4)";
           return true;
-        } else {
-          throw new Error("Bad response");
         }
       } catch (e) {
-        badge.className = "text-xs px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20";
+        badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20";
         badge.textContent = "Colab Offline";
         return false;
       }
     }
 
-    // Live Web Search via DuckDuckGo API
+    // Live Web Search via DuckDuckGo
     async function searchDuckDuckGo(query) {
       try {
         const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
@@ -195,13 +396,10 @@
         if (data.AbstractText) context += `Summary: ${data.AbstractText}\n`;
         if (data.RelatedTopics && data.RelatedTopics.length > 0) {
           context += "Related Information:\n";
-          data.RelatedTopics.slice(0, 3).forEach(t => {
-            if (t.Text) context += `- ${t.Text}\n`;
-          });
+          data.RelatedTopics.slice(0, 3).forEach(t => { if (t.Text) context += `- ${t.Text}\n`; });
         }
         return context.trim();
       } catch (err) {
-        console.warn("Web search failed, proceeding without search context:", err);
         return "";
       }
     }
@@ -214,38 +412,30 @@
       promptInput.value = "";
       promptInput.style.height = "auto";
 
-      // Append User message
-      appendMessage("user", text);
+      appendMessageUI("user", text);
+      saveMessageToHistory("user", text);
 
-      // Append AI bubble with cursor
-      const aiMsgId = appendMessage("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> Connecting...', true);
-
+      const aiMsgId = appendMessageUI("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> Connecting...', false);
       let finalPrompt = text;
 
-      // Execute live web search if toggled
       if (isWebSearch) {
-        updateMessage(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Searching live web...');
+        updateMessageUI(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Searching live web...');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
-          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${text}\n\nPlease provide an accurate, up-to-date answer using the search context above.`;
+          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${text}\n\nAnswer using search context above.`;
         }
       }
 
       try {
-        updateMessage(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
+        updateMessageUI(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
 
-        // STREAMING REQUEST (Instant token-by-token generation!)
         const response = await fetch(`${backendUrl}/api/generate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: modelName,
-            prompt: finalPrompt,
-            stream: true
-          })
+          body: JSON.stringify({ model: modelName, prompt: finalPrompt, stream: true })
         });
 
-        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -263,38 +453,34 @@
               const parsed = JSON.parse(line);
               if (parsed.response) {
                 accumulatedText += parsed.response;
-                
-                // Format markdown in real-time
                 const formattedHtml = marked.parse(accumulatedText) + '<span class="cursor-blink"></span>';
-                updateMessage(aiMsgId, formattedHtml);
+                updateMessageUI(aiMsgId, formattedHtml);
               }
-            } catch (e) {
-              // Partial line chunk, continue
-            }
+            } catch (e) {}
           }
         }
 
-        // Final render without cursor
-        updateMessage(aiMsgId, marked.parse(accumulatedText));
+        updateMessageUI(aiMsgId, marked.parse(accumulatedText));
         document.querySelectorAll('pre code').forEach(hljs.highlightElement);
+        saveMessageToHistory("ai", accumulatedText);
 
       } catch (error) {
-        updateMessage(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not stream from Google Colab. Make sure notebook is running.</p>`);
+        updateMessageUI(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not stream from Google Colab. Make sure your notebook is running.</p>`);
       }
     }
 
-    function appendMessage(sender, content, isRawHtml = false) {
+    function appendMessageUI(sender, content, isMarkdown = false) {
       const container = document.getElementById("chat-container");
       const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
-      
       const isUser = sender === "user";
+      
       const html = `
         <div id="${msgId}" class="flex gap-3.5 items-start ${isUser ? 'flex-row-reverse' : ''}">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isUser ? 'bg-cyan-500 text-slate-950 font-bold text-xs' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-sm'}">
             <i class="fa-solid ${isUser ? 'fa-user' : 'fa-brain'}"></i>
           </div>
           <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm ${isUser ? 'bg-cyan-600 text-white rounded-tr-none' : 'bg-slate-900 border border-slate-800/80 rounded-tl-none prose prose-invert prose-sm max-w-none text-slate-200'}">
-            ${isRawHtml ? content : `<p>${content}</p>`}
+            ${isMarkdown ? marked.parse(content) : content}
           </div>
         </div>
       `;
@@ -303,16 +489,16 @@
       return msgId;
     }
 
-    function updateMessage(msgId, content) {
+    function updateMessageUI(msgId, content) {
       const el = document.getElementById(msgId);
       if (el) {
-        const bubble = el.querySelector("div:last-child");
-        bubble.innerHTML = content;
+        el.querySelector("div:last-child").innerHTML = content;
         document.getElementById("chat-container").scrollTop = document.getElementById("chat-container").scrollHeight;
       }
     }
 
-    // Initial check on load
+    // Initial setups
+    renderSidebarHistory();
     checkBackendStatus();
   </script>
 </body>
