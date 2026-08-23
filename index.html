@@ -294,6 +294,10 @@
         <!-- Settings Button -->
         <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface hover:scale-105 active:scale-95" title="Settings">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
+        </h3>
+        <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </header>
@@ -906,7 +910,38 @@
         userDisplayContent = `[Attached File: ${currentAttachedFile.name}]\n\n${text}`;
       }
 
+      // 1. Append User Message
       appendMessageUI("user", userDisplayContent, true);
+      
+      // 2. Prepare Final Prompt
+      let finalPrompt = text;
+      if (currentAttachedFile) {
+        finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
+        removeAttachedFile();
+      }
+
+      // 3. Build Clean History (Before adding current turn)
+      const existingHistory = conversations[currentChatId]?.messages || [];
+      const recentHistory = existingHistory.slice(-6);
+
+      const historyPayload = recentHistory.map(m => {
+        let cleanContent = m.content;
+        if (m.role === 'assistant') {
+          cleanContent = cleanContent.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+        }
+        return {
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: cleanContent
+        };
+      });
+
+      // Add current user prompt to payload
+      historyPayload.push({
+        role: "user",
+        content: finalPrompt
+      });
+
+      // Save user message to persistent storage
       saveMessageToHistory("user", userDisplayContent);
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating response...</div>', false);
@@ -918,17 +953,11 @@
         }
       }, 40);
 
-      let finalPrompt = text;
-      if (currentAttachedFile) {
-        finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
-        removeAttachedFile();
-      }
-
       if (isWebSearch) {
         updateMessageUI(aiMsgId, '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Searching web for context...</div>');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
-          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer concisely using search context above.`;
+          historyPayload[historyPayload.length - 1].content = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer concisely using search context above.`;
         }
       }
 
@@ -944,37 +973,20 @@
 
       const systemPrompt = {
         role: "system",
-        content: `You are BuckBuck AI, an advanced enterprise neural assistant.
-Current Date & Time: ${dateString}, ${timeString} (${timezone}).
-Instruction: Answer directly, clearly, and concisely. Avoid unnecessary lengthy thinking for simple queries. Format math in LaTeX and code inside markdown blocks.`
+        content: `You are BuckBuck AI, an intelligent, helpful, and friendly neural assistant.
+Current Date: ${dateString}, ${timeString} (${timezone}).
+Directives:
+- Always respond directly and relevantly to the user's latest prompt.
+- If the user introduces themselves or greets you, greet them warmly and naturally.
+- For simple questions and greetings, reply immediately without long reasoning.
+- Format math in LaTeX ($...$ and $$...$$) and code inside markdown blocks with language tags.`
       };
-
-      // SPEED OPTIMIZATION 1: SLIDING WINDOW (Last 6 turns)
-      const currentHistory = conversations[currentChatId]?.messages || [];
-      const recentHistory = currentHistory.slice(-6);
-
-      // SPEED OPTIMIZATION 2: STRIP OLD THINKING TOKENS FROM PROMPT EVALUATION
-      const historyPayload = recentHistory.map(m => {
-        let cleanContent = m.content;
-        if (m.role === 'assistant') {
-          cleanContent = cleanContent.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-        }
-        return {
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: cleanContent
-        };
-      });
-
-      if (historyPayload.length > 0) {
-        historyPayload[historyPayload.length - 1].content = finalPrompt;
-      }
 
       const messagesPayload = [systemPrompt, ...historyPayload];
 
       try {
         updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
 
-        // SPEED OPTIMIZATION 3: GPU PARAMETERS (num_batch 512, num_ctx 4096)
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1129,8 +1141,9 @@ Instruction: Answer directly, clearly, and concisely. Avoid unnecessary lengthy 
         }
       }
 
+      // Enhanced LaTeX normalizer including \boxed, \int, \sum, \begin, etc.
       let normalized = mainText
-        .replace(/\[\s*(\\text|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
+        .replace(/\[\s*(\\text|\\boxed|\\begin|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
           return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
         })
         .replace(/\(\s*([QKVqkvi-z0-9\\]+)\s*\)/g, (match, p1) => {
