@@ -97,6 +97,7 @@ os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
 os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
 os.environ['OLLAMA_NUM_PARALLEL'] = '2'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
+os.environ['OLLAMA_MAX_LOADED_MODELS'] = '2'
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
 print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")

@@ -1181,14 +1181,15 @@
       const item = window.codeRegistry[snipId];
       if (!item) return;
 
-      const preEl = buttonEl.closest('.code-header-bar')?.nextElementSibling;
-      if (!preEl) return;
+      // Find nearest suitable parent container (works for both code header and bottom artifact card)
+      const parentContainer = buttonEl.closest('.mt-4') || buttonEl.closest('.code-header-bar')?.parentElement || buttonEl.closest('.p-3.5') || buttonEl.parentElement;
+      if (!parentContainer) return;
 
-      let termBox = preEl.nextElementSibling;
+      let termBox = parentContainer.nextElementSibling;
       if (!termBox || !termBox.classList.contains('python-terminal-box')) {
         termBox = document.createElement('div');
-        termBox.className = 'python-terminal-box mb-4 p-4 rounded-2xl bg-[#0e1015] border border-emerald-500/30 font-mono text-xs shadow-xl space-y-3';
-        preEl.parentNode.insertBefore(termBox, preEl.nextSibling);
+        termBox.className = 'python-terminal-box mt-3 mb-4 p-4 rounded-2xl bg-[#0e1015] border border-emerald-500/30 font-mono text-xs shadow-xl space-y-3';
+        parentContainer.parentNode.insertBefore(termBox, parentContainer.nextSibling);
       }
 
       termBox.innerHTML = `
@@ -1233,7 +1234,7 @@
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
               ${statusText}
             </span>
-            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs">Close</button>
+            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">Close</button>
           </div>
           ${data.stdout ? `<div class="text-slate-200 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">${data.stdout}</div>` : ''}
           ${data.stderr ? `<div class="text-rose-300 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-rose-950/20 p-2 rounded-lg border border-rose-500/20">${data.stderr}</div>` : ''}
@@ -1245,7 +1246,7 @@
         termBox.innerHTML = `
           <div class="flex items-center justify-between border-b border-white/10 pb-2 text-rose-400 font-semibold text-xs">
             <span>Execution Failed</span>
-            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs">Close</button>
+            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">Close</button>
           </div>
           <div class="text-rose-300 text-xs">Could not reach Colab Python executor. Ensure the updated backend is running.</div>
         `;
@@ -1627,13 +1628,29 @@
 
     async function searchDuckDuckGo(query) {
       try {
-        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+        const cleanQuery = query.replace(/[^\w\s]/gi, ' ').trim();
+        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanQuery)}&format=json&no_html=1&skip_disambig=1`);
         const data = await res.json();
         let context = "";
         if (data.AbstractText) context += `Summary: ${data.AbstractText}\n`;
         if (data.RelatedTopics && data.RelatedTopics.length > 0) {
           context += "Related Search Results:\n";
-          data.RelatedTopics.slice(0, 3).forEach(t => { if (t.Text) context += `- ${t.Text}\n`; });
+          data.RelatedTopics.slice(0, 4).forEach(t => { 
+            if (t.Text) context += `- ${t.Text}\n`; 
+            if (t.Topics && Array.isArray(t.Topics)) {
+              t.Topics.slice(0, 2).forEach(st => { if (st.Text) context += `- ${st.Text}\n`; });
+            }
+          });
+        }
+
+        // Fallback to Wikipedia summary if DDG returned no direct abstract
+        if (!context || context.length < 50) {
+          const firstTerm = cleanQuery.split(' ').slice(0, 2).join(' ');
+          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstTerm)}`);
+          if (wikiRes.ok) {
+            const wikiData = await wikiRes.json();
+            if (wikiData.extract) context += `\nWikipedia Overview (${wikiData.title}):\n${wikiData.extract}`;
+          }
         }
         return context.trim();
       } catch (err) { return ""; }
