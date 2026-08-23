@@ -43,9 +43,9 @@ try:
     drive.mount('/content/drive')
     os.makedirs(DRIVE_MODELS, exist_ok=True)
     os.makedirs(LOCAL_MODELS, exist_ok=True)
-    if os.path.exists(f"{DRIVE_MODELS}/manifests"):
+    if os.path.exists(os.path.join(DRIVE_MODELS, "manifests")):
         print("⚡ Syncing cached models from Google Drive to local SSD...")
-        os.system(f"cp -rn {DRIVE_MODELS}/* {LOCAL_MODELS}/ 2>/dev/null || true")
+        shutil.copytree(DRIVE_MODELS, LOCAL_MODELS, dirs_exist_ok=True)
     os.environ['OLLAMA_MODELS'] = LOCAL_MODELS
     DRIVE_AVAILABLE = True
 except Exception:
@@ -228,18 +228,22 @@ for model in REQUIRED_MODELS:
 # Background sync newly pulled models to Google Drive for permanent persistence
 if DRIVE_AVAILABLE:
     threading.Thread(
-        target=lambda: os.system(f"cp -rn {LOCAL_MODELS}/* {DRIVE_MODELS}/ 2>/dev/null"),
+        target=lambda: shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True),
         daemon=True
     ).start()
 
-# [4.5/6] PRE-WARM MODEL INTO GPU VRAM (ELIMINATES FIRST-TOKEN COLD START)
-print("🔥 Pre-warming DeepSeek-R1 (7B) & Qwen into GPU VRAM for sub-second response...")
-for warm_model in ["deepseek-r1:7b", "qwen2.5:7b"]:
-    try:
-        subprocess.run([OLLAMA_BIN, "run", warm_model, "ready", "--keepalive", "24h"], capture_output=True, timeout=90)
-        print(f"   ⚡ {warm_model} locked into GPU VRAM.")
-    except Exception:
-        pass
+# [4.5/6] PRE-WARM PRIMARY MODEL INTO GPU VRAM VIA HTTP (CLEAN & NON-BLOCKING)
+print("🔥 Pre-warming DeepSeek-R1 (7B) into GPU VRAM for sub-second response...")
+try:
+    req = urllib.request.Request(
+        f"{OLLAMA_INTERNAL_URL}/api/generate",
+        data=json.dumps({"model": "deepseek-r1:7b", "prompt": "hi", "keep_alive": "24h"}).encode(),
+        headers={"Content-Type": "application/json"}
+    )
+    urllib.request.urlopen(req, timeout=120)
+    print("   ⚡ DeepSeek-R1 (7B) resident in GPU VRAM.")
+except Exception as e:
+    print(f"   Note: Warmup status ({e})")
 
 # [5/6] FASTAPI GATEWAY WITH MULTIMODAL, VOICE, AND AUTO-PIP EXECUTION
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + Vision + GPU Audio)...")
@@ -570,12 +574,6 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=502)
 
-threading.Thread(
-    target=lambda: uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning"),
-    daemon=True,
-).start()
-time.sleep(2)
-
 # [6/6] CLOUDFLARE TUNNEL
 tunnel_cmd = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8000"]
 tunnel_process = subprocess.Popen(tunnel_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -596,7 +594,7 @@ threading.Thread(target=watch_tunnel_output, daemon=True).start()
 if tunnel_url_found.wait(timeout=30):
     url = tunnel_url_holder["url"]
     print("\n" + "=" * 68)
-    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v4.1 MULTIMODAL)!")
+    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v4.5 FULL SUITE)!")
     print(f"🔗 BACKEND URL   : {url}")
     print(f"🔑 API KEY       : {API_KEY}")
     print(f"⏱️ SESSION LIMIT  : {EFFECTIVE_SESSION_LIMIT_MINUTES} mins (weekly-budget adjusted)")
@@ -674,5 +672,5 @@ def session_watchdog():
 
 threading.Thread(target=session_watchdog, daemon=True).start()
 
-while True:
-    time.sleep(60)
+# Run FastAPI gateway directly on the main event loop to keep Jupyter kernel active
+uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
