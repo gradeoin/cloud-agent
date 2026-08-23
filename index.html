@@ -99,8 +99,21 @@
 </head>
 <body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary">
 
+  <!-- SILENT INITIAL AUTH CHECK LOADER -->
+  <div id="auth-loading-screen" class="fixed inset-0 bg-m3-surface z-50 flex flex-col items-center justify-center space-y-4">
+    <div class="w-14 h-14 rounded-2xl bg-m3-surfaceContainerHigh flex items-center justify-center shadow-xl anim-float">
+      <svg class="w-7 h-7 text-m3-primary anim-glow" viewBox="0 0 32 32" fill="none">
+        <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="flex items-center gap-2 text-xs text-m3-onSurfaceVariant font-medium">
+      <svg class="w-4 h-4 text-m3-primary anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
+      <span>Initializing workspace...</span>
+    </div>
+  </div>
+
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
-  <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+  <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-m3-surfaceContainer border border-m3-outline/40 w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center space-y-6">
       
       <!-- Logo -->
@@ -132,7 +145,7 @@
   <!-- COLLAPSIBLE GOOGLE MATERIAL 3 SIDEBAR -->
   <aside id="sidebar" class="bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden">
     
-    <!-- Unified Sidebar Header with Hamburger Menu -->
+    <!-- Unified Sidebar Header -->
     <div class="px-3.5 py-3 flex items-center gap-2.5 min-w-[260px]">
       <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Collapse sidebar">
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
@@ -187,7 +200,6 @@
     <!-- Main Header -->
     <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
       <div class="flex items-center gap-3">
-        <!-- Hamburger Button appears in main header ONLY when sidebar is collapsed on desktop -->
         <button id="main-hamburger-btn" onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition hidden" title="Expand sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
@@ -392,11 +404,39 @@
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
     let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
-    let currentChatId = localStorage.getItem("ai_current_chat_id") || "chat_" + Date.now();
+    let currentChatId = getChatIdFromURL() || "chat_" + Date.now();
     let db = null, auth = null, currentUser = null;
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
     let currentAttachedFile = null;
     let activeArtifactCode = "";
+
+    // Extract unique chat ID from URL query (?c=xyz) or hash (#/c/xyz)
+    function getChatIdFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryId = urlParams.get('c');
+      if (queryId) return queryId;
+      const hashMatch = window.location.hash.match(/#\/?c\/(.+)/);
+      if (hashMatch) return hashMatch[1];
+      return null;
+    }
+
+    // Set unique chat ID in the browser URL
+    function updateChatURL(chatId) {
+      if (!chatId) {
+        window.history.pushState({}, "", window.location.pathname);
+      } else {
+        window.history.pushState({ chatId }, "", `?c=${chatId}`);
+      }
+    }
+
+    window.addEventListener('popstate', (e) => {
+      const idFromURL = getChatIdFromURL();
+      if (idFromURL && conversations[idFromURL]) {
+        loadChatSession(idFromURL, false);
+      } else if (!idFromURL) {
+        startNewChat(false);
+      }
+    });
 
     // SMART AUTO-SCROLL
     let isUserScrolledUp = false;
@@ -431,36 +471,44 @@
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("allowed-email-input").value = allowedEmail;
 
+    // PERSISTENT AUTHENTICATION
     function initFirebase() {
       try {
         if (!firebase.apps.length) firebase.initializeApp(defaultFirebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
 
-        auth.onAuthStateChanged(user => {
-          if (user) {
-            if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
-              showAuthError(`Access Denied: ${user.email} is not authorized.`);
-              auth.signOut();
-              return;
+        // Ensure persistence is set to LOCAL
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+          auth.onAuthStateChanged(user => {
+            document.getElementById("auth-loading-screen").classList.add("hidden");
+            if (user) {
+              if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
+                showAuthError(`Access Denied: ${user.email} is not authorized.`);
+                auth.signOut();
+                return;
+              }
+              if (!allowedEmail) {
+                allowedEmail = user.email.toLowerCase();
+                localStorage.setItem("ai_allowed_email", allowedEmail);
+                document.getElementById("allowed-email-input").value = allowedEmail;
+              }
+              currentUser = user;
+              document.getElementById("auth-overlay").classList.add("hidden");
+              document.getElementById("user-name").textContent = user.displayName || user.email;
+              if (user.photoURL) document.getElementById("user-avatar").src = user.photoURL;
+              
+              loadFirestoreConversations();
+            } else {
+              currentUser = null;
+              document.getElementById("auth-overlay").classList.remove("hidden");
             }
-            if (!allowedEmail) {
-              allowedEmail = user.email.toLowerCase();
-              localStorage.setItem("ai_allowed_email", allowedEmail);
-              document.getElementById("allowed-email-input").value = allowedEmail;
-            }
-            currentUser = user;
-            document.getElementById("auth-overlay").classList.add("hidden");
-            document.getElementById("user-name").textContent = user.displayName || user.email;
-            if (user.photoURL) document.getElementById("user-avatar").src = user.photoURL;
-            loadFirestoreConversations();
-          } else {
-            currentUser = null;
-            document.getElementById("auth-overlay").classList.remove("hidden");
-          }
+          });
         });
+
       } catch (e) {
         console.warn("Firebase note:", e);
+        document.getElementById("auth-loading-screen").classList.add("hidden");
       }
     }
     initFirebase();
@@ -493,7 +541,7 @@
       }
     });
 
-    // UNIFIED SIDEBAR TOGGLE (Like Google Gemini)
+    // UNIFIED SIDEBAR TOGGLE
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
@@ -631,10 +679,14 @@
       a.click();
     }
 
-    // Chat Session Management
-    function startNewChat() {
-      currentChatId = "chat_" + Date.now();
-      localStorage.setItem("ai_current_chat_id", currentChatId);
+    // UNIQUE CHAT ROUTING (Like Claude & ChatGPT)
+    function generateUniqueChatId() {
+      return "c_" + Math.random().toString(36).substr(2, 9);
+    }
+
+    function startNewChat(updateHistoryState = true) {
+      currentChatId = generateUniqueChatId();
+      if (updateHistoryState) updateChatURL(null);
       isUserScrolledUp = false;
       document.getElementById("chat-container").innerHTML = `
         <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
@@ -655,9 +707,9 @@
       if (window.innerWidth < 768) toggleSidebar();
     }
 
-    function loadChatSession(chatId) {
+    function loadChatSession(chatId, updateHistoryState = true) {
       currentChatId = chatId;
-      localStorage.setItem("ai_current_chat_id", currentChatId);
+      if (updateHistoryState) updateChatURL(chatId);
       const chat = conversations[chatId];
       if (!chat) return;
 
@@ -696,6 +748,7 @@
           timestamp: Date.now(),
           messages: []
         };
+        updateChatURL(currentChatId);
       }
       conversations[currentChatId].messages.push({ role, content: text });
       localStorage.setItem("ai_conversations", JSON.stringify(conversations));
@@ -741,6 +794,12 @@
         });
         localStorage.setItem("ai_conversations", JSON.stringify(conversations));
         renderSidebarHistory();
+
+        // If URL contains a specific chat ID, load it!
+        const urlChatId = getChatIdFromURL();
+        if (urlChatId && conversations[urlChatId]) {
+          loadChatSession(urlChatId, false);
+        }
       } catch (err) {
         console.warn("Firestore fetch note:", err);
       }
