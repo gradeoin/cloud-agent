@@ -82,6 +82,21 @@
     .anim-spin { animation: spin-slow 10s linear infinite; }
     .anim-float { animation: float-slow 4s ease-in-out infinite; }
     .anim-glow { animation: pulse-glow 3s ease-in-out infinite; }
+
+    /* Clean Sidebar Transitions Without Ghost Borders */
+    #sidebar {
+      width: 260px;
+      min-width: 260px;
+      transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    }
+    #sidebar.sidebar-hidden {
+      width: 0px !important;
+      min-width: 0px !important;
+      border-right: none !important;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
   </style>
 </head>
 <body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary">
@@ -90,7 +105,7 @@
   <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
     <div class="bg-m3-surfaceContainer border border-m3-outline/40 w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center space-y-6">
       
-      <!-- New Animated Logo -->
+      <!-- Logo -->
       <div class="w-16 h-16 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center mx-auto shadow-xl anim-float">
         <svg class="w-8 h-8 text-m3-primary anim-glow" viewBox="0 0 32 32" fill="none">
           <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -117,10 +132,9 @@
   </div>
 
   <!-- COLLAPSIBLE GOOGLE MATERIAL 3 SIDEBAR -->
-  <aside id="sidebar" class="w-64 bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col transition-all duration-300 ease-in-out z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden">
+  <aside id="sidebar" class="bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden">
     
-    <!-- Top Branding & Hamburger Close -->
-    <div class="px-4 py-3.5 flex items-center justify-between">
+    <div class="px-4 py-3.5 flex items-center justify-between min-w-[260px]">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary shrink-0 shadow-sm">
           <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
@@ -135,7 +149,7 @@
     </div>
 
     <!-- M3 Pill "New Chat" Action -->
-    <div class="px-3 py-2">
+    <div class="px-3 py-2 min-w-[260px]">
       <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-3 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98 whitespace-nowrap">
         <svg class="w-4 h-4 text-m3-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         <span>New chat</span>
@@ -143,13 +157,13 @@
     </div>
 
     <!-- Conversation History List -->
-    <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5" id="chat-history-list">
+    <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 min-w-[260px]" id="chat-history-list">
       <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5 whitespace-nowrap">Recent</div>
       <div id="history-items" class="space-y-0.5"></div>
     </div>
 
     <!-- M3 Account Footer -->
-    <div class="p-2 border-t border-m3-outline/20 bg-m3-surfaceContainerLow">
+    <div class="p-2 border-t border-m3-outline/20 bg-m3-surfaceContainerLow min-w-[260px]">
       <div class="flex items-center justify-between p-2 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh transition">
         <div class="flex items-center gap-2.5 min-w-0">
           <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-7 h-7 rounded-full bg-m3-surfaceContainerHighest border border-m3-outline/30 shrink-0">
@@ -169,12 +183,12 @@
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
 
   <!-- MAIN CHAT & WORKSPACE AREA -->
-  <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative">
+  <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative overflow-hidden">
     
     <!-- Header -->
-    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
+    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
-        <!-- Hamburger Button toggles sidebar on both Desktop & Mobile -->
+        <!-- Hamburger Button -->
         <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Toggle sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
@@ -384,7 +398,6 @@
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
     let currentAttachedFile = null;
     let activeArtifactCode = "";
-    let isSidebarOpen = true;
 
     // SMART AUTO-SCROLL
     let isUserScrolledUp = false;
@@ -481,22 +494,14 @@
       }
     });
 
-    // COLLAPSIBLE SIDEBAR FOR DESKTOP & MOBILE
+    // COLLAPSIBLE SIDEBAR TOGGLE
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
       
       if (window.innerWidth >= 768) {
-        // Desktop collapse toggle
-        if (sidebar.classList.contains("md:w-64") || !sidebar.classList.contains("md:w-0")) {
-          sidebar.classList.remove("md:w-64");
-          sidebar.classList.add("md:w-0", "md:border-r-0");
-        } else {
-          sidebar.classList.remove("md:w-0", "md:border-r-0");
-          sidebar.classList.add("md:w-64");
-        }
+        sidebar.classList.toggle("sidebar-hidden");
       } else {
-        // Mobile drawer toggle
         sidebar.classList.toggle("-translate-x-full");
         overlay.classList.toggle("hidden");
       }
