@@ -61,11 +61,11 @@
   <style>
     /* 100% INVISIBLE SCROLLBARS WORLDWIDE WHILE PRESERVING SMOOTH SCROLL */
     *, *::before, *::after {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* IE / Edge */
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
     }
     *::-webkit-scrollbar {
-      display: none !important; /* Chrome / Safari / Opera / Edge */
+      display: none !important;
       width: 0px !important;
       height: 0px !important;
       background: transparent !important;
@@ -267,7 +267,7 @@
   <!-- Sidebar Overlay for Mobile -->
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
 
-  <!-- MAIN CHAT & WORKSPACE AREA (FULL SCREEN WIDTH) -->
+  <!-- MAIN CHAT & WORKSPACE AREA -->
   <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-m3-surface relative overflow-hidden">
     
     <!-- Main Header -->
@@ -351,8 +351,8 @@
           <span class="hidden sm:inline">Artifacts</span>
         </button>
 
-        <!-- Export Chat -->
-        <button onclick="exportChatAsMarkdown()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition hover:scale-105 active:scale-95" title="Export conversation as Markdown">
+        <!-- Export Chat as HTML -->
+        <button onclick="exportChatAsHTML()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition hover:scale-105 active:scale-95" title="Export conversation as HTML document">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
 
@@ -363,7 +363,7 @@
       </div>
     </header>
 
-    <!-- Chat Messages Scroll Container (Spacious Full-Width Layout) -->
+    <!-- Chat Messages Scroll Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-7 max-w-5xl w-full mx-auto relative">
       
       <!-- Minimal Gemini-Style Welcome Header -->
@@ -388,7 +388,7 @@
       </button>
     </div>
 
-    <!-- M3 Floating Pill Input Bar (Full Width) -->
+    <!-- M3 Floating Pill Input Bar -->
     <footer class="p-3 sm:p-5 bg-gradient-to-t from-m3-surface via-m3-surface to-transparent">
       <div class="max-w-5xl mx-auto space-y-2">
         <!-- File Attachment Chip -->
@@ -418,7 +418,7 @@
     </footer>
   </div>
 
-  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (Zero Ghost Borders, Full-Height Sandbox) -->
+  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER -->
   <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden pointer-events-none">
     <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -872,7 +872,7 @@
     function downloadArtifactCurrentFile() {
       if (!activeArtifactCode) return;
       const ext = EXT_MAP[activeArtifactLang] || 'txt';
-      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`);
+      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`, ext === 'html' ? 'text/html' : 'text/plain');
     }
 
     function copyArtifactCode() {
@@ -881,11 +881,11 @@
       showToast("Artifact code copied to clipboard!");
     }
 
-    function downloadFileContent(content, filename) {
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    function downloadFileContent(content, filename, mimeType = "text/html;charset=utf-8") {
+      const blob = new Blob([content], { type: mimeType });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = filename || "download.txt";
+      a.download = filename || "download.html";
       a.click();
       URL.revokeObjectURL(a.href);
       showToast(`Downloaded ${filename}!`);
@@ -910,11 +910,134 @@
       showToast("Message copied to clipboard!");
     }
 
+    // DOWNLOAD RESPONSE AS BEAUTIFULLY STYLED STANDALONE HTML
     function downloadMessageFile(msgId) {
       const rawText = rawMessageStore[msgId];
       if (!rawText) return;
       const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-      downloadFileContent(clean, `response_${Date.now()}.md`);
+      
+      let parsed = clean
+        .replace(/\[\s*(\\text|\\boxed|\\begin|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => `\n$$\n${match.slice(1, -1).trim()}\n$$\n`)
+        .replace(/\(\s*([QKVqkvi-z0-9\\]+)\s*\)/g, (match, p1) => (p1.length <= 4 || p1.startsWith('\\')) ? `$${p1}$` : match);
+
+      const htmlBody = marked.parse(parsed);
+
+      const standaloneHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuckBuck AI • Export</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"><\/script>
+  <style>
+    body { background: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; line-height: 1.75; font-size: 15.5px; }
+    .container { max-width: 860px; margin: 0 auto; padding: 40px 20px; }
+    pre { background: #1e1f20 !important; border: 1px solid #282a2c; padding: 14px; border-radius: 14px; color: #a8c7fa; font-family: 'JetBrains Mono', monospace; overflow-x: auto; margin: 1.2em 0; }
+    code { font-family: 'JetBrains Mono', monospace; }
+    h1, h2, h3 { color: #f1f3f4; font-weight: 600; margin-top: 1.4em; }
+    h1 { color: #a8c7fa; font-size: 1.5em; }
+    h2 { font-size: 1.25em; border-bottom: 1px solid #282a2c; padding-bottom: 0.3em; }
+    blockquote { border-left: 3px solid #a8c7fa; background: rgba(168, 199, 250, 0.06); padding: 10px 16px; border-radius: 0 12px 12px 0; color: #c4c7c5; }
+    table { width: 100%; border-collapse: collapse; margin: 1.2em 0; }
+    th, td { border: 1px solid #282a2c; padding: 8px 12px; }
+    th { background: #1e1f20; color: #a8c7fa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="border-bottom: 1px solid #282a2c; padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h1 style="margin: 0; font-size: 1.3em;">BuckBuck AI Workspace</h1>
+        <div style="font-size: 0.75rem; color: #c4c7c5; margin-top: 2px;">Exported on ${new Date().toLocaleString()}</div>
+      </div>
+      <div style="font-size: 0.75rem; background: #1e1f20; padding: 4px 10px; border-radius: 9999px; border: 1px solid #282a2c; color: #a8c7fa;">HTML Export</div>
+    </div>
+    <div id="content">${htmlBody}</div>
+  </div>
+  <script>
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\\\[', right: '\\\\]', display: true},
+        {left: '\\\\(', right: '\\\\)', display: false}
+      ],
+      throwOnError: false
+    });
+  <\/script>
+</body>
+</html>`;
+
+      downloadFileContent(standaloneHTML, `response_${Date.now()}.html`, "text/html;charset=utf-8");
+    }
+
+    // EXPORT FULL CHAT CONVERSATION AS STANDALONE HTML
+    function exportChatAsHTML() {
+      const chat = conversations[currentChatId];
+      if (!chat || !chat.messages.length) return alert("No messages to export.");
+
+      let chatHTML = "";
+      chat.messages.forEach(m => {
+        const isUser = m.role === 'user';
+        const clean = m.content.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+        const parsed = marked.parse(clean);
+        chatHTML += `
+          <div style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'};">
+            <div style="font-size: 0.75rem; font-weight: 600; color: ${isUser ? '#a8c7fa' : '#818cf8'}; margin-bottom: 4px;">
+              ${isUser ? 'User' : 'Assistant (BuckBuck AI)'}
+            </div>
+            <div style="background: ${isUser ? '#282a2c' : '#1e1f20'}; border: 1px solid #282a2c; border-radius: 18px; padding: 14px 18px; max-width: 90%;">
+              ${parsed}
+            </div>
+          </div>
+        `;
+      });
+
+      const fullDoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${chat.title || 'Conversation'} • BuckBuck AI Export</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"><\/script>
+  <style>
+    body { background: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; line-height: 1.7; font-size: 15px; }
+    .container { max-width: 860px; margin: 0 auto; padding: 40px 20px; }
+    pre { background: #18181a !important; border: 1px solid #282a2c; padding: 12px; border-radius: 12px; color: #a8c7fa; font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
+    code { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="border-bottom: 1px solid #282a2c; padding-bottom: 14px; margin-bottom: 28px;">
+      <h1 style="margin: 0; font-size: 1.4em; color: #a8c7fa;">${chat.title || 'Conversation'}</h1>
+      <div style="font-size: 0.75rem; color: #c4c7c5; margin-top: 4px;">BuckBuck AI Workspace • Exported on ${new Date().toLocaleString()}</div>
+    </div>
+    ${chatHTML}
+  </div>
+  <script>
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+  <\/script>
+</body>
+</html>`;
+
+      downloadFileContent(fullDoc, `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, "text/html;charset=utf-8");
     }
 
     function showToast(msg) {
@@ -930,18 +1053,6 @@
       setTimeout(() => {
         toast.classList.add("opacity-0", "translate-y-2");
       }, 2400);
-    }
-
-    function exportChatAsMarkdown() {
-      const chat = conversations[currentChatId];
-      if (!chat || !chat.messages.length) return alert("No messages to export.");
-
-      let md = `# ${chat.title}\nExported from BuckBuck Studio on ${new Date().toLocaleString()}\n\n---\n\n`;
-      chat.messages.forEach(m => {
-        md += `### ${m.role === 'user' ? 'User' : 'Assistant'}\n\n${m.content}\n\n`;
-      });
-
-      downloadFileContent(md, `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`);
     }
 
     function generateUniqueChatId() {
@@ -1287,7 +1398,7 @@ Directives:
           <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
           <div class="flex items-center gap-3">
             ${previewBtn}
-            <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${filename}')" 
+            <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${filename}', '${ext === 'html' ? 'text/html' : 'text/plain'}')" 
               class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition" title="Download as ${filename}">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               <span>Download</span>
@@ -1377,7 +1488,7 @@ Directives:
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${autoFilename}')" 
+              <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${autoFilename}', '${ext === 'html' ? 'text/html' : 'text/plain'}')" 
                 class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                 Download
@@ -1400,9 +1511,9 @@ Directives:
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
-            <button onclick="downloadMessageFile('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Download response as Markdown file">
+            <button onclick="downloadMessageFile('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Download response as formatted standalone HTML">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              <span>Download .md</span>
+              <span>Download HTML</span>
             </button>
           </div>
         `;
