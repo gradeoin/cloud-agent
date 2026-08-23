@@ -29,6 +29,29 @@
 </head>
 <body class="bg-slate-950 text-slate-100 flex h-screen overflow-hidden font-sans">
 
+  <!-- GOOGLE LOGIN SCREEN (Overlay) -->
+  <div id="auth-overlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center space-y-6">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center mx-auto shadow-xl shadow-cyan-500/20">
+        <i class="fa-solid fa-lock text-slate-950 text-2xl"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-slate-100">Private AI Workstation</h2>
+        <p class="text-xs text-slate-400 mt-1">Authorized Google Access Only</p>
+      </div>
+
+      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 p-3 rounded-xl text-left">
+        <!-- Error messages here -->
+      </div>
+
+      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-bold py-3 px-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-lg shadow-white/10">
+        <i class="fa-brands fa-google text-rose-500 text-base"></i> Sign in with Google
+      </button>
+
+      <p class="text-[11px] text-slate-500">Only the whitelisted administrator email can unlock this workstation.</p>
+    </div>
+  </div>
+
   <!-- Sidebar (Chat History & Management) -->
   <aside id="sidebar" class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
     <!-- Sidebar Header: New Chat Button -->
@@ -49,13 +72,19 @@
       </div>
     </div>
 
-    <!-- Sidebar Footer -->
-    <div class="p-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400 flex items-center justify-between">
-      <span id="firebase-status" class="flex items-center gap-1.5 text-[11px]">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Synced
-      </span>
-      <button onclick="toggleSettingsModal('tab-firebase')" class="text-slate-400 hover:text-cyan-400 transition" title="Firebase Settings">
-        <i class="fa-solid fa-cloud"></i>
+    <!-- User Profile & Sign Out Footer -->
+    <div class="p-3 border-t border-slate-800 bg-slate-950/40 text-xs flex items-center justify-between">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 shrink-0">
+        <div class="min-w-0">
+          <div id="user-name" class="font-semibold text-slate-200 text-xs truncate">Administrator</div>
+          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Synced
+          </div>
+        </div>
+      </div>
+      <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition shrink-0" title="Sign Out">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
       </button>
     </div>
   </aside>
@@ -109,11 +138,11 @@
         </div>
         <div class="space-y-2 flex-1 text-sm">
           <p class="font-semibold text-slate-200">Welcome to your Cloud AI Workstation!</p>
-          <p class="text-slate-400">Real-time token streaming & Firebase cloud history active. Start typing below!</p>
+          <p class="text-slate-400">Google Authentication & Real-time token streaming active. Start typing below!</p>
           <div class="flex gap-2 pt-1 flex-wrap">
-            <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔒 Firebase Secured</span>
+            <span class="text-xs bg-slate-800 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">🔐 Google Protected</span>
+            <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔥 Firebase Synced</span>
             <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">⚡ Fast Streaming</span>
-            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">🌐 Live Web Search</span>
           </div>
         </div>
       </div>
@@ -138,7 +167,7 @@
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Integrations
+          <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Security
         </h3>
         <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-lg">
           <i class="fa-solid fa-xmark"></i>
@@ -148,7 +177,7 @@
       <!-- Navigation Tabs -->
       <div class="flex border-b border-slate-800 gap-4 text-xs font-semibold">
         <button onclick="switchSettingsTab('tab-backend')" id="btn-tab-backend" class="pb-2 text-cyan-400 border-b-2 border-cyan-400">Backend & GPU</button>
-        <button onclick="switchSettingsTab('tab-firebase')" id="btn-tab-firebase" class="pb-2 text-slate-400 hover:text-slate-200">Firebase Cloud Sync</button>
+        <button onclick="switchSettingsTab('tab-security')" id="btn-tab-security" class="pb-2 text-slate-400 hover:text-slate-200">Security & Whitelist</button>
       </div>
 
       <!-- Tab 1: Backend Settings -->
@@ -165,12 +194,14 @@
         </div>
       </div>
 
-      <!-- Tab 2: Firebase Settings -->
-      <div id="tab-firebase" class="space-y-3 hidden">
-        <p class="text-xs text-slate-400">Connected to Firebase Project: <b class="text-cyan-400">buckbuck-ab0ff</b></p>
-        <textarea id="firebase-config-input" rows="5"
-          class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 font-mono focus:outline-none focus:border-cyan-500"></textarea>
-        <div class="text-[11px] text-emerald-400">✅ Firebase Firestore configured with silent security authentication.</div>
+      <!-- Tab 2: Security Settings -->
+      <div id="tab-security" class="space-y-3 hidden">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Allowed Admin Email (Leave blank to allow first login)</label>
+          <input type="email" id="allowed-email-input" placeholder="your-email@gmail.com" 
+            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+          <p class="text-[11px] text-slate-500">Only Google accounts matching this email can access your workstation.</p>
+        </div>
       </div>
 
       <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
@@ -196,34 +227,54 @@
     // State Management
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
-    let firebaseConfigStr = localStorage.getItem("ai_firebase_config") || JSON.stringify(defaultFirebaseConfig, null, 2);
+    let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
     let currentChatId = localStorage.getItem("ai_current_chat_id") || "chat_" + Date.now();
     let db = null;
     let auth = null;
+    let currentUser = null;
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
 
     // Initialize UI inputs
     document.getElementById("backend-url-input").value = backendUrl;
     document.getElementById("model-name-input").value = modelName;
-    document.getElementById("firebase-config-input").value = firebaseConfigStr;
+    document.getElementById("allowed-email-input").value = allowedEmail;
 
-    // Initialize Firebase with Anonymous Authentication
+    // Initialize Firebase Auth & Firestore
     function initFirebase() {
       try {
-        const config = JSON.parse(firebaseConfigStr);
         if (!firebase.apps.length) {
-          firebase.initializeApp(config);
+          firebase.initializeApp(defaultFirebaseConfig);
         }
         db = firebase.firestore();
         auth = firebase.auth();
-        
-        // Silently authenticate in background for secure rules
-        auth.signInAnonymously().then(() => {
-          document.getElementById("firebase-status").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Secured';
-          loadFirestoreConversations();
-        }).catch(err => {
-          console.warn("Auth note (Enable Anonymous in Firebase Auth console if using auth rules):", err);
-          loadFirestoreConversations();
+
+        // Listen for Google Auth State Changes
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            // Check whitelist if configured
+            if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
+              showAuthError(`Access Denied: ${user.email} is not authorized.`);
+              auth.signOut();
+              return;
+            }
+
+            // If no email configured yet, auto-whitelist the first logging user
+            if (!allowedEmail) {
+              allowedEmail = user.email.toLowerCase();
+              localStorage.setItem("ai_allowed_email", allowedEmail);
+              document.getElementById("allowed-email-input").value = allowedEmail;
+            }
+
+            currentUser = user;
+            document.getElementById("auth-overlay").classList.add("hidden");
+            document.getElementById("user-name").textContent = user.displayName || user.email;
+            if (user.photoURL) document.getElementById("user-avatar").src = user.photoURL;
+            loadFirestoreConversations();
+
+          } else {
+            currentUser = null;
+            document.getElementById("auth-overlay").classList.remove("hidden");
+          }
         });
 
       } catch (e) {
@@ -231,6 +282,28 @@
       }
     }
     initFirebase();
+
+    function handleGoogleSignIn() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      hideAuthError();
+      auth.signInWithPopup(provider).catch(err => {
+        showAuthError(err.message || "Failed to sign in with Google.");
+      });
+    }
+
+    function handleSignOut() {
+      auth.signOut();
+    }
+
+    function showAuthError(msg) {
+      const errBox = document.getElementById("auth-error-msg");
+      errBox.textContent = msg;
+      errBox.classList.remove("hidden");
+    }
+
+    function hideAuthError() {
+      document.getElementById("auth-error-msg").classList.add("hidden");
+    }
 
     // Auto resize textarea
     const promptInput = document.getElementById("prompt-input");
@@ -259,9 +332,9 @@
 
     function switchSettingsTab(tabId) {
       document.getElementById("tab-backend").classList.add("hidden");
-      document.getElementById("tab-firebase").classList.add("hidden");
+      document.getElementById("tab-security").classList.add("hidden");
       document.getElementById("btn-tab-backend").className = "pb-2 text-slate-400 hover:text-slate-200";
-      document.getElementById("btn-tab-firebase").className = "pb-2 text-slate-400 hover:text-slate-200";
+      document.getElementById("btn-tab-security").className = "pb-2 text-slate-400 hover:text-slate-200";
 
       document.getElementById(tabId).classList.remove("hidden");
       document.getElementById(`btn-${tabId}`).className = "pb-2 text-cyan-400 border-b-2 border-cyan-400";
@@ -270,14 +343,13 @@
     function saveSettings() {
       backendUrl = document.getElementById("backend-url-input").value.trim().replace(/\/$/, "");
       modelName = document.getElementById("model-name-input").value.trim();
-      firebaseConfigStr = document.getElementById("firebase-config-input").value.trim();
+      allowedEmail = document.getElementById("allowed-email-input").value.trim().toLowerCase();
 
       localStorage.setItem("ai_backend_url", backendUrl);
       localStorage.setItem("ai_model_name", modelName);
-      localStorage.setItem("ai_firebase_config", firebaseConfigStr);
+      localStorage.setItem("ai_allowed_email", allowedEmail);
 
       toggleSettingsModal();
-      initFirebase();
       checkBackendStatus();
     }
 
@@ -321,8 +393,8 @@
       e.stopPropagation();
       delete conversations[chatId];
       localStorage.setItem("ai_conversations", JSON.stringify(conversations));
-      if (db) {
-        db.collection("conversations").doc(chatId).delete().catch(console.warn);
+      if (db && currentUser) {
+        db.collection("users").doc(currentUser.uid).collection("conversations").doc(chatId).delete().catch(console.warn);
       }
       if (currentChatId === chatId) {
         startNewChat();
@@ -343,9 +415,9 @@
       conversations[currentChatId].messages.push({ sender, content: text });
       localStorage.setItem("ai_conversations", JSON.stringify(conversations));
 
-      // Sync with Firebase Firestore in real-time
-      if (db) {
-        db.collection("conversations").doc(currentChatId).set(conversations[currentChatId]).catch(console.warn);
+      // Sync with user's private Firestore collection
+      if (db && currentUser) {
+        db.collection("users").doc(currentUser.uid).collection("conversations").doc(currentChatId).set(conversations[currentChatId]).catch(console.warn);
       }
 
       renderSidebarHistory();
@@ -377,9 +449,9 @@
     }
 
     async function loadFirestoreConversations() {
-      if (!db) return;
+      if (!db || !currentUser) return;
       try {
-        const snapshot = await db.collection("conversations").orderBy("timestamp", "desc").get();
+        const snapshot = await db.collection("users").doc(currentUser.uid).collection("conversations").orderBy("timestamp", "desc").get();
         snapshot.forEach(doc => {
           conversations[doc.id] = doc.data();
         });
