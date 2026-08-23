@@ -64,7 +64,7 @@
     ::-webkit-scrollbar-thumb { background: #282a2c; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #333538; }
     
-    /* ENHANCED READABLE TYPOGRAPHY (Large, Crisp & Airy) */
+    /* ENHANCED READABLE TYPOGRAPHY */
     .prose-readable {
       font-size: 15.5px;
       line-height: 1.75;
@@ -897,7 +897,7 @@
       } catch (err) { return ""; }
     }
 
-    // MULTI-TURN CONVERSATIONAL CHAT
+    // MULTI-TURN CONVERSATIONAL CHAT WITH REAL-TIME CONTEXT
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -916,7 +916,6 @@
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating response...</div>', false);
       
-      // Smoothly scroll down so user sees response starting
       setTimeout(() => {
         const el = document.getElementById(aiMsgId);
         if (el) {
@@ -938,15 +937,36 @@
         }
       }
 
+      // CURRENT REAL-TIME TEMPORAL CONTEXT INJECTION
+      const now = new Date();
+      const dateString = now.toLocaleDateString(undefined, { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      const systemPrompt = {
+        role: "system",
+        content: `You are BuckBuck AI, an advanced enterprise neural assistant.
+Current Date & Time: ${dateString}, ${timeString} (${timezone}).
+You possess full real-time awareness of today's date and current calendar context.
+Always answer directly, clearly, and concisely. Use LaTeX ($...$ and $$...$$) for formulas and fenced code blocks with language identifiers for code.`
+      };
+
       const currentHistory = conversations[currentChatId]?.messages || [];
-      const messagesPayload = currentHistory.map(m => ({
+      const historyPayload = currentHistory.map(m => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content
       }));
 
-      if (messagesPayload.length > 0) {
-        messagesPayload[messagesPayload.length - 1].content = finalPrompt;
+      if (historyPayload.length > 0) {
+        historyPayload[historyPayload.length - 1].content = finalPrompt;
       }
+
+      const messagesPayload = [systemPrompt, ...historyPayload];
 
       try {
         updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
@@ -1063,7 +1083,6 @@
       let thinkHtml = "";
       let mainText = text;
 
-      // Extract <think> reasoning tags
       const thinkMatch = text.match(/<think>([\s\S]*?)(?:<\/think>|$)/i);
       if (thinkMatch) {
         const thinkContent = thinkMatch[1].trim();
@@ -1100,7 +1119,6 @@
         }
       }
 
-      // LaTeX equation normalizer
       let normalized = mainText
         .replace(/\[\s*(\\text|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
           return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
@@ -1112,7 +1130,6 @@
 
       let parsedHtml = marked.parse(normalized);
 
-      // Embedded Artifact Pill launcher
       const codeMatch = mainText.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
       if (codeMatch && codeMatch[1].trim().length > 50) {
         const rawCode = codeMatch[1].trim();
