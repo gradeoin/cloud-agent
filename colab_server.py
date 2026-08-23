@@ -92,7 +92,9 @@ if _minutes_remaining_this_week <= 0:
 EFFECTIVE_SESSION_LIMIT_MINUTES = int(min(SESSION_LIMIT_MINUTES, _minutes_remaining_this_week))
 
 # [2/6] CONFIGURE HIGH-PERFORMANCE GPU ENVIRONMENT
-os.environ['PATH'] = f"/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
+os.environ['PATH'] = f"/usr/local/cuda/bin:/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
+os.environ['LD_LIBRARY_PATH'] = f"/usr/local/cuda/lib64:/usr/lib64-nvidia:{os.environ.get('LD_LIBRARY_PATH', '')}"
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 os.environ['OLLAMA_ORIGINS'] = '*'
 os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
 os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
@@ -511,9 +513,14 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
             params=request.query_params, content=req_body,
         )
         response = await http_client.send(ollama_req, stream=True)
+        
+        resp_headers = dict(response.headers)
+        resp_headers["X-Accel-Buffering"] = "no"
+        resp_headers["Cache-Control"] = "no-cache"
+
         return StreamingResponse(
             response.aiter_raw(), status_code=response.status_code,
-            headers=dict(response.headers), background=response.aclose,
+            headers=resp_headers, media_type="application/x-ndjson", background=response.aclose,
         )
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=502)
