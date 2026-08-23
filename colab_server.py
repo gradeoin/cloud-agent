@@ -203,7 +203,7 @@ subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ))
 time.sleep(3)
 
 print("📥 [4/6] Ensuring core & Vision models are cached...")
-REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llava:7b", "deepseek-r1:1.5b"]
+REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llama3.1:8b", "llava:7b", "deepseek-r1:1.5b"]
 
 def already_pulled(model: str) -> bool:
     try:
@@ -233,12 +233,13 @@ if DRIVE_AVAILABLE:
     ).start()
 
 # [4.5/6] PRE-WARM MODEL INTO GPU VRAM (ELIMINATES FIRST-TOKEN COLD START)
-print("🔥 Pre-warming primary model into GPU VRAM for instant sub-second response...")
-try:
-    subprocess.run([OLLAMA_BIN, "run", "qwen2.5:7b", "ready", "--keepalive", "24h"], capture_output=True, timeout=60)
-    print("   ⚡ Qwen 2.5 (7B) locked into GPU VRAM.")
-except Exception:
-    pass
+print("🔥 Pre-warming DeepSeek-R1 (7B) & Qwen into GPU VRAM for sub-second response...")
+for warm_model in ["deepseek-r1:7b", "qwen2.5:7b"]:
+    try:
+        subprocess.run([OLLAMA_BIN, "run", warm_model, "ready", "--keepalive", "24h"], capture_output=True, timeout=90)
+        print(f"   ⚡ {warm_model} locked into GPU VRAM.")
+    except Exception:
+        pass
 
 # [5/6] FASTAPI GATEWAY WITH MULTIMODAL, VOICE, AND AUTO-PIP EXECUTION
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + Vision + GPU Audio)...")
@@ -534,6 +535,23 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     headers.pop("authorization", None)
     headers.pop("x-api-key", None)
     req_body = await request.body()
+
+    # Automatically pull requested model if not yet cached on Colab
+    if request.method == "POST" and (path == "api/chat" or path == "api/generate"):
+        try:
+            body_json = json.loads(req_body.decode())
+            req_model = body_json.get("model")
+            if req_model and not already_pulled(req_model):
+                print(f"📥 [ON-DEMAND] Auto-pulling '{req_model}' on GPU...")
+                subprocess.run([OLLAMA_BIN, "pull", req_model])
+                if DRIVE_AVAILABLE:
+                    threading.Thread(
+                        target=lambda: os.system(f"cp -rn {LOCAL_MODELS}/* {DRIVE_MODELS}/ 2>/dev/null"),
+                        daemon=True
+                    ).start()
+        except Exception as e:
+            print(f"⚠️ Model check notice: {e}")
+
     try:
         ollama_req = http_client.build_request(
             method=request.method, url=target_url, headers=headers,
