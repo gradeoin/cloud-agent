@@ -1,41 +1,114 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED)
-# WITH AUTH, NON-BLOCKING EXECUTION, GPU PRESERVATION & SESSION WATCHDOG
+# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED v3)
+# PROCESS-SANDBOXED EXEC · AUTH · AUDIT LOG · WEEKLY QUOTA BUDGET GUARD
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # ⚙️ CONFIG — customize as needed
 # ------------------------------------------------------------------------------
-SESSION_LIMIT_MINUTES = 120        # Max continuous session (e.g. 2 hours)
+SESSION_LIMIT_MINUTES = 120        # Hard cap for THIS session (also shrinks automatically, see below)
 AUTO_SHUTDOWN_ON_IDLE = True       # Auto-stop if you leave without closing
-IDLE_TIMEOUT_MINUTES = 25          # Shut down after N mins of zero activity
+IDLE_TIMEOUT_MINUTES = 20          # Shut down after N mins of zero *real* activity
 AUTO_RELEASE_GPU = True            # Release Colab VM on expiry to preserve daily quota
 EXEC_TIMEOUT_SECONDS = 30          # Hard cap on any single /api/exec call
+EXEC_MAX_CONCURRENT = 1            # How many /api/exec calls can run at once
+EXEC_MAX_PER_MINUTE = 20           # Simple rate limit per API key
 ALLOWED_ORIGIN = "https://buckbuck.pages.dev"  # Lock CORS to your actual frontend
+
+# --- Colab weekly-quota protection -------------------------------------------
+# Google doesn't publish a fixed weekly GPU quota, but community-observed
+# free-tier access tends to land somewhere around 15-30 GPU-hours/week.
+# We track cumulative usage across sessions (persisted to Drive) and refuse
+# to let ourselves exceed a conservative self-imposed weekly budget, so we
+# stop *before* Colab's own undocumented limit kicks in and locks us out.
+WEEKLY_BUDGET_MINUTES = 12 * 60     # 12 hours/week — conservative, leaves headroom
+USAGE_LOG_PATH_DRIVE = '/content/drive/MyDrive/buckbuck_usage_log.json'
+USAGE_LOG_PATH_LOCAL = '/content/buckbuck_usage_log.json'
+GPU_TRUE_IDLE_UTIL_PCT = 3          # nvidia-smi util% below which we consider GPU truly idle
 # ------------------------------------------------------------------------------
 
-import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 
 SERVER_START_TIME = time.time()
-LAST_ACTIVITY_TIME = time.time()
+LAST_REAL_ACTIVITY_TIME = time.time()   # only bumped by /api/exec and proxy calls, NOT /api/health polling
 
 # ------------------------------------------------------------------------------
-# 🔑 API KEY — generated fresh each run, printed once. Put it in the frontend's
-# settings alongside the backend URL. Every request must send:
-#   Authorization: Bearer <API_KEY>
+# 🔑 API KEY — generated fresh each run, printed once.
 # ------------------------------------------------------------------------------
 API_KEY = secrets.token_urlsafe(32)
 
-# [1/6] MOUNT GOOGLE DRIVE FOR PERMANENT MODEL PERSISTENCE
+# [1/6] MOUNT GOOGLE DRIVE FOR PERMANENT MODEL PERSISTENCE + USAGE LOG
+DRIVE_AVAILABLE = False
 try:
     from google.colab import drive
     print("📁 [1/6] Mounting Google Drive for permanent model cache...")
     drive.mount('/content/drive')
     os.makedirs('/content/drive/MyDrive/ollama_models', exist_ok=True)
     os.environ['OLLAMA_MODELS'] = '/content/drive/MyDrive/ollama_models'
+    DRIVE_AVAILABLE = True
 except Exception:
-    print("⚠️ Running outside Colab or Drive skipped. Using local disk.")
+    print("⚠️ Running outside Colab or Drive skipped. Using local disk. (Weekly usage tracking will reset every session.)")
+
+USAGE_LOG_PATH = USAGE_LOG_PATH_DRIVE if DRIVE_AVAILABLE else USAGE_LOG_PATH_LOCAL
+
+# ------------------------------------------------------------------------------
+# 📊 WEEKLY USAGE BUDGET — read history, compute how much runway is left
+# ------------------------------------------------------------------------------
+def load_usage_log():
+    try:
+        with open(USAGE_LOG_PATH, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+def save_usage_log(entries):
+    try:
+        with open(USAGE_LOG_PATH, 'w') as f:
+            json.dump(entries, f)
+    except Exception as e:
+        print(f"⚠️ Could not write usage log: {e}")
+
+def _safe_parse(e):
+    try:
+        return datetime.fromisoformat(e["end"])
+    except Exception:
+        return None
+
+def minutes_used_last_7_days(entries):
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    total = 0.0
+    for e in entries:
+        ts = _safe_parse(e)
+        if ts and ts >= cutoff:
+            total += e["minutes"]
+    return total
+
+_usage_entries = load_usage_log()
+_minutes_used_this_week = minutes_used_last_7_days(_usage_entries)
+_minutes_remaining_this_week = max(0, WEEKLY_BUDGET_MINUTES - _minutes_used_this_week)
+
+print(f"📊 Colab quota guard: {_minutes_used_this_week:.0f}/{WEEKLY_BUDGET_MINUTES} mins used in the last 7 days "
+      f"({_minutes_remaining_this_week:.0f} mins remaining in self-imposed weekly budget).")
+
+if _minutes_remaining_this_week <= 0:
+    print("\n" + "=" * 65)
+    print("🛑 WEEKLY BUDGET EXHAUSTED — refusing to start a new GPU session.")
+    print(f"   You've used {_minutes_used_this_week:.0f} minutes in the last 7 days,")
+    print(f"   at or above your {WEEKLY_BUDGET_MINUTES}-minute self-imposed budget.")
+    print("   This is here to stop YOU from tripping Colab's own undocumented")
+    print("   quota and getting rate-limited or locked out for longer.")
+    print("   Raise WEEKLY_BUDGET_MINUTES if you're confident you have headroom,")
+    print("   or just wait for older usage to roll off the 7-day window.")
+    print("=" * 65)
+    raise SystemExit(1)
+
+# Shrink this session's limit so it can't blow through the remaining weekly budget.
+EFFECTIVE_SESSION_LIMIT_MINUTES = int(min(SESSION_LIMIT_MINUTES, _minutes_remaining_this_week))
+if EFFECTIVE_SESSION_LIMIT_MINUTES < SESSION_LIMIT_MINUTES:
+    print(f"⚠️ Session cap reduced from {SESSION_LIMIT_MINUTES} to {EFFECTIVE_SESSION_LIMIT_MINUTES} mins "
+          f"to stay within your weekly budget.")
 
 # [2/6] CONFIGURE HIGH-PERFORMANCE GPU ENVIRONMENT
 os.environ['OLLAMA_ORIGINS'] = '*'
@@ -46,23 +119,18 @@ os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & PACKAGES
 print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel & AI Python Suite...")
-os.system("sudo apt-get update -qq && sudo apt-get install -y zstd pciutils > /dev/null 2>&1")
 os.system("curl -fsSL https://ollama.com/install.sh | sh > /dev/null 2>&1")
 os.system(
     "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
     "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
 )
-os.system(
-    "pip install -q fastapi uvicorn httpx pydantic matplotlib numpy "
-    "sentence-transformers torch > /dev/null 2>&1"
-)
+os.system("pip install -q fastapi uvicorn httpx pydantic matplotlib numpy torch > /dev/null 2>&1")
 
 # [4/6] START OLLAMA ENGINE IN BACKGROUND
 print("⚡ [3/6] Starting Ollama Engine with FlashAttention & GPU Locking...")
 subprocess.Popen(["ollama", "serve"], env=dict(os.environ))
 time.sleep(3)
 
-# Pull primary models to Google Drive — skip anything already cached
 print("📥 [4/6] Ensuring core models are cached in Google Drive...")
 REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "deepseek-r1:1.5b"]
 
@@ -82,7 +150,7 @@ for model in REQUIRED_MODELS:
     if result.returncode != 0:
         print(f"   ⚠️ Failed to pull {model} (exit code {result.returncode}) — continuing anyway.")
 
-# [5/6] FASTAPI GATEWAY WITH CODE EXECUTION & WATCHDOG
+# [5/6] FASTAPI GATEWAY WITH SANDBOXED CODE EXECUTION & WATCHDOG
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + GPU Executor)...")
 
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
@@ -102,8 +170,6 @@ app.add_middleware(
 )
 
 OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
-
-# One shared client for the lifetime of the app
 http_client: httpx.AsyncClient | None = None
 
 @app.on_event("startup")
@@ -116,36 +182,70 @@ async def _shutdown():
     if http_client:
         await http_client.aclose()
 
-# Thread pool so /api/exec runs blocking user code without freezing async event loop
-exec_pool = ThreadPoolExecutor(max_workers=2)
+exec_semaphore = asyncio.Semaphore(EXEC_MAX_CONCURRENT)
+exec_pool = ThreadPoolExecutor(max_workers=EXEC_MAX_CONCURRENT + 1)
 
-def record_activity():
-    global LAST_ACTIVITY_TIME
-    LAST_ACTIVITY_TIME = time.time()
+# Simple per-minute rate limiter
+_rate_lock = threading.Lock()
+_rate_window_start = time.time()
+_rate_count = 0
+
+def check_rate_limit():
+    global _rate_window_start, _rate_count
+    with _rate_lock:
+        now = time.time()
+        if now - _rate_window_start >= 60:
+            _rate_window_start = now
+            _rate_count = 0
+        _rate_count += 1
+        if _rate_count > EXEC_MAX_PER_MINUTE:
+            raise HTTPException(status_code=429, detail="Rate limit exceeded, slow down")
+
+# Audit log
+AUDIT_LOG_PATH = (
+    '/content/drive/MyDrive/buckbuck_audit_log.jsonl' if DRIVE_AVAILABLE
+    else '/content/buckbuck_audit_log.jsonl'
+)
+
+def audit_log(event: dict):
+    event["timestamp"] = datetime.now(timezone.utc).isoformat()
+    try:
+        with open(AUDIT_LOG_PATH, 'a') as f:
+            f.write(json.dumps(event) + "\n")
+    except Exception:
+        pass
+
+def record_real_activity():
+    global LAST_REAL_ACTIVITY_TIME
+    LAST_REAL_ACTIVITY_TIME = time.time()
 
 def require_api_key(authorization: str = Header(default=""), x_api_key: str = Header(default="")):
     """Validates Authorization: Bearer <key> or X-API-Key: <key>"""
-    token = ""
+    supplied = ""
     if authorization.startswith("Bearer "):
-        token = authorization[7:].strip()
+        supplied = authorization[7:].strip()
     elif x_api_key:
-        token = x_api_key.strip()
+        supplied = x_api_key.strip()
 
-    if not token or token != API_KEY:
+    if not secrets.compare_digest(supplied, API_KEY):
+        audit_log({"event": "auth_failed"})
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
-    record_activity()
 
 class CodeExecutionRequest(BaseModel):
     code: str
 
-def _run_user_code(code: str) -> dict:
-    """Runs in a worker thread with execution timeout and chart interception."""
-    start_time = time.time()
-    exec_scope = {"__name__": "__main__", "sys": sys, "os": os}
+# ------------------------------------------------------------------------------
+# 🧪 PROCESS-SANDBOXED EXECUTION (GENUINE OS PROCESS KILL ON TIMEOUT)
+# ------------------------------------------------------------------------------
+_RUNNER_TEMPLATE = r"""
+import sys, io, json, base64, traceback
+
+def _main():
+    code = sys.argv[1] if len(sys.argv) > 1 else ""
+    exec_scope = {"__name__": "__main__"}
     old_stdout, old_stderr = sys.stdout, sys.stderr
     redirected_stdout, redirected_stderr = io.StringIO(), io.StringIO()
     plots_base64 = []
-
     try:
         import matplotlib
         matplotlib.use('Agg')
@@ -162,59 +262,122 @@ def _run_user_code(code: str) -> dict:
             plots_base64.append(base64.b64encode(buf.read()).decode('utf-8'))
             plt.close(fig)
 
-        stdout_text = redirected_stdout.getvalue()
-        stderr_text = redirected_stderr.getvalue()
-        is_success = True
-        error_msg = ""
+        result = {
+            "success": True,
+            "stdout": redirected_stdout.getvalue(),
+            "stderr": redirected_stderr.getvalue(),
+            "error": "",
+            "plots": plots_base64,
+        }
     except Exception as e:
-        stdout_text = redirected_stdout.getvalue()
-        stderr_text = traceback.format_exc()
-        is_success = False
-        error_msg = str(e)
+        result = {
+            "success": False,
+            "stdout": redirected_stdout.getvalue(),
+            "stderr": traceback.format_exc(),
+            "error": str(e),
+            "plots": plots_base64,
+        }
     finally:
         sys.stdout, sys.stderr = old_stdout, old_stderr
+    sys.stdout.write("\n__RESULT_JSON__" + json.dumps(result))
 
-    return {
-        "success": is_success,
-        "stdout": stdout_text,
-        "stderr": stderr_text,
-        "error": error_msg,
-        "plots": plots_base64,
-        "execution_time_seconds": round(time.time() - start_time, 3),
-    }
+_main()
+"""
 
-# 1. PYTHON GPU CODE EXECUTION (NON-BLOCKING & TIMEOUT-BOUNDED)
+def _run_code_in_subprocess(code: str, timeout: float) -> dict:
+    start = time.time()
+    with tempfile.NamedTemporaryFile("w", suffix="_runner.py", delete=False) as f:
+        f.write(_RUNNER_TEMPLATE)
+        runner_path = f.name
+
+    proc = subprocess.Popen(
+        [sys.executable, runner_path, code],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except Exception:
+            proc.kill()
+        proc.wait(timeout=5)
+        try:
+            os.unlink(runner_path)
+        except Exception:
+            pass
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": "",
+            "error": f"Execution exceeded {timeout}s timeout and was killed.",
+            "plots": [],
+            "execution_time_seconds": round(time.time() - start, 3),
+        }
+    finally:
+        try:
+            os.unlink(runner_path)
+        except Exception:
+            pass
+
+    marker = "__RESULT_JSON__"
+    if marker in stdout:
+        payload = stdout.split(marker, 1)[1]
+        try:
+            result = json.loads(payload)
+        except Exception:
+            result = {"success": False, "stdout": stdout, "stderr": stderr,
+                       "error": "Failed to parse sandbox result", "plots": []}
+    else:
+        result = {"success": False, "stdout": stdout, "stderr": stderr,
+                   "error": "Sandbox produced no result", "plots": []}
+
+    result["execution_time_seconds"] = round(time.time() - start, 3)
+    return result
+
 @app.post("/api/exec")
 async def execute_python_code(req: CodeExecutionRequest, _=Depends(require_api_key)):
-    loop = __import__("asyncio").get_event_loop()
-    future = loop.run_in_executor(exec_pool, _run_user_code, req.code)
-    try:
-        result = await __import__("asyncio").wait_for(future, timeout=EXEC_TIMEOUT_SECONDS)
-    except __import__("asyncio").TimeoutError:
-        return JSONResponse(
-            {"success": False, "error": f"Execution exceeded {EXEC_TIMEOUT_SECONDS}s timeout"},
-            status_code=408,
+    check_rate_limit()
+    record_real_activity()
+    async with exec_semaphore:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            exec_pool, _run_code_in_subprocess, req.code, EXEC_TIMEOUT_SECONDS
         )
+    audit_log({
+        "event": "exec",
+        "success": result.get("success"),
+        "execution_time_seconds": result.get("execution_time_seconds"),
+        "code_preview": req.code[:200],
+        "code_length": len(req.code),
+    })
     return result
 
 # 2. SYSTEM HEALTH & GPU VRAM STATS
+try:
+    import torch
+    _TORCH_OK = True
+except Exception:
+    _TORCH_OK = False
+
 @app.get("/api/health")
 async def get_system_health(_=Depends(require_api_key)):
-    try:
-        import torch
-        gpu_available = torch.cuda.is_available()
-        gpu_name = torch.cuda.get_device_name(0) if gpu_available else "CPU"
-        if gpu_available:
-            free_b, _total = torch.cuda.mem_get_info(0)
-            vram_free = f"{free_b / (1024**3):.1f} GB"
-        else:
-            vram_free = "N/A"
-    except Exception as e:
-        gpu_name, vram_free = "unknown (torch unavailable)", "N/A"
+    gpu_name, vram_free = "unknown", "N/A"
+    if _TORCH_OK:
+        try:
+            if torch.cuda.is_available():
+                gpu_name = torch.cuda.get_device_name(0)
+                free_b, _total = torch.cuda.mem_get_info(0)
+                vram_free = f"{free_b / (1024**3):.1f} GB"
+            else:
+                gpu_name = "CPU"
+        except Exception:
+            pass
 
     elapsed_minutes = (time.time() - SERVER_START_TIME) / 60
-    remaining_minutes = max(0, int(SESSION_LIMIT_MINUTES - elapsed_minutes))
-    idle_minutes = int((time.time() - LAST_ACTIVITY_TIME) / 60)
+    remaining_minutes = max(0, int(EFFECTIVE_SESSION_LIMIT_MINUTES - elapsed_minutes))
+    idle_minutes = int((time.time() - LAST_REAL_ACTIVITY_TIME) / 60)
 
     return {
         "status": "healthy",
@@ -222,6 +385,9 @@ async def get_system_health(_=Depends(require_api_key)):
         "vram_free": vram_free,
         "session_remaining_minutes": remaining_minutes,
         "idle_minutes": idle_minutes,
+        "weekly_budget_remaining_minutes": max(
+            0, int(_minutes_remaining_this_week - elapsed_minutes)
+        ),
     }
 
 # 3. REVERSE PROXY FOR OLLAMA (/api/chat, /api/tags, etc.) — AUTH-GATED
@@ -232,6 +398,7 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     if path not in ALLOWED_OLLAMA_ROUTES and not path.startswith("api/chat"):
         raise HTTPException(status_code=403, detail=f"Access to '{path}' is blocked for security.")
 
+    record_real_activity()
     target_url = f"{OLLAMA_INTERNAL_URL}/{path}"
     headers = dict(request.headers)
     headers.pop("host", None)
@@ -257,7 +424,7 @@ threading.Thread(
 ).start()
 time.sleep(2)
 
-# [6/6] CLOUDFLARE TUNNEL WITH EVENT DETECTION
+# [6/6] CLOUDFLARE TUNNEL
 tunnel_cmd = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8000"]
 tunnel_process = subprocess.Popen(tunnel_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
@@ -277,13 +444,15 @@ threading.Thread(target=watch_tunnel_output, daemon=True).start()
 if tunnel_url_found.wait(timeout=30):
     url = tunnel_url_holder["url"]
     print("\n" + "=" * 68)
-    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE!")
-    print(f"🔗 BACKEND URL : {url}")
-    print(f"🔑 API KEY     : {API_KEY}")
-    print(f"⏱️ SESSION LIMIT: {SESSION_LIMIT_MINUTES} mins | IDLE AUTO-STOP: {IDLE_TIMEOUT_MINUTES} mins")
+    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v3 HARDENED)!")
+    print(f"🔗 BACKEND URL   : {url}")
+    print(f"🔑 API KEY       : {API_KEY}")
+    print(f"⏱️ SESSION LIMIT  : {EFFECTIVE_SESSION_LIMIT_MINUTES} mins (weekly-budget adjusted)")
+    print(f"💤 IDLE AUTO-STOP: {IDLE_TIMEOUT_MINUTES} mins of real inactivity")
+    print(f"📊 WEEKLY BUDGET : {_minutes_remaining_this_week:.0f} / {WEEKLY_BUDGET_MINUTES} mins remaining")
     print("=" * 68)
     print("👉 Paste both the URL and API key into Settings (⚙️) on https://buckbuck.pages.dev")
-    print("🛡️ Security Active: CORS locked, threadpool execution, destructive routes blocked.")
+    print("🛡️ Security Active: Process-isolated sandbox, audit logging & weekly quota guard.")
     print("=" * 68)
 else:
     print("⚠️ Cloudflare tunnel did not report a URL within 30s. Check logs.")
@@ -291,7 +460,19 @@ else:
 # ------------------------------------------------------------------------------
 # 🛡️ AUTOMATED GPU PRESERVATION WATCHDOG
 # ------------------------------------------------------------------------------
+def _record_this_session_usage():
+    elapsed_min = (time.time() - SERVER_START_TIME) / 60
+    entries = load_usage_log()
+    entries.append({
+        "end": datetime.now(timezone.utc).isoformat(),
+        "minutes": round(elapsed_min, 2),
+    })
+    cutoff = datetime.now(timezone.utc) - timedelta(days=14)
+    entries = [e for e in entries if _safe_parse(e) and _safe_parse(e) >= cutoff]
+    save_usage_log(entries)
+
 def shutdown_backend():
+    _record_this_session_usage()
     try:
         tunnel_process.kill()
     except Exception:
@@ -306,24 +487,36 @@ def shutdown_backend():
     else:
         os._exit(0)
 
+def gpu_truly_idle() -> bool:
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=5,
+        )
+        util = int(out.stdout.strip().splitlines()[0])
+        return util < GPU_TRUE_IDLE_UTIL_PCT
+    except Exception:
+        return True
+
 def session_watchdog():
     while True:
         time.sleep(30)
         elapsed = (time.time() - SERVER_START_TIME) / 60
-        idle = (time.time() - LAST_ACTIVITY_TIME) / 60
+        idle = (time.time() - LAST_REAL_ACTIVITY_TIME) / 60
 
-        if elapsed >= SESSION_LIMIT_MINUTES:
+        if elapsed >= EFFECTIVE_SESSION_LIMIT_MINUTES:
             print("\n" + "=" * 68)
-            print(f"🛑 [WATCHDOG] Session limit of {SESSION_LIMIT_MINUTES} mins reached!")
+            print(f"🛑 [WATCHDOG] Session cap of {EFFECTIVE_SESSION_LIMIT_MINUTES} mins reached "
+                  f"(weekly-budget adjusted).")
             print("💾 Models safely preserved in Google Drive.")
-            print("🛡️ Releasing Colab GPU to protect your daily compute quota...")
+            print("🛡️ Releasing Colab GPU to protect your weekly compute quota...")
             print("=" * 68)
             shutdown_backend()
             break
 
-        if AUTO_SHUTDOWN_ON_IDLE and idle >= IDLE_TIMEOUT_MINUTES:
+        if AUTO_SHUTDOWN_ON_IDLE and idle >= IDLE_TIMEOUT_MINUTES and gpu_truly_idle():
             print("\n" + "=" * 68)
-            print(f"💤 [WATCHDOG] Inactive for {IDLE_TIMEOUT_MINUTES} mins. Auto-stopping GPU...")
+            print(f"💤 [WATCHDOG] No real requests for {IDLE_TIMEOUT_MINUTES} mins and GPU is idle. Auto-stopping...")
             print("💾 Models safely preserved in Google Drive.")
             print("=" * 68)
             shutdown_backend()
