@@ -200,6 +200,7 @@
     <!-- Main Header -->
     <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
       <div class="flex items-center gap-3">
+        <!-- Hamburger Button appears in main header ONLY when sidebar is collapsed on desktop -->
         <button id="main-hamburger-btn" onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition hidden" title="Expand sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
@@ -315,8 +316,8 @@
     </footer>
   </div>
 
-  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (M3 Style) -->
-  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
+  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (Hidden When Closed, Zero Ghost Borders) -->
+  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden pointer-events-none">
     <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-xs">
@@ -410,7 +411,6 @@
     let currentAttachedFile = null;
     let activeArtifactCode = "";
 
-    // Extract unique chat ID from URL query (?c=xyz) or hash (#/c/xyz)
     function getChatIdFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
       const queryId = urlParams.get('c');
@@ -420,7 +420,6 @@
       return null;
     }
 
-    // Set unique chat ID in the browser URL
     function updateChatURL(chatId) {
       if (!chatId) {
         window.history.pushState({}, "", window.location.pathname);
@@ -478,7 +477,6 @@
         db = firebase.firestore();
         auth = firebase.auth();
 
-        // Ensure persistence is set to LOCAL
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
           auth.onAuthStateChanged(user => {
             document.getElementById("auth-loading-screen").classList.add("hidden");
@@ -618,12 +616,21 @@
       document.getElementById("artifact-code-raw").textContent = code;
       hljs.highlightElement(document.getElementById("artifact-code-raw"));
 
+      const drawer = document.getElementById("artifact-drawer");
+      drawer.classList.remove("hidden", "pointer-events-none");
+      setTimeout(() => {
+        drawer.classList.remove("translate-x-full");
+      }, 10);
+
       switchArtifactTab('preview');
-      document.getElementById("artifact-drawer").classList.remove("translate-x-full");
     }
 
     function closeArtifactDrawer() {
-      document.getElementById("artifact-drawer").classList.add("translate-x-full");
+      const drawer = document.getElementById("artifact-drawer");
+      drawer.classList.add("translate-x-full", "pointer-events-none");
+      setTimeout(() => {
+        drawer.classList.add("hidden");
+      }, 300);
     }
 
     function switchArtifactTab(tab) {
@@ -679,7 +686,6 @@
       a.click();
     }
 
-    // UNIQUE CHAT ROUTING (Like Claude & ChatGPT)
     function generateUniqueChatId() {
       return "c_" + Math.random().toString(36).substr(2, 9);
     }
@@ -795,7 +801,6 @@
         localStorage.setItem("ai_conversations", JSON.stringify(conversations));
         renderSidebarHistory();
 
-        // If URL contains a specific chat ID, load it!
         const urlChatId = getChatIdFromURL();
         if (urlChatId && conversations[urlChatId]) {
           loadChatSession(urlChatId, false);
@@ -851,10 +856,17 @@
 
       appendMessageUI("user", userDisplayContent, true);
       saveMessageToHistory("user", userDisplayContent);
-      scrollToBottom(true);
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating...</div>', false);
       
+      // Smoothly scroll down so user sees their question and the response starting
+      setTimeout(() => {
+        const el = document.getElementById(aiMsgId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 40);
+
       let finalPrompt = text;
       if (currentAttachedFile) {
         finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
