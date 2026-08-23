@@ -419,7 +419,7 @@
   </div>
 
   <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER -->
-  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden pointer-events-none">
+  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden">
     <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-xs">
@@ -430,17 +430,17 @@
 
       <div class="flex items-center gap-1.5">
         <div class="flex bg-m3-surfaceContainerHigh p-0.5 rounded-full border border-m3-outline/20 text-xs font-medium">
-          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold">Preview</button>
-          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white">Code</button>
+          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer">Preview</button>
+          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer">Code</button>
         </div>
 
-        <button onclick="downloadArtifactCurrentFile()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Download File">
+        <button onclick="downloadArtifactCurrentFile()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer" title="Download File">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
-        <button onclick="copyArtifactCode()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Copy code">
+        <button onclick="copyArtifactCode()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer" title="Copy code">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         </button>
-        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-full hover:bg-m3-surfaceContainerHigh text-m3-onSurfaceVariant hover:text-white text-xs">
+        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-full hover:bg-m3-surfaceContainerHigh text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -514,6 +514,10 @@
     let activeArtifactCode = "";
     let activeArtifactTitle = "Artifact Preview";
     let activeArtifactLang = "html";
+    
+    // SAFE IN-MEMORY REGISTRY TO PREVENT QUOTE/ESCAPING BUGS
+    window.codeRegistry = {};
+    let snippetIdCounter = 0;
     const rawMessageStore = {};
 
     const EXT_MAP = {
@@ -764,7 +768,7 @@
             </div>
           `, "html");
         } else {
-          drawer.classList.remove("hidden", "pointer-events-none");
+          drawer.classList.remove("hidden");
           setTimeout(() => drawer.classList.remove("translate-x-full"), 10);
         }
       } else {
@@ -773,73 +777,69 @@
     }
 
     function openArtifactDrawer(title, code, lang = "html") {
-      activeArtifactCode = code;
+      activeArtifactCode = code || "";
       activeArtifactTitle = title || "Artifact Preview";
-      activeArtifactLang = lang.toLowerCase();
+      activeArtifactLang = (lang || "html").toLowerCase();
 
       document.getElementById("artifact-title").textContent = activeArtifactTitle;
       
       const iframe = document.getElementById("artifact-iframe");
       
       if (['html', 'htm', 'svg', 'xml', 'javascript', 'js', 'jsx'].includes(activeArtifactLang)) {
-        let previewHtml = code;
+        let previewHtml = activeArtifactCode;
         if (activeArtifactLang === 'svg') {
-          previewHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;margin:0;">${code}</div>`;
-        } else if (!code.toLowerCase().includes('<html') && !code.toLowerCase().includes('<!doctype')) {
-          previewHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="UTF-8">
-              <script src="https://cdn.tailwindcss.com"><\/script>
-              <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"><\/script>
-              <style>body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }</style>
-            </head>
-            <body>
-              ${code}
-              <script>if(window.lucide) lucide.createIcons();<\/script>
-            </body>
-            </html>
-          `;
+          previewHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;margin:0;">${activeArtifactCode}</div>`;
+        } else if (!activeArtifactCode.toLowerCase().includes('<html') && !activeArtifactCode.toLowerCase().includes('<!doctype')) {
+          previewHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <style>body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }</style>
+</head>
+<body>
+  ${activeArtifactCode}
+  <script>if(window.lucide) lucide.createIcons();<\/script>
+</body>
+</html>`;
         }
         iframe.srcdoc = previewHtml;
       } else if (activeArtifactLang === 'markdown' || activeArtifactLang === 'md') {
-        iframe.srcdoc = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-            <style>body { padding: 30px; font-family: sans-serif; line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto; }</style>
-          </head>
-          <body>
-            <div id="content"></div>
-            <script>document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(code)});<\/script>
-          </body>
-          </html>
-        `;
+        iframe.srcdoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
+  <style>body { padding: 30px; font-family: sans-serif; line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto; }</style>
+</head>
+<body>
+  <div id="content"></div>
+  <script>document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(activeArtifactCode)});<\/script>
+</body>
+</html>`;
       } else {
-        iframe.srcdoc = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
-            <style>body { margin: 0; padding: 20px; background: #1e1f20; color: #e3e3e3; font-family: monospace; }</style>
-          </head>
-          <body>
-            <pre><code class="language-${lang}">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-            <script>hljs.highlightAll();<\/script>
-          </body>
-          </html>
-        `;
+        const escaped = activeArtifactCode.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        iframe.srcdoc = `<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
+  <style>body { margin: 0; padding: 20px; background: #1e1f20; color: #e3e3e3; font-family: monospace; }</style>
+</head>
+<body>
+  <pre><code class="language-${activeArtifactLang}">${escaped}</code></pre>
+  <script>hljs.highlightAll();<\/script>
+</body>
+</html>`;
       }
 
-      document.getElementById("artifact-code-raw").textContent = code;
+      document.getElementById("artifact-code-raw").textContent = activeArtifactCode;
       hljs.highlightElement(document.getElementById("artifact-code-raw"));
 
       const drawer = document.getElementById("artifact-drawer");
-      drawer.classList.remove("hidden", "pointer-events-none");
+      drawer.classList.remove("hidden");
       setTimeout(() => {
         drawer.classList.remove("translate-x-full");
       }, 10);
@@ -849,7 +849,7 @@
 
     function closeArtifactDrawer() {
       const drawer = document.getElementById("artifact-drawer");
-      drawer.classList.add("translate-x-full", "pointer-events-none");
+      drawer.classList.add("translate-x-full");
       setTimeout(() => {
         drawer.classList.add("hidden");
       }, 300);
@@ -859,25 +859,53 @@
       if (tab === 'preview') {
         document.getElementById("artifact-iframe").classList.remove("hidden");
         document.getElementById("artifact-code-view").classList.add("hidden");
-        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold";
-        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white";
+        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer";
+        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer";
       } else {
         document.getElementById("artifact-iframe").classList.add("hidden");
         document.getElementById("artifact-code-view").classList.remove("hidden");
-        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold";
-        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white";
+        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer";
+        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer";
       }
+    }
+
+    // REGISTRY-BACKED PREVIEW, DOWNLOAD, AND COPY
+    function previewSnippet(snipId) {
+      const item = window.codeRegistry[snipId];
+      if (!item) return;
+      openArtifactDrawer(item.filename || `${item.lang.toUpperCase()} Canvas`, item.code, item.lang);
+    }
+
+    function downloadSnippet(snipId) {
+      const item = window.codeRegistry[snipId];
+      if (!item) return;
+      const mime = (item.lang === 'html' || item.lang === 'htm') ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
+      downloadFileContent(item.code, item.filename, mime);
+    }
+
+    function copySnippet(buttonEl, snipId) {
+      const item = window.codeRegistry[snipId];
+      if (!item) return;
+      copyToClipboardSafe(item.code);
+      const span = buttonEl ? buttonEl.querySelector("span") : null;
+      if (span) {
+        const orig = span.textContent;
+        span.textContent = "Copied!";
+        setTimeout(() => { span.textContent = orig; }, 2000);
+      }
+      showToast("Code copied to clipboard!");
     }
 
     function downloadArtifactCurrentFile() {
       if (!activeArtifactCode) return;
       const ext = EXT_MAP[activeArtifactLang] || 'txt';
-      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`, ext === 'html' ? 'text/html' : 'text/plain');
+      const mime = (ext === 'html' || ext === 'htm') ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
+      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`, mime);
     }
 
     function copyArtifactCode() {
       if (!activeArtifactCode) return;
-      navigator.clipboard.writeText(activeArtifactCode);
+      copyToClipboardSafe(activeArtifactCode);
       showToast("Artifact code copied to clipboard!");
     }
 
@@ -891,22 +919,33 @@
       showToast(`Downloaded ${filename}!`);
     }
 
-    function copyCodeText(buttonEl, text) {
-      navigator.clipboard.writeText(text);
-      const span = buttonEl.querySelector("span");
-      if (span) {
-        const orig = span.textContent;
-        span.textContent = "Copied!";
-        setTimeout(() => { span.textContent = orig; }, 2000);
+    function copyToClipboardSafe(text) {
+      if (!text) return;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
       }
-      showToast("Code copied to clipboard!");
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.top = "-9999px";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try { document.execCommand('copy'); } catch(e){}
+      document.body.removeChild(ta);
     }
 
     function copyFullMessage(msgId) {
       const rawText = rawMessageStore[msgId];
       if (!rawText) return;
       const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-      navigator.clipboard.writeText(clean);
+      copyToClipboardSafe(clean);
       showToast("Message copied to clipboard!");
     }
 
@@ -1283,12 +1322,14 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an intelligent, helpful, and concise neural assistant.
+          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant.
 Current Date: ${dateString}, ${timeString} (${timezone}).
-Directives:
-- Respond directly and helpfully.
-- When generating code, HTML, Python, components or files, always enclose them in clean fenced code blocks with language identifiers.
-- Format formulas in LaTeX ($...$ and $$...$$).`
+
+Directives for Coding & Web Apps:
+- Always write modern, production-grade, single-file HTML/JS applications.
+- Always include Tailwind CSS CDN (<script src="https://cdn.tailwindcss.com"><\/script>) and Lucide Icons (<script src="https://unpkg.com/lucide@latest"><\/script>) for modern UI design.
+- Always implement working interactive features (modals, real-time live preview, sliders, carts, state management).
+- Enclose all code blocks in standard triple-backtick markdown blocks with the language identifier (e.g. \`\`\`html, \`\`\`python, \`\`\`javascript).`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
       }
@@ -1307,7 +1348,7 @@ Directives:
               num_gpu: 99,
               num_ctx: 2048,
               num_batch: 512,
-              temperature: 0.6,
+              temperature: 0.3,
               top_p: 0.9,
               num_predict: 1024
             }
@@ -1379,32 +1420,34 @@ Directives:
         const langMatch = codeEl.className.match(/language-(\w+)/);
         const lang = langMatch ? langMatch[1] : 'code';
         const rawCode = codeEl.innerText;
-        const encodedCode = encodeURIComponent(rawCode);
         const ext = EXT_MAP[lang.toLowerCase()] || 'txt';
+        const snipId = 'snip_' + (++snippetIdCounter);
         const filename = `snippet_${Date.now()}.${ext}`;
+
+        window.codeRegistry[snipId] = {
+          code: rawCode,
+          lang: lang,
+          filename: filename
+        };
 
         const header = document.createElement('div');
         header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
         
-        let previewBtn = `
-          <button onclick="openArtifactDrawer('${lang.toUpperCase()} Canvas', decodeURIComponent('${encodedCode}'), '${lang}')" 
-            class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition" title="Preview / Run in Sandbox">
-            <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Preview</span>
-          </button>
-        `;
-
         header.innerHTML = `
           <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
           <div class="flex items-center gap-3">
-            ${previewBtn}
-            <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${filename}', '${ext === 'html' ? 'text/html' : 'text/plain'}')" 
-              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition" title="Download as ${filename}">
+            <button type="button" onclick="previewSnippet('${snipId}')" 
+              class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition cursor-pointer" title="Preview / Run in Sandbox">
+              <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Preview</span>
+            </button>
+            <button type="button" onclick="downloadSnippet('${snipId}')" 
+              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition cursor-pointer" title="Download as ${filename}">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               <span>Download</span>
             </button>
-            <button onclick="copyCodeText(this, decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition" title="Copy code">
+            <button type="button" onclick="copySnippet(this, '${snipId}')" 
+              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition cursor-pointer" title="Copy code">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
@@ -1472,9 +1515,15 @@ Directives:
       if (codeMatch && codeMatch[2].trim().length > 40) {
         const lang = (codeMatch[1] || 'code').toLowerCase();
         const rawCode = codeMatch[2].trim();
-        const encodedCode = encodeURIComponent(rawCode);
         const ext = EXT_MAP[lang] || 'txt';
         const autoFilename = `generated_file_${Date.now()}.${ext}`;
+        const cardId = 'card_' + (msgId || 'art') + '_' + (++snippetIdCounter);
+
+        window.codeRegistry[cardId] = {
+          code: rawCode,
+          lang: lang,
+          filename: autoFilename
+        };
 
         const artifactPill = `
           <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
@@ -1488,15 +1537,15 @@ Directives:
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="downloadFileContent(decodeURIComponent('${encodedCode}'), '${autoFilename}', '${ext === 'html' ? 'text/html' : 'text/plain'}')" 
-                class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm">
+              <button type="button" onclick="downloadSnippet('${cardId}')" 
+                class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                Download
+                <span>Download</span>
               </button>
-              <button onclick="openArtifactDrawer('${autoFilename}', decodeURIComponent('${encodedCode}'), '${lang}')" 
-                class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+              <button type="button" onclick="previewSnippet('${cardId}')" 
+                class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer">
                 <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Live Preview
+                <span>Live Preview</span>
               </button>
             </div>
           </div>
@@ -1507,11 +1556,11 @@ Directives:
       if (msgId) {
         const actionToolbar = `
           <div class="flex items-center gap-2 mt-3 pt-2 text-xs text-m3-onSurfaceVariant border-t border-m3-outline/10">
-            <button onclick="copyFullMessage('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Copy full response">
+            <button type="button" onclick="copyFullMessage('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5 cursor-pointer" title="Copy full response">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
-            <button onclick="downloadMessageFile('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5" title="Download response as formatted standalone HTML">
+            <button type="button" onclick="downloadMessageFile('${msgId}')" class="p-1.5 rounded-lg hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1.5 cursor-pointer" title="Download response as formatted standalone HTML">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               <span>Download HTML</span>
             </button>
