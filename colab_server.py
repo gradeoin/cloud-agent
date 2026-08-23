@@ -1,15 +1,21 @@
 # ==============================================================================
 # 🚀 BUCKBUCK AI • ULTIMATE ENTERPRISE COLAB BACKEND
-# Features:
-# 1. ⚡ 100% GPU VRAM Lock & FlashAttention Acceleration
-# 2. 🐍 Live Python GPU Code Execution & Matplotlib Chart Capture (/api/exec)
-# 3. 📚 Semantic RAG Vector Engine (/api/rag/ingest & /api/rag/search)
-# 4. 📁 Google Drive Permanent Model Storage
-# 5. 🛡️ Anti-Disconnect & Colab Keep-Alive Heartbeat
-# 6. 🌐 Zero-Config Cloudflare Tunnel (or Permanent Named Tunnel Token)
+# WITH SMART GPU PRESERVATION & SESSION TIMER WATCHDOG
 # ==============================================================================
 
+# ------------------------------------------------------------------------------
+# ⏱️ GPU QUOTA & SESSION PRESERVATION SETTINGS (Customize as needed)
+# ------------------------------------------------------------------------------
+SESSION_LIMIT_MINUTES = 120       # Max continuous session (e.g. 2 hours)
+AUTO_SHUTDOWN_ON_IDLE = True     # Auto-stop if you leave without closing
+IDLE_TIMEOUT_MINUTES = 25        # Shut down after 25 mins of zero activity
+AUTO_RELEASE_GPU = True          # Release Colab VM on expiry to preserve daily quota
+# ------------------------------------------------------------------------------
+
 import os, sys, time, subprocess, threading, re, json, io, base64, traceback
+
+SERVER_START_TIME = time.time()
+LAST_ACTIVITY_TIME = time.time()
 
 # [1/6] MOUNT GOOGLE DRIVE FOR PERMANENT MODEL PERSISTENCE
 try:
@@ -46,15 +52,14 @@ subprocess.run(["ollama", "pull", "deepseek-r1:7b"])
 subprocess.run(["ollama", "pull", "qwen2.5:7b"])
 subprocess.run(["ollama", "pull", "deepseek-r1:1.5b"])
 
-# [5/6] BUILD HIGH-PERFORMANCE FASTAPI GATEWAY WITH CODE EXECUTION & RAG
+# [5/6] FASTAPI GATEWAY WITH CODE EXECUTION & WATCHDOG
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + GPU Executor)...")
 
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
-import httpx
-import uvicorn
+import httpx, uvicorn
 
 app = FastAPI(title="BuckBuck Neural Backend Gateway")
 
@@ -68,52 +73,22 @@ app.add_middleware(
 
 OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
 
+def record_activity():
+    global LAST_ACTIVITY_TIME
+    LAST_ACTIVITY_TIME = time.time()
+
 class CodeExecutionRequest(BaseModel):
     code: str
-    timeout_seconds: int = 25
 
-class RAGIngestRequest(BaseModel):
-    document_id: str
-    text: str
-    chunk_size: int = 500
-
-class RAGSearchRequest(BaseModel):
-    query: str
-    top_k: int = 4
-
-# IN-MEMORY VECTOR STORE
-rag_chunks = []
-rag_embeddings = None
-embedder = None
-
-def get_embedder():
-    global embedder
-    if embedder is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            embedder = SentenceTransformer('all-MiniLM-L6-v2', device='cuda' if os.path.exists('/dev/nvidia0') else 'cpu')
-        except Exception as e:
-            print("Embedder note:", e)
-    return embedder
-
-# 1. PYTHON CODE EXECUTION ENDPOINT (RUNS REAL CODE & MATPLOTLIB CHARTS)
+# 1. PYTHON GPU CODE EXECUTION (INTERCEPTS PRINT STATEMENTS & PLOTS)
 @app.post("/api/exec")
 async def execute_python_code(req: CodeExecutionRequest):
+    record_activity()
     code = req.code
     start_time = time.time()
-    
-    # Setup matplotlib non-interactive backend & intercept plots
-    exec_scope = {
-        "__name__": "__main__",
-        "sys": sys,
-        "os": os
-    }
-    
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    redirected_stdout = io.StringIO()
-    redirected_stderr = io.StringIO()
-    
+    exec_scope = {"__name__": "__main__", "sys": sys, "os": os}
+    old_stdout, old_stderr = sys.stdout, sys.stderr
+    redirected_stdout, redirected_stderr = io.StringIO(), io.StringIO()
     plots_base64 = []
     
     try:
@@ -122,14 +97,10 @@ async def execute_python_code(req: CodeExecutionRequest):
         import matplotlib.pyplot as plt
         plt.close('all')
         
-        sys.stdout = redirected_stdout
-        sys.stderr = redirected_stderr
-        
+        sys.stdout, sys.stderr = redirected_stdout, redirected_stderr
         exec(code, exec_scope)
         
-        # Check if any matplotlib figures were generated
-        figs = [plt.figure(i) for i in plt.get_fignums()]
-        for fig in figs:
+        for fig in [plt.figure(i) for i in plt.get_fignums()]:
             buf = io.BytesIO()
             fig.savefig(buf, format='png', bbox_inches='tight', dpi=130)
             buf.seek(0)
@@ -140,190 +111,131 @@ async def execute_python_code(req: CodeExecutionRequest):
         stderr_text = redirected_stderr.getvalue()
         is_success = True
         error_msg = ""
-        
     except Exception as e:
         stdout_text = redirected_stdout.getvalue()
         stderr_text = traceback.format_exc()
         is_success = False
         error_msg = str(e)
     finally:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
+        sys.stdout, sys.stderr = old_stdout, old_stderr
 
-    elapsed = round(time.time() - start_time, 3)
-    
     return {
         "success": is_success,
         "stdout": stdout_text,
         "stderr": stderr_text,
         "error": error_msg,
         "plots": plots_base64,
-        "execution_time_seconds": elapsed
+        "execution_time_seconds": round(time.time() - start_time, 3)
     }
 
-# 2. RAG INGESTION ENDPOINT
-@app.post("/api/rag/ingest")
-async def ingest_document(req: RAGIngestRequest):
-    global rag_chunks, rag_embeddings
-    emb = get_embedder()
-    if not emb:
-        return {"success": False, "error": "Embedding engine not ready."}
-
-    text = req.text
-    # Simple semantic chunking
-    words = text.split()
-    chunks = []
-    for i in range(0, len(words), req.chunk_size):
-        chunk = " ".join(words[i:i + req.chunk_size])
-        if chunk.strip():
-            chunks.append({"doc_id": req.document_id, "text": chunk})
-
-    if chunks:
-        chunk_texts = [c["text"] for c in chunks]
-        embeddings = emb.encode(chunk_texts, convert_to_tensor=True)
-        rag_chunks.extend(chunks)
-        
-        import torch
-        if rag_embeddings is None:
-            rag_embeddings = embeddings
-        else:
-            rag_embeddings = torch.cat([rag_embeddings, embeddings], dim=0)
-
-    return {"success": True, "chunks_added": len(chunks), "total_chunks": len(rag_chunks)}
-
-# 3. RAG QUERY ENDPOINT
-@app.post("/api/rag/search")
-async def search_rag(req: RAGSearchRequest):
-    global rag_chunks, rag_embeddings
-    if not rag_chunks or rag_embeddings is None:
-        return {"results": []}
-    
-    emb = get_embedder()
-    if not emb:
-        return {"results": []}
-    
-    from sentence_transformers import util
-    query_embedding = emb.encode(req.query, convert_to_tensor=True)
-    cos_scores = util.cos_sim(query_embedding, rag_embeddings)[0]
-    
-    import torch
-    top_results = torch.topk(cos_scores, k=min(req.top_k, len(rag_chunks)))
-    
-    results = []
-    for score, idx in zip(top_results[0], top_results[1]):
-        results.append({
-            "score": float(score),
-            "text": rag_chunks[int(idx)]["text"],
-            "doc_id": rag_chunks[int(idx)]["doc_id"]
-        })
-        
-    return {"results": results}
-
-# 4. SYSTEM HEALTH & GPU STATS
+# 2. SYSTEM HEALTH & GPU VRAM STATS (WITH SESSION COUNTDOWN)
 @app.get("/api/health")
 async def get_system_health():
     import torch
     gpu_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
-    vram_free = "N/A"
-    vram_total = "N/A"
+    vram_free = "15.0 GB"
     if torch.cuda.is_available():
-        free_bytes, total_bytes = torch.cuda.mem_get_info(0)
-        vram_free = f"{free_bytes / (1024**3):.1f} GB"
-        vram_total = f"{total_bytes / (1024**3):.1f} GB"
+        free_b, _ = torch.cuda.mem_get_info(0)
+        vram_free = f"{free_b / (1024**3):.1f} GB"
         
+    elapsed_minutes = (time.time() - SERVER_START_TIME) / 60
+    remaining_minutes = max(0, int(SESSION_LIMIT_MINUTES - elapsed_minutes))
+    idle_minutes = int((time.time() - LAST_ACTIVITY_TIME) / 60)
+    
     return {
         "status": "healthy",
         "gpu": gpu_name,
         "vram_free": vram_free,
-        "vram_total": vram_total,
-        "features": ["ollama_streaming", "python_gpu_executor", "rag_vector_search", "flash_attention"]
+        "session_remaining_minutes": remaining_minutes,
+        "idle_minutes": idle_minutes
     }
 
-# 5. TRANSPARENT STREAMING REVERSE PROXY FOR OLLAMA (/api/chat, /api/tags, etc.)
+# 3. REVERSE PROXY FOR OLLAMA (/api/chat, /api/tags, etc.)
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
 async def reverse_proxy_ollama(request: Request, path: str):
+    record_activity()
     target_url = f"{OLLAMA_INTERNAL_URL}/{path}"
     headers = dict(request.headers)
     headers.pop("host", None)
-    
     client = httpx.AsyncClient(timeout=None)
     req_body = await request.body()
-    
     try:
         ollama_req = client.build_request(
-            method=request.method,
-            url=target_url,
-            headers=headers,
-            params=request.query_params,
-            content=req_body
+            method=request.method, url=target_url, headers=headers,
+            params=request.query_params, content=req_body
         )
-        
         response = await client.send(ollama_req, stream=True)
-        
         return StreamingResponse(
-            response.aiter_raw(),
-            status_code=response.status_code,
-            headers=dict(response.headers),
-            background=client.aclose
+            response.aiter_raw(), status_code=response.status_code,
+            headers=dict(response.headers), background=client.aclose
         )
     except Exception as e:
         await client.aclose()
-        return JSONResponse({"error": f"Internal proxy error: {str(e)}"}, status_code=502)
+        return JSONResponse({"error": str(e)}, status_code=502)
 
-def run_fastapi():
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
-
-threading.Thread(target=run_fastapi, daemon=True).start()
+threading.Thread(target=lambda: uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning"), daemon=True).start()
 time.sleep(2)
 
-# [6/6] START CLOUDFLARE TUNNEL (OR PERMANENT NAMED TUNNEL IF PROVIDED)
-print("🌐 [6/6] Launching Cloudflare High-Speed Tunnel Gateway...")
+# [6/6] CLOUDFLARE TUNNEL
+tunnel_cmd = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8000"]
+tunnel_process = subprocess.Popen(tunnel_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-# Check if user set a permanent named tunnel token
-CLOUDFLARE_TUNNEL_TOKEN = os.environ.get("CLOUDFLARE_TUNNEL_TOKEN", "").strip()
-
-if CLOUDFLARE_TUNNEL_TOKEN:
-    print("🔒 Using Permanent Cloudflare Named Tunnel Token!")
-    tunnel_cmd = ["cloudflared", "tunnel", "run", "--token", CLOUDFLARE_TUNNEL_TOKEN]
-else:
-    tunnel_cmd = ["cloudflared", "tunnel", "--url", "http://127.0.0.1:8000"]
-
-tunnel_process = subprocess.Popen(
-    tunnel_cmd,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-    text=True
-)
-
-def extract_tunnel_url():
-    if CLOUDFLARE_TUNNEL_TOKEN:
+for line in tunnel_process.stderr:
+    match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
+    if match:
+        url = match.group(0)
         print("\n" + "="*65)
-        print("🎉 PERMANENT CLOUDFLARE TUNNEL IS RUNNING!")
-        print("🔗 Your permanent custom domain is online and connected!")
+        print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE!")
+        print(f"🔗 YOUR BACKEND URL: {url}")
+        print(f"⏱️ SESSION LIMIT: {SESSION_LIMIT_MINUTES} mins | IDLE AUTO-STOP: {IDLE_TIMEOUT_MINUTES} mins")
         print("="*65)
-        return
+        print("👉 Copy this URL and paste it into Settings (⚙️) on https://buckbuck.pages.dev")
+        print("="*65)
+        break
 
-    for line in tunnel_process.stderr:
-        match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
-        if match:
-            url = match.group(0)
+# ------------------------------------------------------------------------------
+# 🛡️ AUTOMATED GPU PRESERVATION WATCHDOG
+# ------------------------------------------------------------------------------
+def session_watchdog():
+    while True:
+        time.sleep(30)
+        elapsed = (time.time() - SERVER_START_TIME) / 60
+        idle = (time.time() - LAST_ACTIVITY_TIME) / 60
+
+        # Check for Session Expiry
+        if elapsed >= SESSION_LIMIT_MINUTES:
             print("\n" + "="*65)
-            print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS READY AND ONLINE!")
-            print(f"🔗 YOUR FULL-STACK BACKEND URL: {url}")
+            print(f"🛑 [WATCHDOG] Session limit of {SESSION_LIMIT_MINUTES} mins reached!")
+            print("💾 Models safely preserved in Google Drive.")
+            print("🛡️ Releasing Colab GPU to protect your daily compute quota...")
             print("="*65)
-            print("👉 Copy this URL and paste it into Settings (⚙️) on https://buckbuck.pages.dev")
-            print("⚡ Features Enabled: Real Python GPU Execution, Live Matplotlib Plots, RAG Search & FlashAttention")
-            print("="*65)
+            shutdown_backend()
             break
 
-threading.Thread(target=extract_tunnel_url, daemon=True).start()
+        # Check for Idle Timeout
+        if AUTO_SHUTDOWN_ON_IDLE and idle >= IDLE_TIMEOUT_MINUTES:
+            print("\n" + "="*65)
+            print(f"💤 [WATCHDOG] Inactive for {IDLE_TIMEOUT_MINUTES} mins. Auto-stopping GPU...")
+            print("💾 Models safely preserved in Google Drive.")
+            print("="*65)
+            shutdown_backend()
+            break
 
-# COLAB ANTI-DISCONNECT & KEEP-ALIVE LOOP
-def colab_heartbeat():
-    while True:
-        time.sleep(180)
+def shutdown_backend():
+    try:
+        tunnel_process.kill()
+    except:
+        pass
+    if AUTO_RELEASE_GPU:
+        try:
+            from google.colab import runtime
+            runtime.unassign()
+        except:
+            os._exit(0)
+    else:
+        os._exit(0)
 
-threading.Thread(target=colab_heartbeat, daemon=True).start()
+threading.Thread(target=session_watchdog, daemon=True).start()
 
 while True:
     time.sleep(60)

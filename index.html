@@ -1346,15 +1346,34 @@
       }
     }
 
-    // QUERY FASTAPI HEALTHCHECK FOR LIVE VRAM STATS
+    // QUERY FASTAPI HEALTHCHECK FOR LIVE VRAM STATS & SESSION COUNTDOWN
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
       try {
         const res = await fetch(`${backendUrl}/api/health`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           const data = await res.json();
-          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
-          badge.textContent = `T4 (${data.vram_free || '15GB'} Free)`;
+          let label = "T4 GPU";
+          let colorClasses = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+          
+          if (data.session_remaining_minutes !== undefined) {
+            const mins = data.session_remaining_minutes;
+            if (mins <= 15) {
+              colorClasses = "bg-amber-500/15 text-amber-300 border-amber-500/30";
+              label = `T4 (${mins}m left ⚠️)`;
+            } else if (mins >= 60) {
+              const h = Math.floor(mins / 60);
+              const m = mins % 60;
+              label = `T4 (${h}h ${m}m left)`;
+            } else {
+              label = `T4 (${mins}m left)`;
+            }
+          } else if (data.vram_free) {
+            label = `T4 (${data.vram_free} Free)`;
+          }
+
+          badge.className = `text-[10px] px-2.5 py-0.5 rounded-full border font-medium hidden sm:inline ${colorClasses}`;
+          badge.textContent = label;
           return true;
         }
       } catch (e) {
@@ -1372,6 +1391,9 @@
       badge.textContent = "Offline";
       return false;
     }
+
+    // Auto-poll backend status and session countdown every 30 seconds
+    setInterval(checkBackendStatus, 30000);
 
     async function searchDuckDuckGo(query) {
       try {
