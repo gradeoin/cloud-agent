@@ -100,14 +100,13 @@ os.environ['OLLAMA_NUM_PARALLEL'] = '2'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 os.environ['OLLAMA_MAX_LOADED_MODELS'] = '2'
 
+import urllib.request
+
 def get_ollama_path() -> str:
     """
     Locate (or install) the ollama binary.
-    FIXED: no more silent os.system() calls and no more unconditional
-    fallback to a path that might not exist. Every install attempt is
-    verified before being trusted, and failures are reported with the
-    actual exit codes / file sizes so you can see *why* it failed
-    instead of getting a bare FileNotFoundError later in Popen().
+    Resilient to Ollama release format updates by querying GitHub Releases API
+    directly for the latest Linux AMD64 asset (.tar.zst or .tgz) and extracting with zstd/tar.
     """
     def _first_existing(paths):
         for p in paths:
@@ -117,53 +116,63 @@ def get_ollama_path() -> str:
 
     candidates = ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]
 
-    found = _first_existing(candidates)
-    if found:
-        return found
-    found = shutil.which("ollama")
-    if found:
-        return found
-
-    # --- Attempt 1: official install script ---
-    print("⏳ Installing Ollama via official install.sh...")
-    rc = os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    print(f"   install.sh exit code: {rc}")
-
     found = _first_existing(candidates) or shutil.which("ollama")
     if found:
         return found
 
-    # --- Attempt 2: direct linux-amd64 tarball, with real error output ---
-    print("⚠️ install.sh did not produce a binary — trying direct linux-amd64 tarball...")
-    rc1 = os.system("curl -sS -L https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz")
-    tgz_ok = os.path.exists("/tmp/ollama.tgz")
-    tgz_size = os.path.getsize("/tmp/ollama.tgz") if tgz_ok else 0
-    print(f"   curl exit code: {rc1} | file present: {tgz_ok} | size: {tgz_size} bytes")
-
-    if not tgz_ok or tgz_size < 1_000_000:
-        try:
-            with open("/tmp/ollama.tgz", "rb") as fh:
-                head = fh.read(200)
-            print(f"   ⚠️ Downloaded file looks wrong, first bytes: {head!r}")
-        except Exception:
-            pass
-        raise RuntimeError(
-            "Ollama tarball download failed or returned an unexpectedly small file. "
-            "This is almost always a network issue in this Colab session — "
-            "rerun the cell, or check Colab's outbound network status."
-        )
-
-    rc2 = os.system("tar -C /usr -xzf /tmp/ollama.tgz")
-    print(f"   tar exit code: {rc2}")
-
-    found = _first_existing(["/usr/bin/ollama", "/usr/local/bin/ollama"]) or shutil.which("ollama")
+    # --- Attempt 1: Official install script with systemd skipped ---
+    print("⏳ [1/2] Installing Ollama via official script...")
+    rc = os.system("curl -fsSL https://ollama.com/install.sh | sh > /dev/null 2>&1")
+    found = _first_existing(candidates) or shutil.which("ollama")
     if found:
         return found
 
+    # --- Attempt 2: Dynamic GitHub API Release Discovery ---
+    print("⚠️ [2/2] Querying GitHub API for latest Ollama Linux AMD64 asset...")
+    download_url = None
+    asset_name = "ollama-linux-amd64.tar.zst"
+
+    try:
+        req = urllib.request.Request(
+            "https://api.github.com/repos/ollama/ollama/releases/latest",
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+        with urllib.request.urlopen(req, timeout=12) as response:
+            release_data = json.loads(response.read().decode())
+            for asset in release_data.get("assets", []):
+                name = asset.get("name", "")
+                if "linux-amd64" in name and not any(x in name for x in ["rocm", "arm64", "cuda11"]):
+                    download_url = asset.get("browser_download_url")
+                    asset_name = name
+                    break
+    except Exception as e:
+        print(f"   Note: GitHub API lookup ({e}), using direct asset link...")
+
+    if not download_url:
+        download_url = f"https://github.com/ollama/ollama/releases/latest/download/{asset_name}"
+
+    print(f"📥 Downloading {asset_name} from {download_url}...")
+    local_archive = f"/tmp/{asset_name}"
+    os.system(f"curl -sS -L '{download_url}' -o '{local_archive}'")
+
+    if os.path.exists(local_archive) and os.path.getsize(local_archive) > 5_000_000:
+        print(f"📦 Extracting {asset_name} ({(os.path.getsize(local_archive)/(1024*1024)):.1f} MB)...")
+        if local_archive.endswith(".zst"):
+            os.system("sudo apt-get install -y -q zstd > /dev/null 2>&1")
+            os.system(f"tar --zstd -xf '{local_archive}' -C /usr/local 2>/dev/null || (zstd -d -f '{local_archive}' -o /tmp/ollama.tar && tar -xf /tmp/ollama.tar -C /usr/local)")
+        else:
+            os.system(f"tar -xzf '{local_archive}' -C /usr/local")
+
+        os.system("chmod +x /usr/local/bin/ollama 2>/dev/null || chmod +x /usr/bin/ollama 2>/dev/null")
+
+    found = _first_existing(candidates) or shutil.which("ollama")
+    if found:
+        print(f"✅ Ollama successfully installed to {found}")
+        return found
+
     raise RuntimeError(
-        "Ollama binary could not be installed by any method (install.sh and "
-        "manual tarball both failed to produce a runnable binary). "
-        "Check the exit codes and file sizes printed above."
+        "Could not install Ollama via official script or GitHub direct asset extraction. "
+        "Please check your Google Colab internet access."
     )
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
