@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED v4)
+# 🚀 BUCKBUCK AI • ENTERPRISE COLAB BACKEND (HARDENED v4.1 — FIXED OLLAMA INSTALL)
 # VISION AI · DATA SCIENCE SUITE · AUTO-PIP · WHISPER GPU · HARDENED SANDBOX
 # ==============================================================================
 
@@ -22,7 +22,7 @@ USAGE_LOG_PATH_LOCAL = '/content/buckbuck_usage_log.json'
 GPU_TRUE_IDLE_UTIL_PCT = 3          # nvidia-smi util% below which GPU is idle
 # ------------------------------------------------------------------------------
 
-import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile
+import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile, shutil
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
@@ -100,27 +100,71 @@ os.environ['OLLAMA_NUM_PARALLEL'] = '2'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 os.environ['OLLAMA_MAX_LOADED_MODELS'] = '2'
 
-import shutil
-
 def get_ollama_path() -> str:
-    for candidate in ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]:
-        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-            return candidate
+    """
+    Locate (or install) the ollama binary.
+    FIXED: no more silent os.system() calls and no more unconditional
+    fallback to a path that might not exist. Every install attempt is
+    verified before being trusted, and failures are reported with the
+    actual exit codes / file sizes so you can see *why* it failed
+    instead of getting a bare FileNotFoundError later in Popen().
+    """
+    def _first_existing(paths):
+        for p in paths:
+            if os.path.exists(p) and os.access(p, os.X_OK):
+                return p
+        return None
+
+    candidates = ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]
+
+    found = _first_existing(candidates)
+    if found:
+        return found
     found = shutil.which("ollama")
     if found:
         return found
-    print("⏳ Installing Ollama binary...")
-    os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    for candidate in ["/usr/local/bin/ollama", "/usr/bin/ollama", "/bin/ollama"]:
-        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-            return candidate
-    found = shutil.which("ollama")
+
+    # --- Attempt 1: official install script ---
+    print("⏳ Installing Ollama via official install.sh...")
+    rc = os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    print(f"   install.sh exit code: {rc}")
+
+    found = _first_existing(candidates) or shutil.which("ollama")
     if found:
         return found
-    # Fallback to direct tar extraction
-    print("⚠️ Standard script missed, extracting direct linux-amd64 binary...")
-    os.system("curl -s -L https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz && tar -C /usr -xzf /tmp/ollama.tgz > /dev/null 2>&1")
-    return "/usr/bin/ollama" if os.path.exists("/usr/bin/ollama") else "/usr/local/bin/ollama"
+
+    # --- Attempt 2: direct linux-amd64 tarball, with real error output ---
+    print("⚠️ install.sh did not produce a binary — trying direct linux-amd64 tarball...")
+    rc1 = os.system("curl -sS -L https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz")
+    tgz_ok = os.path.exists("/tmp/ollama.tgz")
+    tgz_size = os.path.getsize("/tmp/ollama.tgz") if tgz_ok else 0
+    print(f"   curl exit code: {rc1} | file present: {tgz_ok} | size: {tgz_size} bytes")
+
+    if not tgz_ok or tgz_size < 1_000_000:
+        try:
+            with open("/tmp/ollama.tgz", "rb") as fh:
+                head = fh.read(200)
+            print(f"   ⚠️ Downloaded file looks wrong, first bytes: {head!r}")
+        except Exception:
+            pass
+        raise RuntimeError(
+            "Ollama tarball download failed or returned an unexpectedly small file. "
+            "This is almost always a network issue in this Colab session — "
+            "rerun the cell, or check Colab's outbound network status."
+        )
+
+    rc2 = os.system("tar -C /usr -xzf /tmp/ollama.tgz")
+    print(f"   tar exit code: {rc2}")
+
+    found = _first_existing(["/usr/bin/ollama", "/usr/local/bin/ollama"]) or shutil.which("ollama")
+    if found:
+        return found
+
+    raise RuntimeError(
+        "Ollama binary could not be installed by any method (install.sh and "
+        "manual tarball both failed to produce a runnable binary). "
+        "Check the exit codes and file sizes printed above."
+    )
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
 print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
@@ -339,7 +383,7 @@ def _run_code_in_subprocess(code: str, timeout: float, allow_pip_retry: bool = T
     else:
         result = {"success": False, "stdout": stdout, "stderr": stderr, "error": "No output produced", "plots": []}
 
-    # DYNAMIC PIP AUTO-INSTALLER: If missing module, auto-install and retry!
+    # DYNAMIC PIP AUTO-INSTALLER
     if not result.get("success") and allow_pip_retry:
         err_text = result.get("stderr", "") + result.get("error", "")
         missing_match = re.search(r"No module named '([a-zA-Z0-9_-]+)'", err_text)
@@ -381,18 +425,18 @@ async def transcribe_audio(file: UploadFile = File(...), _=Depends(require_api_k
         import whisper
         if whisper_model is None:
             whisper_model = whisper.load_model("base", device="cuda" if os.path.exists('/dev/nvidia0') else "cpu")
-            
+
         with tempfile.NamedTemporaryFile("wb", suffix=".webm", delete=False) as f:
             content = await file.read()
             f.write(content)
             tmp_audio_path = f.name
-            
+
         transcription = whisper_model.transcribe(tmp_audio_path)
         try:
             os.unlink(tmp_audio_path)
         except Exception:
             pass
-            
+
         return {"success": True, "text": transcription.get("text", "").strip()}
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -488,7 +532,7 @@ threading.Thread(target=watch_tunnel_output, daemon=True).start()
 if tunnel_url_found.wait(timeout=30):
     url = tunnel_url_holder["url"]
     print("\n" + "=" * 68)
-    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v4 MULTIMODAL)!")
+    print("🎉 BUCKBUCK ENTERPRISE GPU BACKEND IS ONLINE (v4.1 MULTIMODAL)!")
     print(f"🔗 BACKEND URL   : {url}")
     print(f"🔑 API KEY       : {API_KEY}")
     print(f"⏱️ SESSION LIMIT  : {EFFECTIVE_SESSION_LIMIT_MINUTES} mins (weekly-budget adjusted)")
@@ -496,7 +540,6 @@ if tunnel_url_found.wait(timeout=30):
     print(f"📊 WEEKLY BUDGET : {_minutes_remaining_this_week:.0f} / {WEEKLY_BUDGET_MINUTES} mins remaining")
     print("=" * 68)
     print("👉 Paste both the URL and API key into Settings (⚙️) on https://buckbuck.pages.dev")
-    print("⚡ New: Vision AI (LLaVA), Auto-Pip, Whisper GPU Voice & ML pre-installed!")
     print("=" * 68)
 else:
     print("⚠️ Cloudflare tunnel did not report a URL within 30s. Check logs.")
