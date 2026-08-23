@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuckBuck AI Studio • Enterprise Cloud Intelligence</title>
+  <title>BuckBuck Studio • Enterprise Cloud Intelligence</title>
   <!-- Google Fonts & Tailwind CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Markdown, Code Highlighting & DOMPurify -->
+  <!-- Markdown, Code Highlighting -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark-dimmed.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
@@ -28,15 +27,6 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
-          },
-          colors: {
-            brand: {
-              50: '#ecfeff',
-              100: '#cffafe',
-              400: '#22d3ee',
-              500: '#06b6d4',
-              600: '#0891b2',
-            }
           }
         }
       }
@@ -44,25 +34,35 @@
   </script>
 
   <style>
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #070a11; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    .prose pre { background: #070a13 !important; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin: 12px 0; }
+    .prose pre { background: #060910 !important; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin: 12px 0; }
     .prose code { color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
-    .cursor-blink { display: inline-block; width: 6px; height: 15px; background: #06b6d4; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #38bdf8; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-panel { background: rgba(13, 18, 30, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    /* Animated SVGs */
+    @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
+    @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes dash { 0% { stroke-dashoffset: 100; } 100% { stroke-dashoffset: 0; } }
+    .anim-pulse { animation: pulse-slow 3s ease-in-out infinite; }
+    .anim-spin { animation: spin-slow 12s linear infinite; }
   </style>
 </head>
 <body class="bg-[#070a11] text-slate-100 flex h-screen overflow-hidden font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
-  <div id="auth-overlay" class="fixed inset-0 bg-[#070a11]/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-md rounded-3xl p-8 shadow-2xl text-center space-y-6 border border-slate-800/80">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center mx-auto shadow-2xl shadow-cyan-500/20">
-        <i class="fa-solid fa-bolt text-slate-950 text-2xl"></i>
+  <div id="auth-overlay" class="fixed inset-0 bg-[#070a11]/95 backdrop-blur-2xl z-50 flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-8 shadow-2xl text-center space-y-6 border border-slate-800/90">
+      <!-- Animated Logo SVG -->
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center mx-auto shadow-2xl shadow-cyan-500/20 anim-pulse">
+        <svg class="w-8 h-8 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
       </div>
       <div>
         <h2 class="text-2xl font-extrabold tracking-tight gradient-text">BuckBuck Studio</h2>
@@ -72,63 +72,72 @@
       <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 p-3.5 rounded-xl text-left font-medium"></div>
 
       <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-bold py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-xl shadow-white/5">
-        <i class="fa-brands fa-google text-rose-500 text-base"></i> Continue with Google
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/>
+          <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
+          <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.1-2 .4-2.7L1.6 6.4C.6 8.3 0 10.5 0 12s.6 3.7 1.6 5.6l3.7-2.9z"/>
+          <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.4-6.7-5.3L1.6 15.9C3.5 19.7 7.4 23 12 23z"/>
+        </svg>
+        Continue with Google
       </button>
 
-      <div class="flex items-center justify-center gap-4 text-[11px] text-slate-500 pt-2 font-medium">
-        <span>🔒 Zero Trust Security</span>
+      <div class="flex items-center justify-center gap-3 text-[11px] text-slate-500 pt-2 font-medium">
+        <span>Zero Trust Authenticated</span>
         <span>•</span>
-        <span>⚡ DeepSeek-R1 7B</span>
+        <span>DeepSeek-R1 Engine</span>
       </div>
     </div>
   </div>
 
   <!-- SIDEBAR (Chat History & Workspace Management) -->
-  <aside id="sidebar" class="w-72 bg-[#0b0f19] border-r border-slate-800/80 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
+  <aside id="sidebar" class="w-72 bg-[#0a0e1a] border-r border-slate-800/80 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
     <!-- Brand Header -->
     <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
-          <i class="fa-solid fa-sparkles text-slate-950 text-xs"></i>
+          <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
         </div>
         <div class="leading-tight">
           <div class="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
-            BuckBuck <span class="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.2 rounded-md font-bold uppercase">Pro</span>
+            BuckBuck <span class="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Studio</span>
           </div>
-          <span class="text-[10px] text-slate-400">AI Artifacts Engine</span>
+          <span class="text-[10px] text-slate-400 font-medium">Cloud Neural Workspace</span>
         </div>
       </div>
       <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-1.5">
-        <i class="fa-solid fa-xmark text-sm"></i>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
 
     <!-- New Chat Action -->
     <div class="p-3">
       <button onclick="startNewChat()" class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:opacity-90 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 transition active:scale-98">
-        <i class="fa-solid fa-plus text-xs"></i> New Conversation
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Conversation
       </button>
     </div>
 
     <!-- Conversation List -->
     <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1" id="chat-history-list">
-      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Saved Sessions</div>
+      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Conversation History</div>
       <div id="history-items" class="space-y-1"></div>
     </div>
 
-    <!-- Sidebar Footer (Profile & Status) -->
+    <!-- Sidebar Footer -->
     <div class="p-3.5 border-t border-slate-800/80 bg-[#070a11]/60 flex items-center justify-between">
       <div class="flex items-center gap-2.5 min-w-0">
         <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 shrink-0">
         <div class="min-w-0">
           <div id="user-name" class="font-bold text-slate-200 text-xs truncate">Administrator</div>
-          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Synced
+          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1.5 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Firestore Synced
           </div>
         </div>
       </div>
       <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-400 p-2 rounded-xl hover:bg-slate-800/60 transition shrink-0" title="Sign Out">
-        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
     </div>
   </aside>
@@ -143,14 +152,14 @@
     <header class="glass-panel border-b border-slate-800/60 px-4 sm:px-6 py-3 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-1.5">
-          <i class="fa-solid fa-bars text-sm"></i>
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
         <div>
           <h1 class="font-extrabold text-sm sm:text-base flex items-center gap-2 text-slate-100">
             Workstation
             <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">Connecting GPU...</span>
           </h1>
-          <p class="text-[10px] text-slate-400">DeepSeek-R1 (7B) • Real-Time Artifacts • Multi-Device Sync</p>
+          <p class="text-[10px] text-slate-400 font-medium">DeepSeek-R1 (7B) • Context Memory Enabled • Live Artifacts</p>
         </div>
       </div>
 
@@ -158,21 +167,21 @@
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- Live Search Toggle -->
         <label class="flex items-center gap-2 cursor-pointer bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-3 py-1.5 rounded-xl transition text-xs select-none shadow-sm">
-          <i class="fa-solid fa-globe text-cyan-400 text-xs"></i>
+          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
           <span class="hidden sm:inline font-semibold text-slate-300">Live Search</span>
           <input type="checkbox" id="websearch-toggle" class="sr-only peer">
           <div class="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500 relative"></div>
         </label>
 
         <!-- Export Chat -->
-        <button onclick="exportChatAsMarkdown()" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-xl text-slate-300 transition flex items-center gap-1.5" title="Export Chat as Markdown">
-          <i class="fa-solid fa-download text-xs text-indigo-400"></i>
+        <button onclick="exportChatAsMarkdown()" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-xl text-slate-300 transition flex items-center gap-1.5" title="Export Conversation as Markdown">
+          <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           <span class="hidden md:inline font-semibold">Export</span>
         </button>
 
         <!-- Settings Button -->
         <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center transition text-slate-300 shadow-sm">
-          <i class="fa-solid fa-sliders text-xs"></i>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
     </header>
@@ -180,50 +189,55 @@
     <!-- Chat Messages Scroll Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto">
       
-      <!-- Welcome Hero (Senior Marketing Brand Style) -->
+      <!-- Welcome Hero -->
       <div id="welcome-banner" class="space-y-6 py-6">
         <div class="text-center space-y-3 max-w-lg mx-auto">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Claude-Style Interactive Artifacts Ready
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Interactive Artifacts & Context Memory Active
           </div>
           <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">What shall we build today?</h2>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Harness deep reasoning, live web intelligence, document analysis, and instant live code previewing in one unified cloud workspace.
+            Multi-turn contextual reasoning, live web intelligence, document analysis, and sandboxed code execution in one unified workspace.
           </p>
         </div>
 
         <!-- Quick Starter Action Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto pt-2">
-          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
+          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS, hero section, and responsive design.')" 
             class="glass-panel hover:border-cyan-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-cyan-500/5 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-cyan-400">
-              <i class="fa-solid fa-code text-cyan-400"></i> Generate Web App / Landing Page
+              <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              Generate Web App & Artifact
             </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Creates complete interactive HTML/JS code with Live Preview artifact.</p>
+            <p class="text-[11px] text-slate-400 leading-snug">Writes complete interactive HTML/JS code with Live Preview sandbox.</p>
           </div>
 
-          <div onclick="injectPrompt('Write a full marketing strategy and launch roadmap for a high-ticket B2B software product.')" 
+          <div onclick="injectPrompt('Write a full senior go-to-market strategy, value proposition framework, and launch roadmap for a B2B SaaS product.')" 
             class="glass-panel hover:border-indigo-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-indigo-500/5 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-indigo-400">
-              <i class="fa-solid fa-bullhorn text-indigo-400"></i> Senior Marketing Strategy
+              <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Senior Marketing & Growth Strategy
             </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Market research, conversion copy, and growth funnels.</p>
+            <p class="text-[11px] text-slate-400 leading-snug">Conversion funnels, messaging frameworks, and growth channels.</p>
           </div>
 
-          <div onclick="injectPrompt('Explain how DeepSeek-R1 uses reinforcement learning and chain-of-thought to achieve frontier reasoning performance.')" 
+          <div onclick="injectPrompt('Analyze the architecture and mathematical principles behind DeepSeek-R1 chain-of-thought reasoning models.')" 
             class="glass-panel hover:border-purple-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-purple-500/5 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-purple-400">
-              <i class="fa-solid fa-brain text-purple-400"></i> Deep Logical Reasoning
+              <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+              Deep Logical Reasoning
             </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Complex math, algorithm design, and step-by-step logic.</p>
+            <p class="text-[11px] text-slate-400 leading-snug">Complex algorithms, math proofs, and multi-step reasoning traces.</p>
           </div>
 
-          <div onclick="injectPrompt('What are the top breaking developments in AI, GPU compute, and tech this week?')" 
+          <div onclick="injectPrompt('What are the newest breakthrough developments in AI, GPU infrastructure, and tech this week?')" 
             class="glass-panel hover:border-emerald-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-emerald-500/5 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-emerald-400">
-              <i class="fa-solid fa-globe text-emerald-400"></i> Real-Time Internet Search
+              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Real-Time Web Intelligence
             </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Searches the live web and synthesizes current facts.</p>
+            <p class="text-[11px] text-slate-400 leading-snug">Searches the live internet and synthesizes verified facts.</p>
           </div>
         </div>
       </div>
@@ -232,76 +246,73 @@
     <!-- Bottom Input & Attachment Bar -->
     <footer class="glass-panel border-t border-slate-800/80 p-3 sm:p-4">
       <div class="max-w-4xl mx-auto space-y-2">
-        <!-- File Attachment Chip (If file attached) -->
+        <!-- File Attachment Chip -->
         <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs w-fit text-cyan-300">
-          <i class="fa-solid fa-paperclip text-xs"></i>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
           <button onclick="removeAttachedFile()" class="text-slate-400 hover:text-rose-400 ml-1">
-            <i class="fa-solid fa-xmark"></i>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
         <div class="flex gap-2 items-end">
           <!-- Attachment Button -->
           <input type="file" id="file-upload-input" class="hidden" onchange="handleFileUpload(event)">
-          <button onclick="document.getElementById('file-upload-input').click()" class="w-10 h-10 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-cyan-400 flex items-center justify-center transition shadow-sm shrink-0" title="Attach Document / Code File (.txt, .md, .py, .js, .json, .csv)">
-            <i class="fa-solid fa-paperclip text-sm"></i>
+          <button onclick="document.getElementById('file-upload-input').click()" class="w-10 h-10 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-cyan-400 flex items-center justify-center transition shadow-sm shrink-0" title="Attach Document / Code File">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
           <!-- Text Input -->
           <div class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
-            <textarea id="prompt-input" rows="1" placeholder="Message BuckBuck or drop files... (Shift+Enter for new line)"
+            <textarea id="prompt-input" rows="1" placeholder="Ask BuckBuck anything... (Shift+Enter for new line)"
               class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-36"></textarea>
           </div>
 
           <!-- Send Button -->
           <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
-            <i class="fa-solid fa-arrow-up text-sm font-extrabold"></i>
+            <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
     </footer>
   </div>
 
-  <!-- CLAUDE-STYLE ARTIFACTS / PREVIEW PANEL (Slide-over / Split View) -->
+  <!-- CLAUDE-STYLE ARTIFACTS / PREVIEW PANEL -->
   <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-[#090d16] border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
     <!-- Artifact Top Bar -->
     <div class="p-3.5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20 text-xs">
-          <i class="fa-solid fa-cube"></i>
+        <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
         </div>
         <div>
           <h3 id="artifact-title" class="font-bold text-xs text-white truncate max-w-xs">Interactive Artifact</h3>
-          <span class="text-[10px] text-slate-400">Live Sandboxed Environment</span>
+          <span class="text-[10px] text-slate-400 font-medium">Live Sandboxed Environment</span>
         </div>
       </div>
 
       <!-- Tab & Action Controls -->
       <div class="flex items-center gap-2">
         <div class="flex bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-xs font-semibold">
-          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950">Preview</button>
+          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold">Preview</button>
           <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white">Code</button>
         </div>
 
         <button onclick="downloadArtifactHTML()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Download HTML File">
-          <i class="fa-solid fa-download"></i>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
         <button onclick="copyArtifactCode()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Copy Code">
-          <i class="fa-regular fa-copy"></i>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         </button>
         <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs">
-          <i class="fa-solid fa-xmark text-sm"></i>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </div>
 
     <!-- Artifact Content Area -->
     <div class="flex-1 relative overflow-hidden bg-slate-950">
-      <!-- Live Preview Iframe -->
       <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
-      
-      <!-- Code View Tab -->
       <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#070a13] font-mono text-xs text-slate-200">
         <pre><code id="artifact-code-raw"></code></pre>
       </div>
@@ -313,10 +324,11 @@
     <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-800">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="font-extrabold text-base text-slate-100 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Security
+          <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings & Security
         </h3>
         <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-base">
-          <i class="fa-solid fa-xmark"></i>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
@@ -485,7 +497,7 @@
       promptInput.dispatchEvent(new Event('input'));
     }
 
-    // File Upload & Attachment Handling (Claude Style)
+    // File Attachment Handling
     function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -554,16 +566,16 @@
     function copyArtifactCode() {
       if (!activeArtifactCode) return;
       navigator.clipboard.writeText(activeArtifactCode);
-      alert("Artifact code copied to clipboard!");
+      alert("Artifact code copied to clipboard.");
     }
 
     function exportChatAsMarkdown() {
       const chat = conversations[currentChatId];
       if (!chat || !chat.messages.length) return alert("No messages to export.");
 
-      let md = `# ${chat.title}\nExported from BuckBuck AI Studio on ${new Date().toLocaleString()}\n\n---\n\n`;
+      let md = `# ${chat.title}\nExported from BuckBuck Studio on ${new Date().toLocaleString()}\n\n---\n\n`;
       chat.messages.forEach(m => {
-        md += `### ${m.sender === 'user' ? '👤 User' : '🤖 BuckBuck AI'}\n\n${m.content}\n\n`;
+        md += `### ${m.role === 'user' ? 'User' : 'BuckBuck AI'}\n\n${m.content}\n\n`;
       });
 
       const blob = new Blob([md], { type: "text/markdown" });
@@ -581,7 +593,7 @@
         <div id="welcome-banner" class="space-y-6 py-6">
           <div class="text-center space-y-3 max-w-lg mx-auto">
             <h2 class="text-3xl font-extrabold tracking-tight text-white">New Conversation</h2>
-            <p class="text-xs text-slate-400">DeepSeek-R1 (7B) is ready for deep reasoning & code generation.</p>
+            <p class="text-xs text-slate-400 font-medium">DeepSeek-R1 (7B) initialized with fresh context memory.</p>
           </div>
         </div>
       `;
@@ -599,7 +611,7 @@
       container.innerHTML = "";
 
       chat.messages.forEach(msg => {
-        appendMessageUI(msg.sender, msg.content, true);
+        appendMessageUI(msg.role, msg.content, true);
       });
 
       renderSidebarHistory();
@@ -620,7 +632,7 @@
       }
     }
 
-    function saveMessageToHistory(sender, text) {
+    function saveMessageToHistory(role, text) {
       if (!conversations[currentChatId]) {
         conversations[currentChatId] = {
           id: currentChatId,
@@ -629,7 +641,7 @@
           messages: []
         };
       }
-      conversations[currentChatId].messages.push({ sender, content: text });
+      conversations[currentChatId].messages.push({ role, content: text });
       localStorage.setItem("ai_conversations", JSON.stringify(conversations));
 
       if (db && currentUser) {
@@ -653,11 +665,11 @@
         div.onclick = () => loadChatSession(id);
         div.innerHTML = `
           <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-regular fa-message text-[11px] shrink-0"></i>
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             <span class="truncate">${item.title || "Conversation"}</span>
           </div>
           <button onclick="deleteChatSession('${id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-400 p-1 transition shrink-0" title="Delete">
-            <i class="fa-solid fa-trash-can text-[11px]"></i>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           </button>
         `;
         list.appendChild(div);
@@ -684,7 +696,7 @@
         const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold";
-          badge.textContent = "Colab Online (T4)";
+          badge.textContent = "Colab GPU Online";
           return true;
         }
       } catch (e) {
@@ -708,6 +720,7 @@
       } catch (err) { return ""; }
     }
 
+    // MULTI-TURN CONVERSATIONAL CONTEXT LOGIC (Like ChatGPT/Claude)
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -718,35 +731,52 @@
 
       let userDisplayContent = text;
       if (currentAttachedFile) {
-        userDisplayContent = `📎 **[Attached File: ${currentAttachedFile.name}]**\n\n${text}`;
+        userDisplayContent = `[Attached File: ${currentAttachedFile.name}]\n\n${text}`;
       }
 
       appendMessageUI("user", userDisplayContent, true);
       saveMessageToHistory("user", userDisplayContent);
 
-      const aiMsgId = appendMessageUI("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> Connecting...', false);
+      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-cyan-400 font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Connecting neural engine...</div>', false);
+      
       let finalPrompt = text;
-
       if (currentAttachedFile) {
         finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
         removeAttachedFile();
       }
 
       if (isWebSearch) {
-        updateMessageUI(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Fetching real-time web data...');
+        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2 text-cyan-400 font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Fetching real-time web intelligence...</div>');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
           finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer using search context above.`;
         }
       }
 
+      // Build Multi-Turn History Payload (/api/chat endpoint)
+      const currentHistory = conversations[currentChatId]?.messages || [];
+      const messagesPayload = currentHistory.map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
+      }));
+
+      // Replace last message with finalPrompt (which might have web search / file content injected)
+      if (messagesPayload.length > 0) {
+        messagesPayload[messagesPayload.length - 1].content = finalPrompt;
+      }
+
       try {
         updateMessageUI(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
 
-        const response = await fetch(`${backendUrl}/api/generate`, {
+        // MULTI-TURN CHAT API (Maintains full conversational memory!)
+        const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: modelName, prompt: finalPrompt, stream: true })
+          body: JSON.stringify({
+            model: modelName,
+            messages: messagesPayload,
+            stream: true
+          })
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -765,8 +795,8 @@
           for (const line of lines) {
             try {
               const parsed = JSON.parse(line);
-              if (parsed.response) {
-                accumulatedText += parsed.response;
+              if (parsed.message && parsed.message.content) {
+                accumulatedText += parsed.message.content;
                 updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText) + '<span class="cursor-blink"></span>');
               }
             } catch (e) {}
@@ -775,18 +805,17 @@
 
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText));
         document.querySelectorAll('pre code').forEach(hljs.highlightElement);
-        saveMessageToHistory("ai", accumulatedText);
+        saveMessageToHistory("assistant", accumulatedText);
 
       } catch (error) {
-        updateMessageUI(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not stream from Google Colab. Make sure your notebook is running.</p>`);
+        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not stream from Google Colab. Verify that your Colab GPU notebook is active.</p>`);
       }
     }
 
-    // Parse Response & Extract Claude-Style Interactive Artifacts
+    // Parse Response & Extract Claude-Style Interactive Artifacts (Custom SVGs)
     function renderResponseWithArtifacts(text) {
       let html = marked.parse(text);
 
-      // Check if HTML/SVG/JS code block exists to create artifact launcher
       const codeMatch = text.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
       if (codeMatch && codeMatch[1].trim().length > 50) {
         const rawCode = codeMatch[1].trim();
@@ -795,16 +824,17 @@
           <div class="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/30 to-purple-950/40 border border-cyan-500/30 flex items-center justify-between shadow-lg shadow-cyan-500/5">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center border border-cyan-500/30">
-                <i class="fa-solid fa-cube text-xs"></i>
+                <svg class="w-4 h-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
               </div>
               <div>
-                <div class="font-bold text-xs text-white">Interactive Web Artifact Created</div>
-                <div class="text-[10px] text-cyan-300/80">Click to run in live sandboxed preview</div>
+                <div class="font-bold text-xs text-white">Interactive Web Artifact</div>
+                <div class="text-[10px] text-cyan-300/80">Click to execute in live sandboxed preview</div>
               </div>
             </div>
             <button onclick="openArtifactDrawer('Live Preview', decodeURIComponent('${encodedCode}'))" 
               class="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-md shadow-cyan-500/20 flex items-center gap-1.5 active:scale-95">
-              <i class="fa-solid fa-play text-[10px]"></i> Live Preview
+              <svg class="w-3 h-3 text-slate-950 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Live Preview
             </button>
           </div>
         `;
@@ -813,15 +843,18 @@
       return html;
     }
 
-    function appendMessageUI(sender, content, isMarkdown = false) {
+    function appendMessageUI(role, content, isMarkdown = false) {
       const container = document.getElementById("chat-container");
       const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
-      const isUser = sender === "user";
+      const isUser = role === "user";
       
+      const userIconSvg = `<svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+      const aiIconSvg = `<svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+
       const html = `
         <div id="${msgId}" class="flex gap-3.5 items-start ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isUser ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 text-slate-950 font-extrabold text-xs shadow-md' : 'bg-slate-900 border border-slate-800 text-cyan-400 text-sm shadow-md'}">
-            <i class="fa-solid ${isUser ? 'fa-user' : 'fa-brain'}"></i>
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isUser ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 shadow-md' : 'bg-slate-900 border border-slate-800 shadow-md'}">
+            ${isUser ? userIconSvg : aiIconSvg}
           </div>
           <div class="max-w-[85%] rounded-3xl px-5 py-3.5 text-sm ${isUser ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white rounded-tr-none shadow-md shadow-cyan-500/10 font-medium' : 'glass-panel border border-slate-800/80 rounded-tl-none prose prose-invert prose-sm max-w-none text-slate-200 shadow-xl'}">
             ${isMarkdown ? renderResponseWithArtifacts(content) : content}
