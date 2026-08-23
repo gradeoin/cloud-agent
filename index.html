@@ -59,18 +59,75 @@
   </script>
 
   <style>
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #131314; }
     ::-webkit-scrollbar-thumb { background: #282a2c; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #333538; }
     
-    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 12px 0; border-radius: 16px; }
-    .prose code { color: #a8c7fa; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
-    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+    /* ENHANCED READABLE TYPOGRAPHY (Large, Crisp & Airy) */
+    .prose-readable {
+      font-size: 15.5px;
+      line-height: 1.75;
+      color: #e3e3e3;
+    }
+    .prose-readable p {
+      margin-bottom: 1.15em;
+    }
+    .prose-readable h1, .prose-readable h2, .prose-readable h3, .prose-readable h4 {
+      color: #f1f3f4;
+      font-weight: 600;
+      margin-top: 1.4em;
+      margin-bottom: 0.6em;
+      letter-spacing: -0.01em;
+    }
+    .prose-readable h1 { font-size: 1.45em; color: #a8c7fa; }
+    .prose-readable h2 { font-size: 1.25em; border-bottom: 1px solid rgba(68, 71, 70, 0.35); padding-bottom: 0.35em; }
+    .prose-readable h3 { font-size: 1.1em; }
+    .prose-readable ul, .prose-readable ol {
+      margin-bottom: 1.15em;
+      padding-left: 1.35em;
+    }
+    .prose-readable ul { list-style-type: disc; }
+    .prose-readable ol { list-style-type: decimal; }
+    .prose-readable li {
+      margin-bottom: 0.45em;
+    }
+    .prose-readable blockquote {
+      border-left: 3px solid #a8c7fa;
+      background: rgba(168, 199, 250, 0.06);
+      padding: 10px 16px;
+      border-radius: 0 14px 14px 0;
+      margin: 1.2em 0;
+      color: #c4c7c5;
+    }
+    .prose-readable strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .prose-readable table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2em 0;
+      font-size: 0.9em;
+    }
+    .prose-readable th, .prose-readable td {
+      border: 1px solid #282a2c;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .prose-readable th {
+      background: #1e1f20;
+      color: #a8c7fa;
+      font-weight: 600;
+    }
+    
+    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 14px 0; border-radius: 16px; }
+    .prose code { color: #a8c7fa; font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .cursor-blink { display: inline-block; width: 6px; height: 15px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     
-    .katex-display { margin: 0.8em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
-    .katex { font-size: 1.05em; color: #e3e3e3; }
+    .katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
+    .katex { font-size: 1.08em; color: #e3e3e3; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -200,7 +257,7 @@
     <!-- Main Header -->
     <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
       <div class="flex items-center gap-3">
-        <!-- Hamburger Button appears in main header ONLY when sidebar is collapsed on desktop -->
+        <!-- Hamburger Button -->
         <button id="main-hamburger-btn" onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition hidden" title="Expand sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
@@ -233,7 +290,7 @@
     </header>
 
     <!-- Chat Messages Scroll Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-3xl w-full mx-auto relative">
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-7 max-w-3xl w-full mx-auto relative">
       
       <!-- Gemini-Style Welcome Header -->
       <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
@@ -250,7 +307,7 @@
         </div>
 
         <!-- M3 Suggestion Chips -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <div onclick="injectPrompt('Explain the Self-Attention mechanism in Transformers with mathematical formulas and step-by-step intuition.')" 
             class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
             <span class="text-xs text-m3-onSurface font-medium">Explain Self-Attention math & matrices</span>
@@ -443,7 +500,7 @@
     const scrollBottomBtn = document.getElementById("scroll-bottom-container");
 
     chatContainer.addEventListener("scroll", function() {
-      const threshold = 120;
+      const threshold = 140;
       const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight <= threshold;
       isUserScrolledUp = !isAtBottom;
       if (isUserScrolledUp) {
@@ -857,9 +914,9 @@
       appendMessageUI("user", userDisplayContent, true);
       saveMessageToHistory("user", userDisplayContent);
 
-      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating...</div>', false);
+      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating response...</div>', false);
       
-      // Smoothly scroll down so user sees their question and the response starting
+      // Smoothly scroll down so user sees response starting
       setTimeout(() => {
         const el = document.getElementById(aiMsgId);
         if (el) {
@@ -874,10 +931,10 @@
       }
 
       if (isWebSearch) {
-        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Searching web...</div>');
+        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Searching web for context...</div>');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
-          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer using search context above.`;
+          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer concisely using search context above.`;
         }
       }
 
@@ -970,14 +1027,14 @@
         const encodedCode = encodeURIComponent(rawCode);
 
         const header = document.createElement('div');
-        header.className = 'code-header-bar flex items-center justify-between px-3.5 py-1.5 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
+        header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
         
         let previewBtn = '';
         if (['html', 'xml', 'svg', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase())) {
           previewBtn = `
             <button onclick="openArtifactDrawer('${lang.toUpperCase()} Preview', decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-m3-primary flex items-center gap-1 text-[11px] font-sans font-medium text-m3-primary transition">
-              <svg class="w-3 h-3 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition">
+              <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span>Preview</span>
             </button>
           `;
@@ -985,11 +1042,11 @@
 
         header.innerHTML = `
           <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3.5">
             ${previewBtn}
             <button onclick="copyCodeText(this, decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-white flex items-center gap-1 text-[11px] font-sans font-medium text-m3-onSurfaceVariant transition">
-              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              class="hover:text-white flex items-center gap-1.5 text-xs font-sans font-medium text-m3-onSurfaceVariant transition">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
           </div>
@@ -1001,8 +1058,50 @@
       });
     }
 
+    // PARSE THINKING ACCORDION & ARTIFACTS
     function renderResponseWithArtifacts(text) {
-      let normalized = text
+      let thinkHtml = "";
+      let mainText = text;
+
+      // Extract <think> reasoning tags
+      const thinkMatch = text.match(/<think>([\s\S]*?)(?:<\/think>|$)/i);
+      if (thinkMatch) {
+        const thinkContent = thinkMatch[1].trim();
+        const isStillThinking = !text.includes("</think>");
+        mainText = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/i, "").trim();
+
+        if (isStillThinking) {
+          thinkHtml = `
+            <div class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/25 rounded-2xl p-3.5 shadow-sm">
+              <div class="flex items-center gap-2 text-xs font-medium text-m3-primary mb-2">
+                <svg class="w-3.5 h-3.5 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
+                Thinking through response...
+              </div>
+              <div class="text-xs text-m3-onSurfaceVariant font-mono whitespace-pre-wrap leading-relaxed opacity-75 max-h-36 overflow-y-auto">
+                ${thinkContent}
+              </div>
+            </div>
+          `;
+        } else if (thinkContent.length > 0) {
+          thinkHtml = `
+            <details class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/20 rounded-2xl overflow-hidden group shadow-sm">
+              <summary class="px-4 py-2.5 cursor-pointer font-medium text-xs text-m3-primary flex items-center justify-between select-none hover:bg-m3-surfaceContainer transition">
+                <span class="flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 00-8 8c0 3 2 5.5 4 7v3h8v-3c2-1.5 4-4 4-7a8 8 0 00-8-8z"/><path d="M9 22h6"/></svg>
+                  Thought Process (${Math.max(1, Math.round(thinkContent.split(' ').length / 15))}s)
+                </span>
+                <svg class="w-3.5 h-3.5 text-m3-onSurfaceVariant transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+              </summary>
+              <div class="px-4 py-3 border-t border-m3-outline/20 text-xs text-m3-onSurfaceVariant/85 font-mono whitespace-pre-wrap leading-relaxed bg-[#151517]">
+                ${thinkContent}
+              </div>
+            </details>
+          `;
+        }
+      }
+
+      // LaTeX equation normalizer
+      let normalized = mainText
         .replace(/\[\s*(\\text|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
           return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
         })
@@ -1011,30 +1110,32 @@
           return match;
         });
 
-      let html = marked.parse(normalized);
+      let parsedHtml = marked.parse(normalized);
 
-      const codeMatch = text.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
+      // Embedded Artifact Pill launcher
+      const codeMatch = mainText.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
       if (codeMatch && codeMatch[1].trim().length > 50) {
         const rawCode = codeMatch[1].trim();
         const encodedCode = encodeURIComponent(rawCode);
         const artifactPill = `
-          <div class="mt-4 p-3 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm">
+          <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2.5">
               <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
               </div>
-              <div class="font-medium text-xs text-m3-onSurface">Artifact generated</div>
+              <div class="font-medium text-xs text-m3-onSurface">Interactive Artifact Available</div>
             </div>
             <button onclick="openArtifactDrawer('Preview', decodeURIComponent('${encodedCode}'))" 
-              class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95">
+              class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm">
               <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Preview
             </button>
           </div>
         `;
-        html += artifactPill;
+        parsedHtml += artifactPill;
       }
-      return html;
+
+      return thinkHtml + parsedHtml;
     }
 
     function appendMessageUI(role, content, isMarkdown = false) {
@@ -1043,13 +1144,13 @@
       const isUser = role === "user";
 
       const html = `
-        <div id="${msgId}" class="flex gap-3.5 items-start msg-fade-in ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary shadow-sm'}">
+        <div id="${msgId}" class="flex gap-3.5 sm:gap-4 items-start msg-fade-in ${isUser ? 'flex-row-reverse' : ''}">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary shadow-sm'}">
             ${isUser ? 
               `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` : 
               `<svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none"><path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
           </div>
-          <div class="max-w-[85%] text-sm ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-3xl px-4 py-2.5 font-medium' : 'prose prose-invert prose-sm max-w-none text-m3-onSurface leading-relaxed pt-1'}">
+          <div class="max-w-[88%] ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-3xl px-4 py-2.5 text-[15px] font-medium' : 'prose-readable max-w-none text-m3-onSurface leading-relaxed'}">
             ${isMarkdown ? renderResponseWithArtifacts(content) : content}
           </div>
         </div>
