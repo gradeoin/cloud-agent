@@ -3,88 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Private Cloud AI Workstation</title>
-  <!-- Tailwind CSS & FontAwesome -->
+  <title>BuckBuck AI Studio • Enterprise Cloud Intelligence</title>
+  <!-- Google Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Markdown & Code Highlighting -->
+  
+  <!-- Markdown, Code Highlighting & DOMPurify -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark-dimmed.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    .prose pre { background: #090d16 !important; border-radius: 8px; padding: 12px; margin: 8px 0; }
-    .prose code { color: #38bdf8; }
-    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #38bdf8; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .prose pre { background: #070a13 !important; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin: 12px 0; }
+    .prose code { color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    .cursor-blink { display: inline-block; width: 6px; height: 15px; background: #06b6d4; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 flex h-screen overflow-hidden font-sans">
+<body class="bg-[#070a11] text-slate-100 flex h-screen overflow-hidden font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
-  <div id="auth-overlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center space-y-6">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center mx-auto shadow-xl shadow-cyan-500/20">
-        <i class="fa-solid fa-lock text-slate-950 text-2xl"></i>
+  <div id="auth-overlay" class="fixed inset-0 bg-[#070a11]/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-8 shadow-2xl text-center space-y-6 border border-slate-800/80">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center mx-auto shadow-2xl shadow-cyan-500/20">
+        <i class="fa-solid fa-bolt text-slate-950 text-2xl"></i>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-slate-100">Private AI Workstation</h2>
-        <p class="text-xs text-slate-400 mt-1">Authorized Google Access Only</p>
+        <h2 class="text-2xl font-extrabold tracking-tight gradient-text">BuckBuck Studio</h2>
+        <p class="text-xs text-slate-400 mt-1 font-medium">Enterprise Cloud Intelligence Workstation</p>
       </div>
 
-      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 p-3 rounded-xl text-left">
-        <!-- Error messages here -->
-      </div>
+      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 p-3.5 rounded-xl text-left font-medium"></div>
 
-      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-bold py-3 px-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-lg shadow-white/10">
-        <i class="fa-brands fa-google text-rose-500 text-base"></i> Sign in with Google
+      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-bold py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-xl shadow-white/5">
+        <i class="fa-brands fa-google text-rose-500 text-base"></i> Continue with Google
       </button>
 
-      <p class="text-[11px] text-slate-500">Only the whitelisted administrator email can unlock this workstation.</p>
+      <div class="flex items-center justify-center gap-4 text-[11px] text-slate-500 pt-2 font-medium">
+        <span>🔒 Zero Trust Security</span>
+        <span>•</span>
+        <span>⚡ DeepSeek-R1 7B</span>
+      </div>
     </div>
   </div>
 
-  <!-- Sidebar (Chat History & Management) -->
-  <aside id="sidebar" class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
-    <!-- Sidebar Header: New Chat Button -->
-    <div class="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
-      <button onclick="startNewChat()" class="flex-1 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 transition active:scale-95">
-        <i class="fa-solid fa-plus"></i> New Chat
-      </button>
-      <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-2">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <!-- Chat History List -->
-    <div class="flex-1 overflow-y-auto p-3 space-y-1" id="chat-history-list">
-      <div class="text-[11px] font-semibold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Recent Conversations</div>
-      <div id="history-items" class="space-y-1">
-        <!-- Dynamically populated from Firestore -->
+  <!-- SIDEBAR (Chat History & Workspace Management) -->
+  <aside id="sidebar" class="w-72 bg-[#0b0f19] border-r border-slate-800/80 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
+    <!-- Brand Header -->
+    <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
+          <i class="fa-solid fa-sparkles text-slate-950 text-xs"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
+            BuckBuck <span class="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.2 rounded-md font-bold uppercase">Pro</span>
+          </div>
+          <span class="text-[10px] text-slate-400">AI Artifacts Engine</span>
+        </div>
       </div>
+      <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-1.5">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
     </div>
 
-    <!-- User Profile & Sign Out Footer -->
-    <div class="p-3 border-t border-slate-800 bg-slate-950/40 text-xs flex items-center justify-between">
+    <!-- New Chat Action -->
+    <div class="p-3">
+      <button onclick="startNewChat()" class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:opacity-90 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 transition active:scale-98">
+        <i class="fa-solid fa-plus text-xs"></i> New Conversation
+      </button>
+    </div>
+
+    <!-- Conversation List -->
+    <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1" id="chat-history-list">
+      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Saved Sessions</div>
+      <div id="history-items" class="space-y-1"></div>
+    </div>
+
+    <!-- Sidebar Footer (Profile & Status) -->
+    <div class="p-3.5 border-t border-slate-800/80 bg-[#070a11]/60 flex items-center justify-between">
       <div class="flex items-center gap-2.5 min-w-0">
-        <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 shrink-0">
+        <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 shrink-0">
         <div class="min-w-0">
-          <div id="user-name" class="font-semibold text-slate-200 text-xs truncate">Administrator</div>
-          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Firebase Synced
+          <div id="user-name" class="font-bold text-slate-200 text-xs truncate">Administrator</div>
+          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Cloud Synced
           </div>
         </div>
       </div>
-      <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition shrink-0" title="Sign Out">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-400 p-2 rounded-xl hover:bg-slate-800/60 transition shrink-0" title="Sign Out">
+        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
       </button>
     </div>
   </aside>
@@ -92,84 +136,186 @@
   <!-- Sidebar Overlay for Mobile -->
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
 
-  <!-- Main Chat Area -->
-  <div class="flex-1 flex flex-col h-screen min-w-0">
+  <!-- MAIN CHAT & WORKSPACE AREA -->
+  <div class="flex-1 flex flex-col h-screen min-w-0 bg-[#070a11] relative">
     
     <!-- Top Header -->
-    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 sm:px-6 py-3 flex justify-between items-center z-10">
+    <header class="glass-panel border-b border-slate-800/60 px-4 sm:px-6 py-3 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-2">
-          <i class="fa-solid fa-bars"></i>
+        <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-1.5">
+          <i class="fa-solid fa-bars text-sm"></i>
         </button>
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center shadow-md">
-          <i class="fa-solid fa-brain text-white text-sm"></i>
-        </div>
         <div>
-          <h1 class="font-bold text-sm sm:text-base flex items-center gap-2">
-            Private Cloud AI
-            <span id="status-badge" class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Checking...</span>
+          <h1 class="font-extrabold text-sm sm:text-base flex items-center gap-2 text-slate-100">
+            Workstation
+            <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">Connecting GPU...</span>
           </h1>
-          <p class="text-[11px] text-slate-400 truncate">DeepSeek-R1 (7B) • Cloudflare GPU Tunnel</p>
+          <p class="text-[10px] text-slate-400">DeepSeek-R1 (7B) • Real-Time Artifacts • Multi-Device Sync</p>
         </div>
       </div>
 
-      <!-- Header Controls -->
+      <!-- Controls -->
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- Live Search Toggle -->
-        <label class="flex items-center gap-2 cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-lg transition text-xs select-none">
-          <i class="fa-solid fa-globe text-cyan-400"></i>
-          <span class="hidden sm:inline font-medium text-slate-300">Live Search</span>
+        <label class="flex items-center gap-2 cursor-pointer bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-3 py-1.5 rounded-xl transition text-xs select-none shadow-sm">
+          <i class="fa-solid fa-globe text-cyan-400 text-xs"></i>
+          <span class="hidden sm:inline font-semibold text-slate-300">Live Search</span>
           <input type="checkbox" id="websearch-toggle" class="sr-only peer">
           <div class="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500 relative"></div>
         </label>
 
+        <!-- Export Chat -->
+        <button onclick="exportChatAsMarkdown()" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-xl text-slate-300 transition flex items-center gap-1.5" title="Export Chat as Markdown">
+          <i class="fa-solid fa-download text-xs text-indigo-400"></i>
+          <span class="hidden md:inline font-semibold">Export</span>
+        </button>
+
         <!-- Settings Button -->
-        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 flex items-center justify-center transition text-slate-300">
-          <i class="fa-solid fa-gear text-sm"></i>
+        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center transition text-slate-300 shadow-sm">
+          <i class="fa-solid fa-sliders text-xs"></i>
         </button>
       </div>
     </header>
 
     <!-- Chat Messages Scroll Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto">
-      <div id="welcome-banner" class="flex gap-4 items-start p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60 shadow-sm">
-        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-          <i class="fa-solid fa-robot text-sm"></i>
+      
+      <!-- Welcome Hero (Senior Marketing Brand Style) -->
+      <div id="welcome-banner" class="space-y-6 py-6">
+        <div class="text-center space-y-3 max-w-lg mx-auto">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Claude-Style Interactive Artifacts Ready
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">What shall we build today?</h2>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Harness deep reasoning, live web intelligence, document analysis, and instant live code previewing in one unified cloud workspace.
+          </p>
         </div>
-        <div class="space-y-2 flex-1 text-sm">
-          <p class="font-semibold text-slate-200">Welcome to your Cloud AI Workstation!</p>
-          <p class="text-slate-400">Google Authentication & Real-time token streaming active. Start typing below!</p>
-          <div class="flex gap-2 pt-1 flex-wrap">
-            <span class="text-xs bg-slate-800 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">🔐 Google Protected</span>
-            <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">🔥 Firebase Synced</span>
-            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">⚡ Fast Streaming</span>
+
+        <!-- Quick Starter Action Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto pt-2">
+          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
+            class="glass-panel hover:border-cyan-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-cyan-500/5 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-cyan-400">
+              <i class="fa-solid fa-code text-cyan-400"></i> Generate Web App / Landing Page
+            </div>
+            <p class="text-[11px] text-slate-400 leading-snug">Creates complete interactive HTML/JS code with Live Preview artifact.</p>
+          </div>
+
+          <div onclick="injectPrompt('Write a full marketing strategy and launch roadmap for a high-ticket B2B software product.')" 
+            class="glass-panel hover:border-indigo-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-indigo-500/5 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-indigo-400">
+              <i class="fa-solid fa-bullhorn text-indigo-400"></i> Senior Marketing Strategy
+            </div>
+            <p class="text-[11px] text-slate-400 leading-snug">Market research, conversion copy, and growth funnels.</p>
+          </div>
+
+          <div onclick="injectPrompt('Explain how DeepSeek-R1 uses reinforcement learning and chain-of-thought to achieve frontier reasoning performance.')" 
+            class="glass-panel hover:border-purple-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-purple-500/5 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-purple-400">
+              <i class="fa-solid fa-brain text-purple-400"></i> Deep Logical Reasoning
+            </div>
+            <p class="text-[11px] text-slate-400 leading-snug">Complex math, algorithm design, and step-by-step logic.</p>
+          </div>
+
+          <div onclick="injectPrompt('What are the top breaking developments in AI, GPU compute, and tech this week?')" 
+            class="glass-panel hover:border-emerald-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-emerald-500/5 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-emerald-400">
+              <i class="fa-solid fa-globe text-emerald-400"></i> Real-Time Internet Search
+            </div>
+            <p class="text-[11px] text-slate-400 leading-snug">Searches the live web and synthesizes current facts.</p>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Bottom Input Bar -->
-    <footer class="bg-slate-900/80 backdrop-blur border-t border-slate-800 p-3 sm:p-4">
-      <div class="max-w-4xl mx-auto flex gap-2 items-end">
-        <div class="flex-1 bg-slate-800/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
-          <textarea id="prompt-input" rows="1" placeholder="Ask DeepSeek-R1 anything... (Shift+Enter for new line)"
-            class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-32"></textarea>
+    <!-- Bottom Input & Attachment Bar -->
+    <footer class="glass-panel border-t border-slate-800/80 p-3 sm:p-4">
+      <div class="max-w-4xl mx-auto space-y-2">
+        <!-- File Attachment Chip (If file attached) -->
+        <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs w-fit text-cyan-300">
+          <i class="fa-solid fa-paperclip text-xs"></i>
+          <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
+          <button onclick="removeAttachedFile()" class="text-slate-400 hover:text-rose-400 ml-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-        <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
-          <i class="fa-solid fa-paper-plane text-sm"></i>
-        </button>
+
+        <div class="flex gap-2 items-end">
+          <!-- Attachment Button -->
+          <input type="file" id="file-upload-input" class="hidden" onchange="handleFileUpload(event)">
+          <button onclick="document.getElementById('file-upload-input').click()" class="w-10 h-10 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-cyan-400 flex items-center justify-center transition shadow-sm shrink-0" title="Attach Document / Code File (.txt, .md, .py, .js, .json, .csv)">
+            <i class="fa-solid fa-paperclip text-sm"></i>
+          </button>
+
+          <!-- Text Input -->
+          <div class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
+            <textarea id="prompt-input" rows="1" placeholder="Message BuckBuck or drop files... (Shift+Enter for new line)"
+              class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-36"></textarea>
+          </div>
+
+          <!-- Send Button -->
+          <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
+            <i class="fa-solid fa-arrow-up text-sm font-extrabold"></i>
+          </button>
+        </div>
       </div>
     </footer>
   </div>
 
-  <!-- Settings & Connections Modal -->
+  <!-- CLAUDE-STYLE ARTIFACTS / PREVIEW PANEL (Slide-over / Split View) -->
+  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-[#090d16] border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <!-- Artifact Top Bar -->
+    <div class="p-3.5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20 text-xs">
+          <i class="fa-solid fa-cube"></i>
+        </div>
+        <div>
+          <h3 id="artifact-title" class="font-bold text-xs text-white truncate max-w-xs">Interactive Artifact</h3>
+          <span class="text-[10px] text-slate-400">Live Sandboxed Environment</span>
+        </div>
+      </div>
+
+      <!-- Tab & Action Controls -->
+      <div class="flex items-center gap-2">
+        <div class="flex bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-xs font-semibold">
+          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950">Preview</button>
+          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white">Code</button>
+        </div>
+
+        <button onclick="downloadArtifactHTML()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Download HTML File">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button onclick="copyArtifactCode()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Copy Code">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Artifact Content Area -->
+    <div class="flex-1 relative overflow-hidden bg-slate-950">
+      <!-- Live Preview Iframe -->
+      <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
+      
+      <!-- Code View Tab -->
+      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#070a13] font-mono text-xs text-slate-200">
+        <pre><code id="artifact-code-raw"></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
   <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-800">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
+        <h3 class="font-extrabold text-base text-slate-100 flex items-center gap-2">
           <i class="fa-solid fa-sliders text-cyan-400"></i> Settings & Security
         </h3>
-        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-lg">
+        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -185,35 +331,34 @@
         <div class="space-y-1">
           <label class="text-xs font-semibold text-slate-300">Google Colab Tunnel URL</label>
           <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
         </div>
         <div class="space-y-1">
           <label class="text-xs font-semibold text-slate-300">Model Name</label>
           <input type="text" id="model-name-input" value="deepseek-r1:7b" 
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
         </div>
       </div>
 
       <!-- Tab 2: Security Settings -->
       <div id="tab-security" class="space-y-3 hidden">
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-300">Allowed Admin Email (Leave blank to allow first login)</label>
+          <label class="text-xs font-semibold text-slate-300">Whitelisted Administrator Email</label>
           <input type="email" id="allowed-email-input" placeholder="your-email@gmail.com" 
-            class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
           <p class="text-[11px] text-slate-500">Only Google accounts matching this email can access your workstation.</p>
         </div>
       </div>
 
       <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
         <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">Cancel</button>
-        <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-semibold text-slate-950 shadow-md">Save Settings</button>
+        <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-xs font-bold text-slate-950 shadow-md">Save Settings</button>
       </div>
     </div>
   </div>
 
   <!-- Application Logic -->
   <script>
-    // Embedded Default Firebase Configuration
     const defaultFirebaseConfig = {
       apiKey: "AIzaSyA_sMdU-ahrAdQYiZkYCQZGk9RopwFh1w0",
       authDomain: "buckbuck-ab0ff.firebaseapp.com",
@@ -224,61 +369,49 @@
       measurementId: "G-HDTY2CLWSL"
     };
 
-    // State Management
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
     let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
     let currentChatId = localStorage.getItem("ai_current_chat_id") || "chat_" + Date.now();
-    let db = null;
-    let auth = null;
-    let currentUser = null;
+    let db = null, auth = null, currentUser = null;
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
+    let currentAttachedFile = null;
+    let activeArtifactCode = "";
 
-    // Initialize UI inputs
     document.getElementById("backend-url-input").value = backendUrl;
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("allowed-email-input").value = allowedEmail;
 
-    // Initialize Firebase Auth & Firestore
     function initFirebase() {
       try {
-        if (!firebase.apps.length) {
-          firebase.initializeApp(defaultFirebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(defaultFirebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
 
-        // Listen for Google Auth State Changes
         auth.onAuthStateChanged(user => {
           if (user) {
-            // Check whitelist if configured
             if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
               showAuthError(`Access Denied: ${user.email} is not authorized.`);
               auth.signOut();
               return;
             }
-
-            // If no email configured yet, auto-whitelist the first logging user
             if (!allowedEmail) {
               allowedEmail = user.email.toLowerCase();
               localStorage.setItem("ai_allowed_email", allowedEmail);
               document.getElementById("allowed-email-input").value = allowedEmail;
             }
-
             currentUser = user;
             document.getElementById("auth-overlay").classList.add("hidden");
             document.getElementById("user-name").textContent = user.displayName || user.email;
             if (user.photoURL) document.getElementById("user-avatar").src = user.photoURL;
             loadFirestoreConversations();
-
           } else {
             currentUser = null;
             document.getElementById("auth-overlay").classList.remove("hidden");
           }
         });
-
       } catch (e) {
-        console.warn("Firebase initialization error:", e);
+        console.warn("Firebase initialization note:", e);
       }
     }
     initFirebase();
@@ -291,21 +424,14 @@
       });
     }
 
-    function handleSignOut() {
-      auth.signOut();
-    }
-
+    function handleSignOut() { auth.signOut(); }
     function showAuthError(msg) {
       const errBox = document.getElementById("auth-error-msg");
       errBox.textContent = msg;
       errBox.classList.remove("hidden");
     }
+    function hideAuthError() { document.getElementById("auth-error-msg").classList.add("hidden"); }
 
-    function hideAuthError() {
-      document.getElementById("auth-error-msg").classList.add("hidden");
-    }
-
-    // Auto resize textarea
     const promptInput = document.getElementById("prompt-input");
     promptInput.addEventListener("input", function() {
       this.style.height = "auto";
@@ -353,18 +479,109 @@
       checkBackendStatus();
     }
 
+    function injectPrompt(text) {
+      promptInput.value = text;
+      promptInput.focus();
+      promptInput.dispatchEvent(new Event('input'));
+    }
+
+    // File Upload & Attachment Handling (Claude Style)
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentAttachedFile = {
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + " KB",
+          content: evt.target.result
+        };
+        document.getElementById("attached-file-name").textContent = `${currentAttachedFile.name} (${currentAttachedFile.size})`;
+        document.getElementById("file-attachment-chip").classList.remove("hidden");
+      };
+      reader.readAsText(file);
+    }
+
+    function removeAttachedFile() {
+      currentAttachedFile = null;
+      document.getElementById("file-attachment-chip").classList.add("hidden");
+      document.getElementById("file-upload-input").value = "";
+    }
+
+    // CLAUDE ARTIFACTS PREVIEW SYSTEM
+    function openArtifactDrawer(title, code) {
+      activeArtifactCode = code;
+      document.getElementById("artifact-title").textContent = title || "Interactive Artifact";
+      
+      const iframe = document.getElementById("artifact-iframe");
+      iframe.srcdoc = code;
+
+      document.getElementById("artifact-code-raw").textContent = code;
+      hljs.highlightElement(document.getElementById("artifact-code-raw"));
+
+      switchArtifactTab('preview');
+      document.getElementById("artifact-drawer").classList.remove("translate-x-full");
+    }
+
+    function closeArtifactDrawer() {
+      document.getElementById("artifact-drawer").classList.add("translate-x-full");
+    }
+
+    function switchArtifactTab(tab) {
+      if (tab === 'preview') {
+        document.getElementById("artifact-iframe").classList.remove("hidden");
+        document.getElementById("artifact-code-view").classList.add("hidden");
+        document.getElementById("art-tab-preview").className = "px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold";
+        document.getElementById("art-tab-code").className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-white";
+      } else {
+        document.getElementById("artifact-iframe").classList.add("hidden");
+        document.getElementById("artifact-code-view").classList.remove("hidden");
+        document.getElementById("art-tab-code").className = "px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold";
+        document.getElementById("art-tab-preview").className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-white";
+      }
+    }
+
+    function downloadArtifactHTML() {
+      if (!activeArtifactCode) return;
+      const blob = new Blob([activeArtifactCode], { type: "text/html" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "artifact-preview.html";
+      a.click();
+    }
+
+    function copyArtifactCode() {
+      if (!activeArtifactCode) return;
+      navigator.clipboard.writeText(activeArtifactCode);
+      alert("Artifact code copied to clipboard!");
+    }
+
+    function exportChatAsMarkdown() {
+      const chat = conversations[currentChatId];
+      if (!chat || !chat.messages.length) return alert("No messages to export.");
+
+      let md = `# ${chat.title}\nExported from BuckBuck AI Studio on ${new Date().toLocaleString()}\n\n---\n\n`;
+      chat.messages.forEach(m => {
+        md += `### ${m.sender === 'user' ? '👤 User' : '🤖 BuckBuck AI'}\n\n${m.content}\n\n`;
+      });
+
+      const blob = new Blob([md], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+      a.click();
+    }
+
     // Chat Session Management
     function startNewChat() {
       currentChatId = "chat_" + Date.now();
       localStorage.setItem("ai_current_chat_id", currentChatId);
       document.getElementById("chat-container").innerHTML = `
-        <div id="welcome-banner" class="flex gap-4 items-start p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60 shadow-sm">
-          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-            <i class="fa-solid fa-robot text-sm"></i>
-          </div>
-          <div class="space-y-1 flex-1 text-sm">
-            <p class="font-semibold text-slate-200">New Conversation Started</p>
-            <p class="text-slate-400 text-xs">Ready for questions with DeepSeek-R1.</p>
+        <div id="welcome-banner" class="space-y-6 py-6">
+          <div class="text-center space-y-3 max-w-lg mx-auto">
+            <h2 class="text-3xl font-extrabold tracking-tight text-white">New Conversation</h2>
+            <p class="text-xs text-slate-400">DeepSeek-R1 (7B) is ready for deep reasoning & code generation.</p>
           </div>
         </div>
       `;
@@ -407,7 +624,7 @@
       if (!conversations[currentChatId]) {
         conversations[currentChatId] = {
           id: currentChatId,
-          title: text.slice(0, 30) + (text.length > 30 ? "..." : ""),
+          title: text.slice(0, 28) + (text.length > 28 ? "..." : ""),
           timestamp: Date.now(),
           messages: []
         };
@@ -415,7 +632,6 @@
       conversations[currentChatId].messages.push({ sender, content: text });
       localStorage.setItem("ai_conversations", JSON.stringify(conversations));
 
-      // Sync with user's private Firestore collection
       if (db && currentUser) {
         db.collection("users").doc(currentUser.uid).collection("conversations").doc(currentChatId).set(conversations[currentChatId]).catch(console.warn);
       }
@@ -433,10 +649,10 @@
         const item = conversations[id];
         const isActive = id === currentChatId;
         const div = document.createElement("div");
-        div.className = `group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-slate-800 text-cyan-400 font-semibold' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'}`;
+        div.className = `group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'}`;
         div.onclick = () => loadChatSession(id);
         div.innerHTML = `
-          <div class="flex items-center gap-2 truncate">
+          <div class="flex items-center gap-2.5 truncate">
             <i class="fa-regular fa-message text-[11px] shrink-0"></i>
             <span class="truncate">${item.title || "Conversation"}</span>
           </div>
@@ -467,18 +683,17 @@
       try {
         const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
-          badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold";
           badge.textContent = "Colab Online (T4)";
           return true;
         }
       } catch (e) {
-        badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20";
+        badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold";
         badge.textContent = "Colab Offline";
         return false;
       }
     }
 
-    // Live Web Search via DuckDuckGo
     async function searchDuckDuckGo(query) {
       try {
         const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
@@ -486,34 +701,42 @@
         let context = "";
         if (data.AbstractText) context += `Summary: ${data.AbstractText}\n`;
         if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-          context += "Related Information:\n";
+          context += "Related Search Results:\n";
           data.RelatedTopics.slice(0, 3).forEach(t => { if (t.Text) context += `- ${t.Text}\n`; });
         }
         return context.trim();
-      } catch (err) {
-        return "";
-      }
+      } catch (err) { return ""; }
     }
 
     async function handleSend() {
       const text = promptInput.value.trim();
-      if (!text) return;
+      if (!text && !currentAttachedFile) return;
 
       const isWebSearch = document.getElementById("websearch-toggle").checked;
       promptInput.value = "";
       promptInput.style.height = "auto";
 
-      appendMessageUI("user", text);
-      saveMessageToHistory("user", text);
+      let userDisplayContent = text;
+      if (currentAttachedFile) {
+        userDisplayContent = `📎 **[Attached File: ${currentAttachedFile.name}]**\n\n${text}`;
+      }
+
+      appendMessageUI("user", userDisplayContent, true);
+      saveMessageToHistory("user", userDisplayContent);
 
       const aiMsgId = appendMessageUI("ai", '<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> Connecting...', false);
       let finalPrompt = text;
 
+      if (currentAttachedFile) {
+        finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
+        removeAttachedFile();
+      }
+
       if (isWebSearch) {
-        updateMessageUI(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Searching live web...');
+        updateMessageUI(aiMsgId, '<i class="fa-solid fa-globe fa-spin text-cyan-400"></i> Fetching real-time web data...');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
-          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${text}\n\nAnswer using search context above.`;
+          finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer using search context above.`;
         }
       }
 
@@ -544,20 +767,50 @@
               const parsed = JSON.parse(line);
               if (parsed.response) {
                 accumulatedText += parsed.response;
-                const formattedHtml = marked.parse(accumulatedText) + '<span class="cursor-blink"></span>';
-                updateMessageUI(aiMsgId, formattedHtml);
+                updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText) + '<span class="cursor-blink"></span>');
               }
             } catch (e) {}
           }
         }
 
-        updateMessageUI(aiMsgId, marked.parse(accumulatedText));
+        updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText));
         document.querySelectorAll('pre code').forEach(hljs.highlightElement);
         saveMessageToHistory("ai", accumulatedText);
 
       } catch (error) {
         updateMessageUI(aiMsgId, `<p class="text-rose-400">❌ <b>Error:</b> Could not stream from Google Colab. Make sure your notebook is running.</p>`);
       }
+    }
+
+    // Parse Response & Extract Claude-Style Interactive Artifacts
+    function renderResponseWithArtifacts(text) {
+      let html = marked.parse(text);
+
+      // Check if HTML/SVG/JS code block exists to create artifact launcher
+      const codeMatch = text.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
+      if (codeMatch && codeMatch[1].trim().length > 50) {
+        const rawCode = codeMatch[1].trim();
+        const encodedCode = encodeURIComponent(rawCode);
+        const artifactPill = `
+          <div class="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/30 to-purple-950/40 border border-cyan-500/30 flex items-center justify-between shadow-lg shadow-cyan-500/5">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center border border-cyan-500/30">
+                <i class="fa-solid fa-cube text-xs"></i>
+              </div>
+              <div>
+                <div class="font-bold text-xs text-white">Interactive Web Artifact Created</div>
+                <div class="text-[10px] text-cyan-300/80">Click to run in live sandboxed preview</div>
+              </div>
+            </div>
+            <button onclick="openArtifactDrawer('Live Preview', decodeURIComponent('${encodedCode}'))" 
+              class="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-md shadow-cyan-500/20 flex items-center gap-1.5 active:scale-95">
+              <i class="fa-solid fa-play text-[10px]"></i> Live Preview
+            </button>
+          </div>
+        `;
+        html += artifactPill;
+      }
+      return html;
     }
 
     function appendMessageUI(sender, content, isMarkdown = false) {
@@ -567,11 +820,11 @@
       
       const html = `
         <div id="${msgId}" class="flex gap-3.5 items-start ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isUser ? 'bg-cyan-500 text-slate-950 font-bold text-xs' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-sm'}">
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isUser ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 text-slate-950 font-extrabold text-xs shadow-md' : 'bg-slate-900 border border-slate-800 text-cyan-400 text-sm shadow-md'}">
             <i class="fa-solid ${isUser ? 'fa-user' : 'fa-brain'}"></i>
           </div>
-          <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm ${isUser ? 'bg-cyan-600 text-white rounded-tr-none' : 'bg-slate-900 border border-slate-800/80 rounded-tl-none prose prose-invert prose-sm max-w-none text-slate-200'}">
-            ${isMarkdown ? marked.parse(content) : content}
+          <div class="max-w-[85%] rounded-3xl px-5 py-3.5 text-sm ${isUser ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white rounded-tr-none shadow-md shadow-cyan-500/10 font-medium' : 'glass-panel border border-slate-800/80 rounded-tl-none prose prose-invert prose-sm max-w-none text-slate-200 shadow-xl'}">
+            ${isMarkdown ? renderResponseWithArtifacts(content) : content}
           </div>
         </div>
       `;
@@ -588,7 +841,6 @@
       }
     }
 
-    // Initial setups
     renderSidebarHistory();
     checkBackendStatus();
   </script>
