@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuckBuck AI • Google Material 3 Workspace</title>
-  <!-- Google Fonts: Google Sans / Roboto Flex & JetBrains Mono -->
+  <title>BuckBuck AI • Enterprise Neural Workspace</title>
+  
+  <!-- Dynamic SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%2338bdf8'/><stop offset='50%' stop-color='%23818cf8'/><stop offset='100%' stop-color='%23c084fc'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%23131314'/><path d='M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+
+  <!-- Google Fonts: Google Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -36,12 +40,12 @@
           },
           colors: {
             m3: {
-              surface: '#131314',           // Base Gemini dark bg
+              surface: '#131314',
               surfaceContainerLow: '#18181a',
-              surfaceContainer: '#1e1f20',   // Sidebar & Input pill
+              surfaceContainer: '#1e1f20',
               surfaceContainerHigh: '#282a2c',
               surfaceContainerHighest: '#333538',
-              primary: '#a8c7fa',           // Google M3 Light Blue Accent
+              primary: '#a8c7fa',
               primaryContainer: '#0842a0',
               onSurface: '#e3e3e3',
               onSurfaceVariant: '#c4c7c5',
@@ -65,12 +69,19 @@
     .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     
-    /* KaTeX Math Styling */
     .katex-display { margin: 0.8em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
     .katex { font-size: 1.05em; color: #e3e3e3; }
     
+    /* Smooth Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .anim-spin { animation: spin-slow 12s linear infinite; }
+    @keyframes float-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 12px rgba(168, 199, 250, 0.4)); } 50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(168, 199, 250, 0.7)); } }
+
+    .msg-fade-in { animation: fadeIn 0.25s ease-out forwards; }
+    .anim-spin { animation: spin-slow 10s linear infinite; }
+    .anim-float { animation: float-slow 4s ease-in-out infinite; }
+    .anim-glow { animation: pulse-glow 3s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary">
@@ -78,14 +89,17 @@
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
   <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
     <div class="bg-m3-surfaceContainer border border-m3-outline/40 w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center space-y-6">
-      <div class="w-14 h-14 rounded-2xl bg-m3-surfaceContainerHighest flex items-center justify-center mx-auto text-m3-primary">
-        <svg class="w-7 h-7 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      
+      <!-- New Animated Logo -->
+      <div class="w-16 h-16 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center mx-auto shadow-xl anim-float">
+        <svg class="w-8 h-8 text-m3-primary anim-glow" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
+
       <div>
-        <h2 class="text-xl font-semibold text-m3-onSurface tracking-tight">BuckBuck Studio</h2>
-        <p class="text-xs text-m3-onSurfaceVariant mt-1">Sign in with your authorized Google account</p>
+        <h2 class="text-xl font-semibold text-m3-onSurface tracking-tight">BuckBuck AI</h2>
+        <p class="text-xs text-m3-onSurfaceVariant mt-1">Enterprise Neural Workspace</p>
       </div>
 
       <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-300 border border-rose-500/20 p-3 rounded-2xl text-left font-medium"></div>
@@ -102,32 +116,35 @@
     </div>
   </div>
 
-  <!-- GOOGLE MATERIAL 3 SIDEBAR -->
-  <aside id="sidebar" class="w-64 bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
+  <!-- COLLAPSIBLE GOOGLE MATERIAL 3 SIDEBAR -->
+  <aside id="sidebar" class="w-64 bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col transition-all duration-300 ease-in-out z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden">
     
+    <!-- Top Branding & Hamburger Close -->
     <div class="px-4 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary shrink-0 shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+            <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-        <span class="font-semibold text-sm tracking-tight text-m3-onSurface">BuckBuck</span>
+        <span class="font-semibold text-sm tracking-tight text-m3-onSurface whitespace-nowrap">BuckBuck</span>
       </div>
-      <button onclick="toggleSidebar()" class="md:hidden text-m3-onSurfaceVariant hover:text-m3-onSurface p-1 rounded-full hover:bg-m3-surfaceContainer">
+      <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-1.5 rounded-full hover:bg-m3-surfaceContainer transition">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
 
     <!-- M3 Pill "New Chat" Action -->
     <div class="px-3 py-2">
-      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-3 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98">
-        <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-3 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98 whitespace-nowrap">
+        <svg class="w-4 h-4 text-m3-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         <span>New chat</span>
       </button>
     </div>
 
     <!-- Conversation History List -->
     <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5" id="chat-history-list">
-      <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5">Recent</div>
+      <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5 whitespace-nowrap">Recent</div>
       <div id="history-items" class="space-y-0.5"></div>
     </div>
 
@@ -155,9 +172,10 @@
   <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative">
     
     <!-- Header -->
-    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10">
+    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-m3-outline/10">
       <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition">
+        <!-- Hamburger Button toggles sidebar on both Desktop & Mobile -->
+        <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Toggle sidebar">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
         <div class="flex items-center gap-2">
@@ -169,7 +187,7 @@
       <!-- Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2">
         <!-- Live Search Pill -->
-        <label class="flex items-center gap-2 cursor-pointer bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full transition text-xs select-none">
+        <label class="flex items-center gap-2 cursor-pointer bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full transition text-xs select-none shadow-sm hover:scale-[1.02] active:scale-95">
           <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
           <span class="hidden sm:inline font-medium text-m3-onSurfaceVariant">Search</span>
           <input type="checkbox" id="websearch-toggle" class="sr-only peer">
@@ -177,12 +195,12 @@
         </label>
 
         <!-- Export Chat -->
-        <button onclick="exportChatAsMarkdown()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition" title="Export conversation as Markdown">
+        <button onclick="exportChatAsMarkdown()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition hover:scale-105 active:scale-95" title="Export conversation as Markdown">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
 
         <!-- Settings Button -->
-        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface" title="Settings">
+        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface hover:scale-105 active:scale-95" title="Settings">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
@@ -192,10 +210,15 @@
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-3xl w-full mx-auto relative">
       
       <!-- Gemini-Style Welcome Header -->
-      <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
+      <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
         <div class="space-y-2">
+          <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
+            <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
+              <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-            <span class="text-m3-primary">Hello</span>
+            <span class="text-m3-primary">Hello,</span>
           </h2>
           <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
         </div>
@@ -203,25 +226,25 @@
         <!-- M3 Suggestion Chips -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
           <div onclick="injectPrompt('Explain the Self-Attention mechanism in Transformers with mathematical formulas and step-by-step intuition.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
             <span class="text-xs text-m3-onSurface font-medium">Explain Self-Attention math & matrices</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
           <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
             <span class="text-xs text-m3-onSurface font-medium">Build an interactive web app with Artifacts</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
           <div onclick="injectPrompt('Write a full marketing launch strategy and go-to-market plan for a new software product.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
             <span class="text-xs text-m3-onSurface font-medium">Write a senior marketing & launch plan</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
           <div onclick="injectPrompt('What are the newest breakthrough developments in AI and tech this week?')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 hover:border-m3-primary/40 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group shadow-sm hover:scale-[1.01]">
             <span class="text-xs text-m3-onSurface font-medium">Search real-time tech news & updates</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
@@ -308,7 +331,7 @@
     <div class="bg-m3-surfaceContainer border border-m3-outline/30 w-full max-w-md rounded-[28px] p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-m3-outline/20 pb-3">
         <h3 class="font-medium text-base text-m3-onSurface flex items-center gap-2">
-          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Settings
         </h3>
         <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
@@ -361,6 +384,7 @@
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
     let currentAttachedFile = null;
     let activeArtifactCode = "";
+    let isSidebarOpen = true;
 
     // SMART AUTO-SCROLL
     let isUserScrolledUp = false;
@@ -457,11 +481,25 @@
       }
     });
 
+    // COLLAPSIBLE SIDEBAR FOR DESKTOP & MOBILE
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
-      sidebar.classList.toggle("-translate-x-full");
-      overlay.classList.toggle("hidden");
+      
+      if (window.innerWidth >= 768) {
+        // Desktop collapse toggle
+        if (sidebar.classList.contains("md:w-64") || !sidebar.classList.contains("md:w-0")) {
+          sidebar.classList.remove("md:w-64");
+          sidebar.classList.add("md:w-0", "md:border-r-0");
+        } else {
+          sidebar.classList.remove("md:w-0", "md:border-r-0");
+          sidebar.classList.add("md:w-64");
+        }
+      } else {
+        // Mobile drawer toggle
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      }
     }
 
     function toggleSettingsModal() {
@@ -588,10 +626,15 @@
       localStorage.setItem("ai_current_chat_id", currentChatId);
       isUserScrolledUp = false;
       document.getElementById("chat-container").innerHTML = `
-        <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
+        <div id="welcome-banner" class="space-y-8 pt-12 pb-6 msg-fade-in">
           <div class="space-y-2">
+            <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
+              <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
+                <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
             <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-              <span class="text-m3-primary">Hello</span>
+              <span class="text-m3-primary">Hello,</span>
             </h2>
             <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
           </div>
@@ -876,9 +919,7 @@
       });
     }
 
-    // Preprocess and format LaTeX equations and Claude Artifacts
     function renderResponseWithArtifacts(text) {
-      // Normalize LaTeX bracket styles like [ \text... ] and (Q)
       let normalized = text
         .replace(/\[\s*(\\text|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
           return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
@@ -920,11 +961,11 @@
       const isUser = role === "user";
 
       const html = `
-        <div id="${msgId}" class="flex gap-3.5 items-start ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary'}">
+        <div id="${msgId}" class="flex gap-3.5 items-start msg-fade-in ${isUser ? 'flex-row-reverse' : ''}">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary shadow-sm'}">
             ${isUser ? 
               `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` : 
-              `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`}
+              `<svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none"><path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
           </div>
           <div class="max-w-[85%] text-sm ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-3xl px-4 py-2.5 font-medium' : 'prose prose-invert prose-sm max-w-none text-m3-onSurface leading-relaxed pt-1'}">
             ${isMarkdown ? renderResponseWithArtifacts(content) : content}
