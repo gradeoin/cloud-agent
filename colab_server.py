@@ -214,13 +214,30 @@ for model in REQUIRED_MODELS:
 # [5/6] FASTAPI GATEWAY WITH MULTIMODAL, VOICE, AND AUTO-PIP EXECUTION
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + Vision + GPU Audio)...")
 
+# Automatically free port 8000 if an older cell instance was running
+os.system("fuser -k 8000/tcp > /dev/null 2>&1 || true")
+time.sleep(1)
+
 from fastapi import FastAPI, Request, HTTPException, Depends, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 import httpx, uvicorn
 
-app = FastAPI(title="BuckBuck Neural Multimodal Gateway")
+OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
+http_client: httpx.AsyncClient | None = None
+whisper_model = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_client
+    http_client = httpx.AsyncClient(timeout=60.0)
+    yield
+    if http_client:
+        await http_client.aclose()
+
+app = FastAPI(title="BuckBuck Neural Multimodal Gateway", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -229,20 +246,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-OLLAMA_INTERNAL_URL = "http://127.0.0.1:11434"
-http_client: httpx.AsyncClient | None = None
-whisper_model = None
-
-@app.on_event("startup")
-async def _startup():
-    global http_client
-    http_client = httpx.AsyncClient(timeout=60.0)
-
-@app.on_event("shutdown")
-async def _shutdown():
-    if http_client:
-        await http_client.aclose()
 
 exec_semaphore = asyncio.Semaphore(EXEC_MAX_CONCURRENT)
 exec_pool = ThreadPoolExecutor(max_workers=EXEC_MAX_CONCURRENT + 1)
