@@ -154,7 +154,7 @@
     }
   </style>
 </head>
-<body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary">
+<body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary" onclick="closeAllDropdowns(event)">
 
   <!-- SILENT INITIAL AUTH CHECK LOADER -->
   <div id="auth-loading-screen" class="fixed inset-0 bg-m3-surface z-50 flex flex-col items-center justify-center space-y-4">
@@ -262,15 +262,58 @@
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
 
-        <!-- Model Mode Switcher Pill (7B Deep Reasoning vs 1.5B Fast) -->
-        <div class="flex items-center bg-m3-surfaceContainer border border-m3-outline/30 rounded-full p-0.5 text-xs shadow-sm">
-          <button onclick="switchModel('deepseek-r1:7b')" id="btn-model-7b" class="px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold transition text-xs flex items-center gap-1.5">
-            <span>R1 (7B)</span>
+        <!-- INTERACTIVE MODEL SELECTOR DROPDOWN -->
+        <div class="relative" onclick="event.stopPropagation()">
+          <button onclick="toggleModelDropdown()" id="model-selector-btn" class="flex items-center gap-2 bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3.5 py-1.5 rounded-full text-xs font-medium text-m3-onSurface transition shadow-sm hover:scale-[1.02] active:scale-95">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="current-model-display">DeepSeek-R1 (7B)</span>
+            <svg class="w-3.5 h-3.5 text-m3-onSurfaceVariant transition-transform" id="model-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <button onclick="switchModel('deepseek-r1:1.5b')" id="btn-model-1.5b" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white transition text-xs flex items-center gap-1.5">
-            <svg class="w-3 h-3 text-amber-400 fill-current" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>Fast (1.5B)</span>
-          </button>
+
+          <!-- Model Menu Options -->
+          <div id="model-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-72 bg-m3-surfaceContainer border border-m3-outline/40 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1 backdrop-blur-xl">
+            <div class="text-[10px] uppercase font-bold text-m3-onSurfaceVariant/70 px-3 pt-2 pb-1 tracking-wider">Select AI Model</div>
+            
+            <button onclick="selectModel('deepseek-r1:7b', 'DeepSeek-R1 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>DeepSeek-R1 (7B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-normal">Reasoning</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Deep logic, math proofs & architecture</div>
+              </div>
+            </button>
+
+            <button onclick="selectModel('qwen2.5:7b', 'Qwen 2.5 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>Qwen 2.5 (7B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal">⚡ Instant</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Fast conversational & full coding (0s delay)</div>
+              </div>
+            </button>
+
+            <button onclick="selectModel('llama3.1:8b', 'Llama 3.1 (8B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>Llama 3.1 (8B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-normal">Chat</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Meta's friendly general assistant</div>
+              </div>
+            </button>
+
+            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-m3-surfaceContainerHigh transition flex items-center justify-between group">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>DeepSeek-R1 (1.5B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal">⚡ Fast</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Lightweight instant reasoning</div>
+              </div>
+            </button>
+          </div>
         </div>
 
         <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline">T4 GPU</span>
@@ -294,11 +337,7 @@
         <!-- Settings Button -->
         <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface hover:scale-105 active:scale-95" title="Settings">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          Settings
-        </h3>
-        <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+          </button>
       </div>
     </header>
 
@@ -413,7 +452,7 @@
             class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
         <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">Model Tag</label>
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">Active Model Tag</label>
           <input type="text" id="model-name-input" value="deepseek-r1:7b" 
             class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
@@ -452,25 +491,43 @@
     let currentAttachedFile = null;
     let activeArtifactCode = "";
 
-    function switchModel(newModel) {
-      modelName = newModel;
-      localStorage.setItem("ai_model_name", modelName);
-      document.getElementById("model-name-input").value = modelName;
-      updateModelSwitcherUI();
+    function toggleModelDropdown() {
+      const menu = document.getElementById("model-dropdown-menu");
+      const arrow = document.getElementById("model-dropdown-arrow");
+      menu.classList.toggle("hidden");
+      if (!menu.classList.contains("hidden")) {
+        arrow.classList.add("rotate-180");
+      } else {
+        arrow.classList.remove("rotate-180");
+      }
     }
 
-    function updateModelSwitcherUI() {
-      const btn7b = document.getElementById("btn-model-7b");
-      const btn15b = document.getElementById("btn-model-1.5b");
-      if (!btn7b || !btn15b) return;
-
-      if (modelName.includes("1.5b")) {
-        btn15b.className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold transition text-xs flex items-center gap-1.5";
-        btn7b.className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white transition text-xs flex items-center gap-1.5";
-      } else {
-        btn7b.className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold transition text-xs flex items-center gap-1.5";
-        btn15b.className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white transition text-xs flex items-center gap-1.5";
+    function closeAllDropdowns() {
+      const menu = document.getElementById("model-dropdown-menu");
+      const arrow = document.getElementById("model-dropdown-arrow");
+      if (menu && !menu.classList.contains("hidden")) {
+        menu.classList.add("hidden");
+        arrow.classList.remove("rotate-180");
       }
+    }
+
+    function selectModel(tag, label) {
+      modelName = tag;
+      localStorage.setItem("ai_model_name", modelName);
+      document.getElementById("model-name-input").value = modelName;
+      document.getElementById("current-model-display").textContent = label;
+      closeAllDropdowns();
+    }
+
+    function updateModelDisplayFromStorage() {
+      const map = {
+        "deepseek-r1:7b": "DeepSeek-R1 (7B)",
+        "qwen2.5:7b": "Qwen 2.5 (7B)",
+        "llama3.1:8b": "Llama 3.1 (8B)",
+        "deepseek-r1:1.5b": "DeepSeek-R1 (1.5B)"
+      };
+      const label = map[modelName] || modelName;
+      document.getElementById("current-model-display").textContent = label;
     }
 
     function getChatIdFromURL() {
@@ -531,7 +588,7 @@
     document.getElementById("backend-url-input").value = backendUrl;
     document.getElementById("model-name-input").value = modelName;
     document.getElementById("allowed-email-input").value = allowedEmail;
-    updateModelSwitcherUI();
+    updateModelDisplayFromStorage();
 
     // PERSISTENT AUTHENTICATION
     function initFirebase() {
@@ -635,7 +692,7 @@
       localStorage.setItem("ai_model_name", modelName);
       localStorage.setItem("ai_allowed_email", allowedEmail);
 
-      updateModelSwitcherUI();
+      updateModelDisplayFromStorage();
       toggleSettingsModal();
       checkBackendStatus();
     }
@@ -896,7 +953,7 @@
       } catch (err) { return ""; }
     }
 
-    // MULTI-TURN FAST CONVERSATIONAL CHAT ENGINE
+    // MULTI-TURN CONVERSATIONAL CHAT ENGINE
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile) return;
@@ -910,17 +967,15 @@
         userDisplayContent = `[Attached File: ${currentAttachedFile.name}]\n\n${text}`;
       }
 
-      // 1. Append User Message
       appendMessageUI("user", userDisplayContent, true);
-      
-      // 2. Prepare Final Prompt
+
       let finalPrompt = text;
       if (currentAttachedFile) {
         finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
         removeAttachedFile();
       }
 
-      // 3. Build Clean History (Before adding current turn)
+      // 1. Build clean recent history (Last 6 turns)
       const existingHistory = conversations[currentChatId]?.messages || [];
       const recentHistory = existingHistory.slice(-6);
 
@@ -935,13 +990,12 @@
         };
       });
 
-      // Add current user prompt to payload
+      // 2. Add current user prompt
       historyPayload.push({
         role: "user",
         content: finalPrompt
       });
 
-      // Save user message to persistent storage
       saveMessageToHistory("user", userDisplayContent);
 
       const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating response...</div>', false);
@@ -961,28 +1015,31 @@
         }
       }
 
-      const now = new Date();
-      const dateString = now.toLocaleDateString(undefined, { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const isR1 = modelName.includes("r1");
+      let messagesPayload = historyPayload;
 
-      const systemPrompt = {
-        role: "system",
-        content: `You are BuckBuck AI, an intelligent, helpful, and friendly neural assistant.
+      // Only inject system prompt if NOT a pure reasoning model like R1 (which is sensitive to system prompts)
+      if (!isR1) {
+        const now = new Date();
+        const dateString = now.toLocaleDateString(undefined, { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        const systemPrompt = {
+          role: "system",
+          content: `You are BuckBuck AI, an intelligent, helpful, and friendly AI assistant.
 Current Date: ${dateString}, ${timeString} (${timezone}).
 Directives:
-- Always respond directly and relevantly to the user's latest prompt.
-- If the user introduces themselves or greets you, greet them warmly and naturally.
-- For simple questions and greetings, reply immediately without long reasoning.
-- Format math in LaTeX ($...$ and $$...$$) and code inside markdown blocks with language tags.`
-      };
-
-      const messagesPayload = [systemPrompt, ...historyPayload];
+- Respond directly, naturally, and helpfully.
+- Format math in LaTeX ($...$ for inline, $$...$$ for display) and code in fenced markdown blocks.`
+        };
+        messagesPayload = [systemPrompt, ...historyPayload];
+      }
 
       try {
         updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
@@ -1141,7 +1198,6 @@ Directives:
         }
       }
 
-      // Enhanced LaTeX normalizer including \boxed, \int, \sum, \begin, etc.
       let normalized = mainText
         .replace(/\[\s*(\\text|\\boxed|\\begin|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
           return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
