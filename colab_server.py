@@ -93,7 +93,7 @@ EFFECTIVE_SESSION_LIMIT_MINUTES = int(min(SESSION_LIMIT_MINUTES, _minutes_remain
 
 # [2/6] CONFIGURE HIGH-PERFORMANCE GPU ENVIRONMENT
 os.environ['PATH'] = f"/usr/local/cuda/bin:/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
-os.environ['LD_LIBRARY_PATH'] = f"/usr/local/cuda/lib64:/usr/lib64-nvidia:{os.environ.get('LD_LIBRARY_PATH', '')}"
+os.environ['LD_LIBRARY_PATH'] = f"/usr/local/lib/ollama:/usr/local/cuda/lib64:/usr/lib64-nvidia:{os.environ.get('LD_LIBRARY_PATH', '')}"
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 os.environ['OLLAMA_ORIGINS'] = '*'
 os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
@@ -200,7 +200,12 @@ REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llava:7b", "deepseek-r1:1.5b
 def already_pulled(model: str) -> bool:
     try:
         listed = subprocess.run([OLLAMA_BIN, "list"], capture_output=True, text=True, timeout=15)
-        return model.split(":")[0] in listed.stdout
+        for line in listed.stdout.splitlines():
+            # Check full model:tag match or base match if untagged
+            parts = line.split()
+            if parts and (parts[0] == model or parts[0] == f"{model}:latest" or model in parts[0]):
+                return True
+        return False
     except Exception:
         return False
 

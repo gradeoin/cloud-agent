@@ -1800,15 +1800,19 @@ Directives:
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let accumulatedText = "";
+        let lineBuffer = "";
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n").filter(l => l.trim().length > 0);
+          lineBuffer += decoder.decode(value, { stream: true });
+          const lines = lineBuffer.split("\n");
+          // Keep the last incomplete fragment in the buffer
+          lineBuffer = lines.pop();
 
           for (const line of lines) {
+            if (!line.trim()) continue;
             try {
               const parsed = JSON.parse(line);
               if (parsed.message && parsed.message.content) {
@@ -1819,6 +1823,16 @@ Directives:
               }
             } catch (e) {}
           }
+        }
+
+        // Process any trailing line left in buffer
+        if (lineBuffer && lineBuffer.trim()) {
+          try {
+            const parsed = JSON.parse(lineBuffer);
+            if (parsed.message && parsed.message.content) {
+              accumulatedText += parsed.message.content;
+            }
+          } catch(e){}
         }
 
         rawMessageStore[aiMsgId] = accumulatedText;
