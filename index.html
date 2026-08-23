@@ -418,7 +418,7 @@
     </footer>
   </div>
 
-  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER -->
+  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (With Multi-File & Combined Support) -->
   <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden">
     <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
       <div class="flex items-center gap-2.5">
@@ -515,7 +515,7 @@
     let activeArtifactTitle = "Artifact Preview";
     let activeArtifactLang = "html";
     
-    // SAFE IN-MEMORY REGISTRY TO PREVENT QUOTE/ESCAPING BUGS
+    // SAFE IN-MEMORY REGISTRY TO PREVENT QUOTE/ESCAPING BUGS & SUPPORT MULTI-FILE BUNDLING
     window.codeRegistry = {};
     let snippetIdCounter = 0;
     const rawMessageStore = {};
@@ -776,6 +776,55 @@
       }
     }
 
+    // MULTI-FILE COMPILER: Merges separate HTML, CSS, and JS into a unified bundle
+    function buildCombinedWebApp(htmlCode = "", cssCode = "", jsCode = "") {
+      let baseHtml = htmlCode.trim();
+      if (!baseHtml) {
+        baseHtml = `<div class="p-8 text-center"><h1 class="text-2xl font-bold">Interactive Web App</h1></div>`;
+      }
+
+      // Check if it already has full HTML structure
+      const hasDoctype = baseHtml.toLowerCase().includes('<!doctype') || baseHtml.toLowerCase().includes('<html');
+
+      if (!hasDoctype) {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script src="https://unpkg.com/lucide@latest"><\/script>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    ${cssCode ? `\n/* Custom Styles */\n${cssCode}\n` : ''}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  ${baseHtml}
+  ${jsCode ? `<script>\n// Custom Application Logic\n${jsCode}\n<\/script>` : ''}
+  <script>if(window.lucide) lucide.createIcons();<\/script>
+</body>
+</html>`;
+      } else {
+        let compiled = baseHtml;
+        if (cssCode && !compiled.includes(cssCode)) {
+          if (compiled.includes('</head>')) {
+            compiled = compiled.replace('</head>', `<style>\n${cssCode}\n</style>\n</head>`);
+          } else {
+            compiled = `<style>\n${cssCode}\n</style>\n` + compiled;
+          }
+        }
+        if (jsCode && !compiled.includes(jsCode)) {
+          if (compiled.includes('</body>')) {
+            compiled = compiled.replace('</body>', `<script>\n${jsCode}\n<\/script>\n</body>`);
+          } else {
+            compiled = compiled + `\n<script>\n${jsCode}\n<\/script>`;
+          }
+        }
+        return compiled;
+      }
+    }
+
     function openArtifactDrawer(title, code, lang = "html") {
       activeArtifactCode = code || "";
       activeArtifactTitle = title || "Artifact Preview";
@@ -873,7 +922,14 @@
     function previewSnippet(snipId) {
       const item = window.codeRegistry[snipId];
       if (!item) return;
-      openArtifactDrawer(item.filename || `${item.lang.toUpperCase()} Canvas`, item.code, item.lang);
+      
+      // If snippet has an associated multi-file compiled bundle, preview the combined bundle!
+      if (item.bundleId && window.codeRegistry[item.bundleId]) {
+        const bundle = window.codeRegistry[item.bundleId];
+        openArtifactDrawer(bundle.filename || "Full Web App", bundle.code, "html");
+      } else {
+        openArtifactDrawer(item.filename || `${item.lang.toUpperCase()} Canvas`, item.code, item.lang);
+      }
     }
 
     function downloadSnippet(snipId) {
@@ -1384,7 +1440,7 @@ Directives for Coding & Web Apps:
         rawMessageStore[aiMsgId] = accumulatedText;
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText, aiMsgId));
         const aiMsgElement = document.getElementById(aiMsgId);
-        enhanceCodeBlocksInElement(aiMsgElement);
+        enhanceCodeBlocksInElement(aiMsgElement, aiMsgId);
         renderMathInMsg(aiMsgElement);
         saveMessageToHistory("assistant", accumulatedText);
         scrollToBottom(false);
@@ -1407,9 +1463,11 @@ Directives for Coding & Web Apps:
       });
     }
 
-    function enhanceCodeBlocksInElement(containerEl) {
+    function enhanceCodeBlocksInElement(containerEl, msgId = "") {
       if (!containerEl) return;
       const preElements = containerEl.querySelectorAll('pre');
+      const bundleId = msgId ? ('bundle_' + msgId) : null;
+      const hasBundle = bundleId && window.codeRegistry[bundleId];
       
       preElements.forEach(pre => {
         if (pre.previousElementSibling && pre.previousElementSibling.classList.contains('code-header-bar')) return;
@@ -1427,8 +1485,12 @@ Directives for Coding & Web Apps:
         window.codeRegistry[snipId] = {
           code: rawCode,
           lang: lang,
-          filename: filename
+          filename: filename,
+          bundleId: (['html', 'htm', 'css', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase()) && hasBundle) ? bundleId : null
         };
+
+        const isWebLang = ['html', 'htm', 'css', 'javascript', 'js', 'jsx', 'svg'].includes(lang.toLowerCase());
+        const previewBtnLabel = (isWebLang && hasBundle) ? 'Preview App' : 'Preview';
 
         const header = document.createElement('div');
         header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
@@ -1439,7 +1501,7 @@ Directives for Coding & Web Apps:
             <button type="button" onclick="previewSnippet('${snipId}')" 
               class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition cursor-pointer" title="Preview / Run in Sandbox">
               <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Preview</span>
+              <span>${previewBtnLabel}</span>
             </button>
             <button type="button" onclick="downloadSnippet('${snipId}')" 
               class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition cursor-pointer" title="Download as ${filename}">
@@ -1511,46 +1573,113 @@ Directives for Coding & Web Apps:
 
       let parsedHtml = marked.parse(normalized);
 
-      const codeMatch = mainText.match(/```(\w+)?\n([\s\S]*?)```/);
-      if (codeMatch && codeMatch[2].trim().length > 40) {
-        const lang = (codeMatch[1] || 'code').toLowerCase();
-        const rawCode = codeMatch[2].trim();
-        const ext = EXT_MAP[lang] || 'txt';
-        const autoFilename = `generated_file_${Date.now()}.${ext}`;
-        const cardId = 'card_' + (msgId || 'art') + '_' + (++snippetIdCounter);
+      // MULTI-SNIPPET PARSER: EXTRACT ALL HTML, CSS, AND JS BLOCKS
+      const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+      let match;
+      let htmlSnippets = [];
+      let cssSnippets = [];
+      let jsSnippets = [];
+      let totalBlocks = 0;
 
-        window.codeRegistry[cardId] = {
-          code: rawCode,
-          lang: lang,
-          filename: autoFilename
+      while ((match = codeBlockRegex.exec(mainText)) !== null) {
+        totalBlocks++;
+        const lang = (match[1] || 'code').toLowerCase();
+        const codeContent = match[2].trim();
+        if (['html', 'htm'].includes(lang)) htmlSnippets.push(codeContent);
+        else if (lang === 'css') cssSnippets.push(codeContent);
+        else if (['js', 'javascript', 'jsx'].includes(lang)) jsSnippets.push(codeContent);
+      }
+
+      const hasMultiWebFiles = (htmlSnippets.length > 0 && (cssSnippets.length > 0 || jsSnippets.length > 0)) || (totalBlocks > 1 && (htmlSnippets.length + cssSnippets.length + jsSnippets.length >= 2));
+
+      if (hasMultiWebFiles && msgId) {
+        const combinedHTML = buildCombinedWebApp(
+          htmlSnippets.join('\n\n'),
+          cssSnippets.join('\n\n'),
+          jsSnippets.join('\n\n')
+        );
+
+        const bundleId = 'bundle_' + msgId;
+        window.codeRegistry[bundleId] = {
+          code: combinedHTML,
+          lang: 'html',
+          filename: `full_webapp_${Date.now()}.html`,
+          isBundle: true
         };
 
-        const artifactPill = `
-          <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
-            <div class="flex items-center gap-2.5">
-              <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        const bundleCard = `
+          <div class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-m3-surfaceContainer to-indigo-950/30 border border-indigo-500/30 flex items-center justify-between shadow-lg flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 flex items-center justify-center shadow-inner">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
               </div>
               <div>
-                <div class="font-medium text-xs text-m3-onSurface">${autoFilename}</div>
-                <div class="text-[10px] text-m3-onSurfaceVariant">${lang.toUpperCase()} • ${(rawCode.length / 1024).toFixed(1)} KB</div>
+                <div class="font-medium text-xs text-white flex items-center gap-2">
+                  <span>Interactive Full-Stack Web App</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal">HTML + CSS + JS Unified</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Automatically merged separate files into a working executable sandbox</div>
               </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="downloadSnippet('${cardId}')" 
-                class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="downloadSnippet('${bundleId}')" 
+                class="px-3.5 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                <span>Download</span>
+                <span>Download App (.html)</span>
               </button>
-              <button type="button" onclick="previewSnippet('${cardId}')" 
-                class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer">
+              <button type="button" onclick="previewSnippet('${bundleId}')" 
+                class="px-4 py-1.5 rounded-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-500/20 cursor-pointer">
                 <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>Live Preview</span>
+                <span>Live Preview Unified App</span>
               </button>
             </div>
           </div>
         `;
-        parsedHtml += artifactPill;
+        parsedHtml += bundleCard;
+
+      } else {
+        // SINGLE SNIPPET CARD
+        const codeMatch = mainText.match(/```(\w+)?\n([\s\S]*?)```/);
+        if (codeMatch && codeMatch[2].trim().length > 40) {
+          const lang = (codeMatch[1] || 'code').toLowerCase();
+          const rawCode = codeMatch[2].trim();
+          const ext = EXT_MAP[lang] || 'txt';
+          const autoFilename = `generated_file_${Date.now()}.${ext}`;
+          const cardId = 'card_' + (msgId || 'art') + '_' + (++snippetIdCounter);
+
+          window.codeRegistry[cardId] = {
+            code: rawCode,
+            lang: lang,
+            filename: autoFilename
+          };
+
+          const artifactPill = `
+            <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                </div>
+                <div>
+                  <div class="font-medium text-xs text-m3-onSurface">${autoFilename}</div>
+                  <div class="text-[10px] text-m3-onSurfaceVariant">${lang.toUpperCase()} • ${(rawCode.length / 1024).toFixed(1)} KB</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="downloadSnippet('${cardId}')" 
+                  class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                  <span>Download</span>
+                </button>
+                <button type="button" onclick="previewSnippet('${cardId}')" 
+                  class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Live Preview</span>
+                </button>
+              </div>
+            </div>
+          `;
+          parsedHtml += artifactPill;
+        }
       }
 
       if (msgId) {
@@ -1594,7 +1723,7 @@ Directives for Coding & Web Apps:
       container.insertAdjacentHTML("beforeend", html);
       const el = document.getElementById(msgId);
       if (isMarkdown && !isUser) {
-        enhanceCodeBlocksInElement(el);
+        enhanceCodeBlocksInElement(el, msgId);
         renderMathInMsg(el);
       }
       return msgId;
