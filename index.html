@@ -14,6 +14,11 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+  <!-- KaTeX LaTeX Math Typesetting Engine -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
   
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -60,6 +65,10 @@
     .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     
+    /* KaTeX Math Styling */
+    .katex-display { margin: 0.8em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
+    .katex { font-size: 1.05em; color: #e3e3e3; }
+    
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .anim-spin { animation: spin-slow 12s linear infinite; }
   </style>
@@ -93,10 +102,9 @@
     </div>
   </div>
 
-  <!-- GOOGLE MATERIAL 3 SIDEBAR (Navigation Drawer) -->
+  <!-- GOOGLE MATERIAL 3 SIDEBAR -->
   <aside id="sidebar" class="w-64 bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
     
-    <!-- Top Branding & Collapse -->
     <div class="px-4 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary">
@@ -117,7 +125,7 @@
       </button>
     </div>
 
-    <!-- Conversation History List (M3 List Style) -->
+    <!-- Conversation History List -->
     <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5" id="chat-history-list">
       <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5">Recent</div>
       <div id="history-items" class="space-y-0.5"></div>
@@ -146,7 +154,7 @@
   <!-- MAIN CHAT & WORKSPACE AREA -->
   <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative">
     
-    <!-- M3 Minimalist Header -->
+    <!-- Header -->
     <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition">
@@ -187,28 +195,28 @@
       <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
         <div class="space-y-2">
           <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-            <span class="gradient-text">Hello</span>
+            <span class="text-m3-primary">Hello</span>
           </h2>
           <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
         </div>
 
-        <!-- M3 Minimalist Suggestion Chips -->
+        <!-- M3 Suggestion Chips -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+          <div onclick="injectPrompt('Explain the Self-Attention mechanism in Transformers with mathematical formulas and step-by-step intuition.')" 
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            <span class="text-xs text-m3-onSurface font-medium">Explain Self-Attention math & matrices</span>
+            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+
           <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
             class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
-            <span class="text-xs text-m3-onSurface font-medium">Build an interactive landing page with Artifacts</span>
+            <span class="text-xs text-m3-onSurface font-medium">Build an interactive web app with Artifacts</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
           <div onclick="injectPrompt('Write a full marketing launch strategy and go-to-market plan for a new software product.')" 
             class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
             <span class="text-xs text-m3-onSurface font-medium">Write a senior marketing & launch plan</span>
-            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <div onclick="injectPrompt('Analyze the architecture and mathematical principles behind DeepSeek-R1 reasoning models.')" 
-            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
-            <span class="text-xs text-m3-onSurface font-medium">Explain DeepSeek-R1 logic & algorithms</span>
             <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
@@ -300,7 +308,7 @@
     <div class="bg-m3-surfaceContainer border border-m3-outline/30 w-full max-w-md rounded-[28px] p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-m3-outline/20 pb-3">
         <h3 class="font-medium text-base text-m3-onSurface flex items-center gap-2">
-          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Settings
         </h3>
         <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
@@ -582,10 +590,10 @@
       document.getElementById("chat-container").innerHTML = `
         <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
           <div class="space-y-2">
-            <h2 class="text-3xl font-medium tracking-tight text-m3-onSurface">
-              <span class="gradient-text">Hello</span>
+            <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
+              <span class="text-m3-primary">Hello</span>
             </h2>
-            <p class="text-2xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
+            <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
           </div>
         </div>
       `;
@@ -797,13 +805,28 @@
         }
 
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText));
-        enhanceCodeBlocksInElement(document.getElementById(aiMsgId));
+        const aiMsgElement = document.getElementById(aiMsgId);
+        enhanceCodeBlocksInElement(aiMsgElement);
+        renderMathInMsg(aiMsgElement);
         saveMessageToHistory("assistant", accumulatedText);
         scrollToBottom(false);
 
       } catch (error) {
         updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not reach Colab GPU backend.</p>`);
       }
+    }
+
+    function renderMathInMsg(element) {
+      if (!element || !window.renderMathInElement) return;
+      renderMathInElement(element, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ],
+        throwOnError: false
+      });
     }
 
     function enhanceCodeBlocksInElement(containerEl) {
@@ -853,8 +876,19 @@
       });
     }
 
+    // Preprocess and format LaTeX equations and Claude Artifacts
     function renderResponseWithArtifacts(text) {
-      let html = marked.parse(text);
+      // Normalize LaTeX bracket styles like [ \text... ] and (Q)
+      let normalized = text
+        .replace(/\[\s*(\\text|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
+          return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
+        })
+        .replace(/\(\s*([QKVqkvi-z0-9\\]+)\s*\)/g, (match, p1) => {
+          if (p1.length <= 4 || p1.startsWith('\\')) return `$${p1}$`;
+          return match;
+        });
+
+      let html = marked.parse(normalized);
 
       const codeMatch = text.match(/```(?:html|xml|svg|jsx|javascript)\n([\s\S]*?)```/);
       if (codeMatch && codeMatch[1].trim().length > 50) {
@@ -898,8 +932,10 @@
         </div>
       `;
       container.insertAdjacentHTML("beforeend", html);
+      const el = document.getElementById(msgId);
       if (isMarkdown && !isUser) {
-        enhanceCodeBlocksInElement(document.getElementById(msgId));
+        enhanceCodeBlocksInElement(el);
+        renderMathInMsg(el);
       }
       return msgId;
     }
@@ -908,6 +944,7 @@
       const el = document.getElementById(msgId);
       if (el) {
         el.querySelector("div:last-child").innerHTML = content;
+        renderMathInMsg(el);
       }
     }
 
