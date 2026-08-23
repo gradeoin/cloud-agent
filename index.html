@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuckBuck Studio • Enterprise Cloud Intelligence</title>
-  <!-- Google Fonts & Tailwind CSS -->
+  <title>BuckBuck AI • Google Material 3 Workspace</title>
+  <!-- Google Fonts: Google Sans / Roboto Flex & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Markdown, Code Highlighting -->
+  <!-- Markdown & Code Highlighting -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark-dimmed.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
   
   <!-- Firebase SDKs -->
@@ -22,11 +22,27 @@
 
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Google Sans"', 'Roboto', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            m3: {
+              surface: '#131314',           // Base Gemini dark bg
+              surfaceContainerLow: '#18181a',
+              surfaceContainer: '#1e1f20',   // Sidebar & Input pill
+              surfaceContainerHigh: '#282a2c',
+              surfaceContainerHighest: '#333538',
+              primary: '#a8c7fa',           // Google M3 Light Blue Accent
+              primaryContainer: '#0842a0',
+              onSurface: '#e3e3e3',
+              onSurfaceVariant: '#c4c7c5',
+              outline: '#444746',
+              outlineVariant: '#282a2c',
+            }
           }
         }
       }
@@ -35,106 +51,92 @@
 
   <style>
     ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #070a11; }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    .prose pre { background: #060910 !important; border: 1px solid #1e293b; padding: 14px; margin: 0 0 12px 0; }
-    .prose code { color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
-    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #38bdf8; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .glass-panel { background: rgba(13, 18, 30, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    ::-webkit-scrollbar-track { background: #131314; }
+    ::-webkit-scrollbar-thumb { background: #282a2c; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #333538; }
     
-    @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
+    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 12px 0; border-radius: 16px; }
+    .prose code { color: #a8c7fa; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    .cursor-blink { display: inline-block; width: 6px; height: 14px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    
     @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .anim-pulse { animation: pulse-slow 3s ease-in-out infinite; }
     .anim-spin { animation: spin-slow 12s linear infinite; }
   </style>
 </head>
-<body class="bg-[#070a11] text-slate-100 flex h-screen overflow-hidden font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+<body class="bg-m3-surface text-m3-onSurface flex h-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary">
 
   <!-- GOOGLE LOGIN SCREEN (Overlay) -->
-  <div id="auth-overlay" class="fixed inset-0 bg-[#070a11]/95 backdrop-blur-2xl z-50 flex items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-md rounded-3xl p-8 shadow-2xl text-center space-y-6 border border-slate-800/90">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center mx-auto shadow-2xl shadow-cyan-500/20 anim-pulse">
-        <svg class="w-8 h-8 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+    <div class="bg-m3-surfaceContainer border border-m3-outline/40 w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center space-y-6">
+      <div class="w-14 h-14 rounded-2xl bg-m3-surfaceContainerHighest flex items-center justify-center mx-auto text-m3-primary">
+        <svg class="w-7 h-7 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
         </svg>
       </div>
       <div>
-        <h2 class="text-2xl font-extrabold tracking-tight gradient-text">BuckBuck Studio</h2>
-        <p class="text-xs text-slate-400 mt-1 font-medium">Enterprise Cloud Intelligence Workstation</p>
+        <h2 class="text-xl font-semibold text-m3-onSurface tracking-tight">BuckBuck Studio</h2>
+        <p class="text-xs text-m3-onSurfaceVariant mt-1">Sign in with your authorized Google account</p>
       </div>
 
-      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-400 border border-rose-500/20 p-3.5 rounded-xl text-left font-medium"></div>
+      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-300 border border-rose-500/20 p-3 rounded-2xl text-left font-medium"></div>
 
-      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-bold py-3.5 px-4 rounded-2xl text-sm flex items-center justify-center gap-3 transition shadow-xl shadow-white/5">
+      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-medium py-3 px-4 rounded-full text-sm flex items-center justify-center gap-3 transition shadow-md">
         <svg class="w-4 h-4" viewBox="0 0 24 24">
           <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/>
           <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
           <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.1-2 .4-2.7L1.6 6.4C.6 8.3 0 10.5 0 12s.6 3.7 1.6 5.6l3.7-2.9z"/>
           <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.4-6.7-5.3L1.6 15.9C3.5 19.7 7.4 23 12 23z"/>
         </svg>
-        Continue with Google
+        Sign in with Google
       </button>
-
-      <div class="flex items-center justify-center gap-3 text-[11px] text-slate-500 pt-2 font-medium">
-        <span>Zero Trust Authenticated</span>
-        <span>•</span>
-        <span>DeepSeek-R1 Engine</span>
-      </div>
     </div>
   </div>
 
-  <!-- SIDEBAR (Chat History & Workspace Management) -->
-  <aside id="sidebar" class="w-72 bg-[#0a0e1a] border-r border-slate-800/80 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
-    <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
+  <!-- GOOGLE MATERIAL 3 SIDEBAR (Navigation Drawer) -->
+  <aside id="sidebar" class="w-64 bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col transition-all duration-300 z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0">
+    
+    <!-- Top Branding & Collapse -->
+    <div class="px-4 py-3.5 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
-          <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
+        <div class="w-7 h-7 rounded-xl bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </div>
-        <div class="leading-tight">
-          <div class="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
-            BuckBuck <span class="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Studio</span>
-          </div>
-          <span class="text-[10px] text-slate-400 font-medium">Cloud Neural Workspace</span>
-        </div>
+        <span class="font-semibold text-sm tracking-tight text-m3-onSurface">BuckBuck</span>
       </div>
-      <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-200 p-1.5">
+      <button onclick="toggleSidebar()" class="md:hidden text-m3-onSurfaceVariant hover:text-m3-onSurface p-1 rounded-full hover:bg-m3-surfaceContainer">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
 
-    <!-- New Chat Action -->
-    <div class="p-3">
-      <button onclick="startNewChat()" class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:opacity-90 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 transition active:scale-98">
-        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        New Conversation
+    <!-- M3 Pill "New Chat" Action -->
+    <div class="px-3 py-2">
+      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-3 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98">
+        <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span>New chat</span>
       </button>
     </div>
 
-    <!-- Conversation List -->
-    <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1" id="chat-history-list">
-      <div class="text-[10px] font-bold text-slate-500 uppercase px-3 py-1.5 tracking-wider">Conversation History</div>
-      <div id="history-items" class="space-y-1"></div>
+    <!-- Conversation History List (M3 List Style) -->
+    <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5" id="chat-history-list">
+      <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5">Recent</div>
+      <div id="history-items" class="space-y-0.5"></div>
     </div>
 
-    <!-- Sidebar Footer -->
-    <div class="p-3.5 border-t border-slate-800/80 bg-[#070a11]/60 flex items-center justify-between">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/80 shrink-0">
-        <div class="min-w-0">
-          <div id="user-name" class="font-bold text-slate-200 text-xs truncate">Administrator</div>
-          <div id="firebase-status" class="text-[10px] text-emerald-400 flex items-center gap-1.5 font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Firestore Synced
+    <!-- M3 Account Footer -->
+    <div class="p-2 border-t border-m3-outline/20 bg-m3-surfaceContainerLow">
+      <div class="flex items-center justify-between p-2 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh transition">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-7 h-7 rounded-full bg-m3-surfaceContainerHighest border border-m3-outline/30 shrink-0">
+          <div class="min-w-0">
+            <div id="user-name" class="font-medium text-xs text-m3-onSurface truncate">Admin</div>
+            <div id="firebase-status" class="text-[10px] text-m3-onSurfaceVariant truncate">Firestore synced</div>
           </div>
         </div>
+        <button onclick="handleSignOut()" class="text-m3-onSurfaceVariant hover:text-rose-400 p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition" title="Sign out">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
       </div>
-      <button onclick="handleSignOut()" class="text-slate-400 hover:text-rose-400 p-2 rounded-xl hover:bg-slate-800/60 transition shrink-0" title="Sign Out">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-      </button>
     </div>
   </aside>
 
@@ -142,98 +144,78 @@
   <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
 
   <!-- MAIN CHAT & WORKSPACE AREA -->
-  <div class="flex-1 flex flex-col h-screen min-w-0 bg-[#070a11] relative">
+  <div class="flex-1 flex flex-col h-screen min-w-0 bg-m3-surface relative">
     
-    <!-- Top Header -->
-    <header class="glass-panel border-b border-slate-800/60 px-4 sm:px-6 py-3 flex justify-between items-center z-10">
+    <!-- M3 Minimalist Header -->
+    <header class="bg-m3-surface/80 backdrop-blur-md px-4 sm:px-6 py-2.5 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
-        <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-1.5">
+        <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
-        <div>
-          <h1 class="font-extrabold text-sm sm:text-base flex items-center gap-2 text-slate-100">
-            Workstation
-            <span id="status-badge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">Connecting GPU...</span>
-          </h1>
-          <p class="text-[10px] text-slate-400 font-medium">DeepSeek-R1 (7B) • Smart Auto-Scroll • Code Preview & Copy</p>
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-sm text-m3-onSurface">DeepSeek-R1</span>
+          <span id="status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">T4 GPU</span>
         </div>
       </div>
 
       <!-- Controls -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Live Search Toggle -->
-        <label class="flex items-center gap-2 cursor-pointer bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-3 py-1.5 rounded-xl transition text-xs select-none shadow-sm">
-          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-          <span class="hidden sm:inline font-semibold text-slate-300">Live Search</span>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Live Search Pill -->
+        <label class="flex items-center gap-2 cursor-pointer bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full transition text-xs select-none">
+          <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <span class="hidden sm:inline font-medium text-m3-onSurfaceVariant">Search</span>
           <input type="checkbox" id="websearch-toggle" class="sr-only peer">
-          <div class="w-7 h-3.5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500 relative"></div>
+          <div class="w-6 h-3.5 bg-m3-surfaceContainerHighest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-m3-primary relative"></div>
         </label>
 
         <!-- Export Chat -->
-        <button onclick="exportChatAsMarkdown()" class="text-xs bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 px-2.5 py-1.5 rounded-xl text-slate-300 transition flex items-center gap-1.5" title="Export Conversation as Markdown">
-          <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          <span class="hidden md:inline font-semibold">Export</span>
+        <button onclick="exportChatAsMarkdown()" class="text-xs bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 p-2 rounded-full text-m3-onSurfaceVariant hover:text-m3-onSurface transition" title="Export conversation as Markdown">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
 
         <!-- Settings Button -->
-        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center transition text-slate-300 shadow-sm">
+        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center transition text-m3-onSurfaceVariant hover:text-m3-onSurface" title="Settings">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
     </header>
 
     <!-- Chat Messages Scroll Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl w-full mx-auto relative">
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-3xl w-full mx-auto relative">
       
-      <!-- Welcome Hero -->
-      <div id="welcome-banner" class="space-y-6 py-6">
-        <div class="text-center space-y-3 max-w-lg mx-auto">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-            Interactive Code Previews & Smart Scrolling Ready
-          </div>
-          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">What shall we build today?</h2>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Multi-turn contextual reasoning, live web intelligence, document analysis, and sandboxed code execution in one unified workspace.
-          </p>
+      <!-- Gemini-Style Welcome Header -->
+      <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
+        <div class="space-y-2">
+          <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
+            <span class="gradient-text">Hello</span>
+          </h2>
+          <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
         </div>
 
-        <!-- Quick Starter Action Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto pt-2">
-          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS, hero section, pricing table, and responsive design.')" 
-            class="glass-panel hover:border-cyan-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-cyan-500/5 space-y-1.5">
-            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-cyan-400">
-              <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              Generate Web App & Artifact
-            </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Writes complete interactive HTML/JS code with Live Preview sandbox.</p>
+        <!-- M3 Minimalist Suggestion Chips -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+          <div onclick="injectPrompt('Build an interactive modern Landing Page for an AI SaaS startup with Tailwind CSS and responsive design.')" 
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            <span class="text-xs text-m3-onSurface font-medium">Build an interactive landing page with Artifacts</span>
+            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
-          <div onclick="injectPrompt('Write a full senior go-to-market strategy, value proposition framework, and launch roadmap for a B2B SaaS product.')" 
-            class="glass-panel hover:border-indigo-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-indigo-500/5 space-y-1.5">
-            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-indigo-400">
-              <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              Senior Marketing & Growth Strategy
-            </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Conversion funnels, messaging frameworks, and growth channels.</p>
+          <div onclick="injectPrompt('Write a full marketing launch strategy and go-to-market plan for a new software product.')" 
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            <span class="text-xs text-m3-onSurface font-medium">Write a senior marketing & launch plan</span>
+            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
-          <div onclick="injectPrompt('Analyze the architecture and mathematical principles behind DeepSeek-R1 chain-of-thought reasoning models.')" 
-            class="glass-panel hover:border-purple-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-purple-500/5 space-y-1.5">
-            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-purple-400">
-              <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-              Deep Logical Reasoning
-            </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Complex algorithms, math proofs, and multi-step reasoning traces.</p>
+          <div onclick="injectPrompt('Analyze the architecture and mathematical principles behind DeepSeek-R1 reasoning models.')" 
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            <span class="text-xs text-m3-onSurface font-medium">Explain DeepSeek-R1 logic & algorithms</span>
+            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
-          <div onclick="injectPrompt('What are the newest breakthrough developments in AI, GPU infrastructure, and tech this week?')" 
-            class="glass-panel hover:border-emerald-500/40 p-4 rounded-2xl cursor-pointer transition group shadow-sm hover:shadow-emerald-500/5 space-y-1.5">
-            <div class="flex items-center gap-2 font-bold text-xs text-slate-200 group-hover:text-emerald-400">
-              <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Real-Time Web Intelligence
-            </div>
-            <p class="text-[11px] text-slate-400 leading-snug">Searches the live internet and synthesizes verified facts.</p>
+          <div onclick="injectPrompt('What are the newest breakthrough developments in AI and tech this week?')" 
+            class="bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh border border-m3-outline/20 p-4 rounded-2xl cursor-pointer transition flex items-center justify-between group">
+            <span class="text-xs text-m3-onSurface font-medium">Search real-time tech news & updates</span>
+            <svg class="w-4 h-4 text-m3-primary opacity-0 group-hover:opacity-100 transition shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
       </div>
@@ -241,128 +223,112 @@
 
     <!-- Floating Scroll-To-Bottom Indicator -->
     <div id="scroll-bottom-container" class="absolute bottom-24 right-8 z-20 hidden">
-      <button onclick="scrollToBottom(true)" class="glass-panel hover:bg-slate-800 text-cyan-400 p-2.5 rounded-full shadow-2xl border border-cyan-500/30 flex items-center gap-2 text-xs font-bold transition hover:scale-105 active:scale-95">
+      <button onclick="scrollToBottom(true)" class="bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-primary p-2.5 rounded-full shadow-xl border border-m3-outline/40 flex items-center gap-2 text-xs font-medium transition hover:scale-105 active:scale-95">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        <span class="pr-1 text-[11px] text-slate-200">Scroll to bottom</span>
+        <span class="pr-1 text-xs text-m3-onSurface">Bottom</span>
       </button>
     </div>
 
-    <!-- Bottom Input & Attachment Bar -->
-    <footer class="glass-panel border-t border-slate-800/80 p-3 sm:p-4">
-      <div class="max-w-4xl mx-auto space-y-2">
+    <!-- M3 Floating Pill Input Bar -->
+    <footer class="p-3 sm:p-4 bg-gradient-to-t from-m3-surface via-m3-surface to-transparent">
+      <div class="max-w-3xl mx-auto space-y-2">
         <!-- File Attachment Chip -->
-        <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs w-fit text-cyan-300">
+        <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-xs w-fit text-m3-primary">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
-          <button onclick="removeAttachedFile()" class="text-slate-400 hover:text-rose-400 ml-1">
+          <button onclick="removeAttachedFile()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <div class="flex gap-2 items-end">
-          <!-- Attachment Button -->
+        <!-- M3 Surface Container Pill -->
+        <div class="bg-m3-surfaceContainer border border-m3-outline/30 rounded-[28px] px-4 py-2.5 flex items-center gap-2 focus-within:border-m3-primary/60 focus-within:bg-m3-surfaceContainerHigh transition shadow-sm">
           <input type="file" id="file-upload-input" class="hidden" onchange="handleFileUpload(event)">
-          <button onclick="document.getElementById('file-upload-input').click()" class="w-10 h-10 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-cyan-400 flex items-center justify-center transition shadow-sm shrink-0" title="Attach Document / Code File">
+          <button onclick="document.getElementById('file-upload-input').click()" class="text-m3-onSurfaceVariant hover:text-m3-primary p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition shrink-0" title="Attach file">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
 
-          <!-- Text Input -->
-          <div class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-2xl px-4 py-2.5 focus-within:border-cyan-500/60 transition shadow-inner">
-            <textarea id="prompt-input" rows="1" placeholder="Ask BuckBuck anything... (Shift+Enter for new line)"
-              class="w-full bg-transparent text-sm text-slate-100 placeholder-slate-400 focus:outline-none resize-none max-h-36"></textarea>
-          </div>
+          <textarea id="prompt-input" rows="1" placeholder="Ask DeepSeek-R1..."
+            class="flex-1 bg-transparent text-sm text-m3-onSurface placeholder-m3-onSurfaceVariant focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
 
-          <!-- Send Button -->
-          <button id="send-btn" onclick="handleSend()" class="w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 active:scale-95 text-slate-950 flex items-center justify-center transition font-bold shrink-0 shadow-lg shadow-cyan-500/20">
-            <svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40">
+            <svg class="w-4 h-4 text-m3-surface" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
     </footer>
   </div>
 
-  <!-- CLAUDE-STYLE ARTIFACTS / PREVIEW PANEL -->
-  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-[#090d16] border-l border-slate-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
-    <div class="p-3.5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER (M3 Style) -->
+  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-1/2 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-xs">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
         </div>
-        <div>
-          <h3 id="artifact-title" class="font-bold text-xs text-white truncate max-w-xs">Interactive Artifact</h3>
-          <span class="text-[10px] text-slate-400 font-medium">Live Sandboxed Environment</span>
-        </div>
+        <h3 id="artifact-title" class="font-medium text-xs text-m3-onSurface truncate max-w-xs">Artifact Preview</h3>
       </div>
 
-      <div class="flex items-center gap-2">
-        <div class="flex bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-xs font-semibold">
-          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold">Preview</button>
-          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white">Code</button>
+      <div class="flex items-center gap-1.5">
+        <div class="flex bg-m3-surfaceContainerHigh p-0.5 rounded-full border border-m3-outline/20 text-xs font-medium">
+          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold">Preview</button>
+          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white">Code</button>
         </div>
 
-        <button onclick="downloadArtifactHTML()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Download HTML File">
+        <button onclick="downloadArtifactHTML()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Download HTML">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
-        <button onclick="copyArtifactCode()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs" title="Copy Code">
+        <button onclick="copyArtifactCode()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs" title="Copy code">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         </button>
-        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs">
+        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-full hover:bg-m3-surfaceContainerHigh text-m3-onSurfaceVariant hover:text-white text-xs">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </div>
 
-    <div class="flex-1 relative overflow-hidden bg-slate-950">
+    <div class="flex-1 relative overflow-hidden bg-white">
       <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
-      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#070a13] font-mono text-xs text-slate-200">
+      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-m3-surfaceContainerLow font-mono text-xs text-m3-onSurface">
         <pre class="m-0 border-none bg-transparent p-0"><code id="artifact-code-raw"></code></pre>
       </div>
     </div>
   </div>
 
-  <!-- Settings Modal -->
+  <!-- Settings Modal (M3 Dialog) -->
   <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-4 border border-slate-800">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-extrabold text-base text-slate-100 flex items-center gap-2">
-          <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          Settings & Security
+    <div class="bg-m3-surfaceContainer border border-m3-outline/30 w-full max-w-md rounded-[28px] p-6 shadow-2xl space-y-5">
+      <div class="flex justify-between items-center border-b border-m3-outline/20 pb-3">
+        <h3 class="font-medium text-base text-m3-onSurface flex items-center gap-2">
+          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
         </h3>
-        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-200 text-base">
+        <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div class="flex border-b border-slate-800 gap-4 text-xs font-semibold">
-        <button onclick="switchSettingsTab('tab-backend')" id="btn-tab-backend" class="pb-2 text-cyan-400 border-b-2 border-cyan-400">Backend & GPU</button>
-        <button onclick="switchSettingsTab('tab-security')" id="btn-tab-security" class="pb-2 text-slate-400 hover:text-slate-200">Security & Whitelist</button>
-      </div>
-
-      <div id="tab-backend" class="space-y-3.5">
-        <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-300">Google Colab Tunnel URL</label>
+      <div class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">Google Colab Tunnel URL</label>
           <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
-        <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-300">Model Name</label>
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">Model Tag</label>
           <input type="text" id="model-name-input" value="deepseek-r1:7b" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
+            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
-      </div>
-
-      <div id="tab-security" class="space-y-3 hidden">
-        <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-300">Whitelisted Administrator Email</label>
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-m3-onSurfaceVariant">Whitelisted Admin Email</label>
           <input type="email" id="allowed-email-input" placeholder="your-email@gmail.com" 
-            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono">
-          <p class="text-[11px] text-slate-500">Only Google accounts matching this email can access your workstation.</p>
+            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
         </div>
       </div>
 
-      <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
-        <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">Cancel</button>
-        <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-xs font-bold text-slate-950 shadow-md">Save Settings</button>
+      <div class="pt-2 flex justify-end gap-2">
+        <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-full text-xs font-medium text-m3-onSurfaceVariant hover:bg-m3-surfaceContainerHigh">Cancel</button>
+        <button onclick="saveSettings()" class="px-5 py-2 rounded-full bg-m3-primary text-m3-surface font-semibold text-xs shadow-sm">Save</button>
       </div>
     </div>
   </div>
@@ -388,7 +354,7 @@
     let currentAttachedFile = null;
     let activeArtifactCode = "";
 
-    // SMART AUTO-SCROLL CONTROLS
+    // SMART AUTO-SCROLL
     let isUserScrolledUp = false;
     const chatContainer = document.getElementById("chat-container");
     const scrollBottomBtn = document.getElementById("scroll-bottom-container");
@@ -490,19 +456,8 @@
       overlay.classList.toggle("hidden");
     }
 
-    function toggleSettingsModal(tab = 'tab-backend') {
+    function toggleSettingsModal() {
       document.getElementById("settings-modal").classList.toggle("hidden");
-      switchSettingsTab(tab);
-    }
-
-    function switchSettingsTab(tabId) {
-      document.getElementById("tab-backend").classList.add("hidden");
-      document.getElementById("tab-security").classList.add("hidden");
-      document.getElementById("btn-tab-backend").className = "pb-2 text-slate-400 hover:text-slate-200";
-      document.getElementById("btn-tab-security").className = "pb-2 text-slate-400 hover:text-slate-200";
-
-      document.getElementById(tabId).classList.remove("hidden");
-      document.getElementById(`btn-${tabId}`).className = "pb-2 text-cyan-400 border-b-2 border-cyan-400";
     }
 
     function saveSettings() {
@@ -550,7 +505,7 @@
     // CLAUDE ARTIFACTS PREVIEW SYSTEM
     function openArtifactDrawer(title, code) {
       activeArtifactCode = code;
-      document.getElementById("artifact-title").textContent = title || "Interactive Artifact";
+      document.getElementById("artifact-title").textContent = title || "Artifact Preview";
       
       const iframe = document.getElementById("artifact-iframe");
       iframe.srcdoc = code;
@@ -570,13 +525,13 @@
       if (tab === 'preview') {
         document.getElementById("artifact-iframe").classList.remove("hidden");
         document.getElementById("artifact-code-view").classList.add("hidden");
-        document.getElementById("art-tab-preview").className = "px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold";
-        document.getElementById("art-tab-code").className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-white";
+        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold";
+        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white";
       } else {
         document.getElementById("artifact-iframe").classList.add("hidden");
         document.getElementById("artifact-code-view").classList.remove("hidden");
-        document.getElementById("art-tab-code").className = "px-2.5 py-1 rounded-md bg-cyan-500 text-slate-950 font-bold";
-        document.getElementById("art-tab-preview").className = "px-2.5 py-1 rounded-md text-slate-400 hover:text-white";
+        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold";
+        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white";
       }
     }
 
@@ -599,7 +554,7 @@
       navigator.clipboard.writeText(text);
       const span = buttonEl.querySelector("span");
       const orig = span.textContent;
-      span.textContent = "Copied!";
+      span.textContent = "Copied";
       setTimeout(() => { span.textContent = orig; }, 2000);
     }
 
@@ -609,7 +564,7 @@
 
       let md = `# ${chat.title}\nExported from BuckBuck Studio on ${new Date().toLocaleString()}\n\n---\n\n`;
       chat.messages.forEach(m => {
-        md += `### ${m.role === 'user' ? 'User' : 'BuckBuck AI'}\n\n${m.content}\n\n`;
+        md += `### ${m.role === 'user' ? 'User' : 'Assistant'}\n\n${m.content}\n\n`;
       });
 
       const blob = new Blob([md], { type: "text/markdown" });
@@ -625,10 +580,12 @@
       localStorage.setItem("ai_current_chat_id", currentChatId);
       isUserScrolledUp = false;
       document.getElementById("chat-container").innerHTML = `
-        <div id="welcome-banner" class="space-y-6 py-6">
-          <div class="text-center space-y-3 max-w-lg mx-auto">
-            <h2 class="text-3xl font-extrabold tracking-tight text-white">New Conversation</h2>
-            <p class="text-xs text-slate-400 font-medium">DeepSeek-R1 (7B) initialized with fresh context memory.</p>
+        <div id="welcome-banner" class="space-y-8 pt-12 pb-6">
+          <div class="space-y-2">
+            <h2 class="text-3xl font-medium tracking-tight text-m3-onSurface">
+              <span class="gradient-text">Hello</span>
+            </h2>
+            <p class="text-2xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
           </div>
         </div>
       `;
@@ -698,7 +655,7 @@
         const item = conversations[id];
         const isActive = id === currentChatId;
         const div = document.createElement("div");
-        div.className = `group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'}`;
+        div.className = `group flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs cursor-pointer transition ${isActive ? 'bg-m3-surfaceContainerHigh text-m3-primary font-medium' : 'text-m3-onSurfaceVariant hover:bg-m3-surfaceContainer hover:text-m3-onSurface'}`;
         div.onclick = () => loadChatSession(id);
         div.innerHTML = `
           <div class="flex items-center gap-2.5 truncate">
@@ -732,13 +689,13 @@
       try {
         const res = await fetch(`${backendUrl}/api/tags`, { method: "GET", signal: AbortSignal.timeout(5000) });
         if (res.ok) {
-          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold";
-          badge.textContent = "Colab GPU Online";
+          badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium";
+          badge.textContent = "T4 GPU";
           return true;
         }
       } catch (e) {
-        badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold";
-        badge.textContent = "Colab Offline";
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium";
+        badge.textContent = "Offline";
         return false;
       }
     }
@@ -775,7 +732,7 @@
       saveMessageToHistory("user", userDisplayContent);
       scrollToBottom(true);
 
-      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-cyan-400 font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Connecting neural engine...</div>', false);
+      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Generating...</div>', false);
       
       let finalPrompt = text;
       if (currentAttachedFile) {
@@ -784,7 +741,7 @@
       }
 
       if (isWebSearch) {
-        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2 text-cyan-400 font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Fetching real-time web intelligence...</div>');
+        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Searching web...</div>');
         const searchResults = await searchDuckDuckGo(text);
         if (searchResults) {
           finalPrompt = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer using search context above.`;
@@ -802,7 +759,7 @@
       }
 
       try {
-        updateMessageUI(aiMsgId, '<span class="text-slate-400 text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
+        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Thinking...</span><span class="cursor-blink"></span>');
 
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
@@ -845,11 +802,10 @@
         scrollToBottom(false);
 
       } catch (error) {
-        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not stream from Google Colab. Verify that your Colab GPU notebook is active.</p>`);
+        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not reach Colab GPU backend.</p>`);
       }
     }
 
-    // Enhance every rendered code block with Language Tag, Copy Button, and Preview Option
     function enhanceCodeBlocksInElement(containerEl) {
       if (!containerEl) return;
       const preElements = containerEl.querySelectorAll('pre');
@@ -866,25 +822,25 @@
         const encodedCode = encodeURIComponent(rawCode);
 
         const header = document.createElement('div');
-        header.className = 'code-header-bar flex items-center justify-between px-3.5 py-1.5 bg-[#0e1422] border-t border-x border-slate-800 text-[11px] text-slate-400 font-mono rounded-t-xl';
+        header.className = 'code-header-bar flex items-center justify-between px-3.5 py-1.5 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
         
         let previewBtn = '';
         if (['html', 'xml', 'svg', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase())) {
           previewBtn = `
             <button onclick="openArtifactDrawer('${lang.toUpperCase()} Preview', decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-cyan-400 flex items-center gap-1 text-[11px] font-sans font-semibold text-cyan-300 transition">
-              <svg class="w-3 h-3 text-cyan-400 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              class="hover:text-m3-primary flex items-center gap-1 text-[11px] font-sans font-medium text-m3-primary transition">
+              <svg class="w-3 h-3 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span>Preview</span>
             </button>
           `;
         }
 
         header.innerHTML = `
-          <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">${lang}</span>
+          <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
           <div class="flex items-center gap-3">
             ${previewBtn}
             <button onclick="copyCodeText(this, decodeURIComponent('${encodedCode}'))" 
-              class="hover:text-white flex items-center gap-1 text-[11px] font-sans font-semibold text-slate-400 transition">
+              class="hover:text-white flex items-center gap-1 text-[11px] font-sans font-medium text-m3-onSurfaceVariant transition">
               <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               <span>Copy</span>
             </button>
@@ -905,20 +861,17 @@
         const rawCode = codeMatch[1].trim();
         const encodedCode = encodeURIComponent(rawCode);
         const artifactPill = `
-          <div class="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-indigo-950/30 to-purple-950/40 border border-cyan-500/30 flex items-center justify-between shadow-lg shadow-cyan-500/5">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center border border-cyan-500/30">
-                <svg class="w-4 h-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          <div class="mt-4 p-3 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
               </div>
-              <div>
-                <div class="font-bold text-xs text-white">Interactive Web Artifact</div>
-                <div class="text-[10px] text-cyan-300/80">Click to execute in live sandboxed preview</div>
-              </div>
+              <div class="font-medium text-xs text-m3-onSurface">Artifact generated</div>
             </div>
-            <button onclick="openArtifactDrawer('Live Preview', decodeURIComponent('${encodedCode}'))" 
-              class="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition shadow-md shadow-cyan-500/20 flex items-center gap-1.5 active:scale-95">
-              <svg class="w-3 h-3 text-slate-950 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Live Preview
+            <button onclick="openArtifactDrawer('Preview', decodeURIComponent('${encodedCode}'))" 
+              class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95">
+              <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Preview
             </button>
           </div>
         `;
@@ -931,16 +884,15 @@
       const container = document.getElementById("chat-container");
       const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
       const isUser = role === "user";
-      
-      const userIconSvg = `<svg class="w-4 h-4 text-slate-950" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-      const aiIconSvg = `<svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
 
       const html = `
         <div id="${msgId}" class="flex gap-3.5 items-start ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isUser ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 shadow-md' : 'bg-slate-900 border border-slate-800 shadow-md'}">
-            ${isUser ? userIconSvg : aiIconSvg}
+          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary'}">
+            ${isUser ? 
+              `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` : 
+              `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`}
           </div>
-          <div class="max-w-[85%] rounded-3xl px-5 py-3.5 text-sm ${isUser ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white rounded-tr-none shadow-md shadow-cyan-500/10 font-medium' : 'glass-panel border border-slate-800/80 rounded-tl-none prose prose-invert prose-sm max-w-none text-slate-200 shadow-xl'}">
+          <div class="max-w-[85%] text-sm ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-3xl px-4 py-2.5 font-medium' : 'prose prose-invert prose-sm max-w-none text-m3-onSurface leading-relaxed pt-1'}">
             ${isMarkdown ? renderResponseWithArtifacts(content) : content}
           </div>
         </div>
