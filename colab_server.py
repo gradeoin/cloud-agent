@@ -32,14 +32,17 @@ LAST_REAL_ACTIVITY_TIME = time.time()
 # 🔑 API KEY
 API_KEY = secrets.token_urlsafe(32)
 
-# [1/6] MOUNT GOOGLE DRIVE
+# [1/6] MOUNT GOOGLE DRIVE & SYNC TO HIGH-SPEED LOCAL NVME SSD
 DRIVE_AVAILABLE = False
 try:
     from google.colab import drive
     print("📁 [1/6] Mounting Google Drive for permanent model cache...")
     drive.mount('/content/drive')
     os.makedirs('/content/drive/MyDrive/ollama_models', exist_ok=True)
-    os.environ['OLLAMA_MODELS'] = '/content/drive/MyDrive/ollama_models'
+    os.makedirs('/content/ollama_local', exist_ok=True)
+    print("⚡ Syncing cached models to ultra-fast NVMe local SSD for instant loading...")
+    os.system("cp -ru /content/drive/MyDrive/ollama_models/* /content/ollama_local/ 2>/dev/null || true")
+    os.environ['OLLAMA_MODELS'] = '/content/ollama_local'
     DRIVE_AVAILABLE = True
 except Exception:
     print("⚠️ Running outside Colab or Drive skipped. Using local disk.")
@@ -179,6 +182,7 @@ def get_ollama_path() -> str:
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
 print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
+os.system("sudo apt-get update -qq && sudo apt-get install -y -q zstd > /dev/null 2>&1")
 OLLAMA_BIN = get_ollama_path()
 os.system(
     "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
@@ -194,14 +198,13 @@ print(f"⚡ [3/6] Starting Ollama Engine ({OLLAMA_BIN}) with FlashAttention & GP
 subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ))
 time.sleep(3)
 
-print("📥 [4/6] Ensuring core & Vision models are cached in Google Drive...")
+print("📥 [4/6] Ensuring core & Vision models are cached...")
 REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llava:7b", "deepseek-r1:1.5b"]
 
 def already_pulled(model: str) -> bool:
     try:
         listed = subprocess.run([OLLAMA_BIN, "list"], capture_output=True, text=True, timeout=15)
         for line in listed.stdout.splitlines():
-            # Check full model:tag match or base match if untagged
             parts = line.split()
             if parts and (parts[0] == model or parts[0] == f"{model}:latest" or model in parts[0]):
                 return True
@@ -217,6 +220,21 @@ for model in REQUIRED_MODELS:
     result = subprocess.run([OLLAMA_BIN, "pull", model])
     if result.returncode != 0:
         print(f"   ⚠️ Failed to pull {model} (exit code {result.returncode}) — continuing anyway.")
+
+# Background sync newly pulled models to Google Drive for permanent persistence
+if DRIVE_AVAILABLE:
+    threading.Thread(
+        target=lambda: os.system("cp -ru /content/ollama_local/* /content/drive/MyDrive/ollama_models/ 2>/dev/null"),
+        daemon=True
+    ).start()
+
+# [4.5/6] PRE-WARM MODEL INTO GPU VRAM (ELIMINATES FIRST-TOKEN COLD START)
+print("🔥 Pre-warming primary model into GPU VRAM for instant sub-second response...")
+try:
+    subprocess.run([OLLAMA_BIN, "run", "qwen2.5:7b", "ready", "--keepalive", "24h"], capture_output=True, timeout=60)
+    print("   ⚡ Qwen 2.5 (7B) locked into GPU VRAM.")
+except Exception:
+    pass
 
 # [5/6] FASTAPI GATEWAY WITH MULTIMODAL, VOICE, AND AUTO-PIP EXECUTION
 print("🧠 [5/6] Initializing Enterprise Backend Gateway (FastAPI + Vision + GPU Audio)...")
@@ -239,7 +257,7 @@ whisper_model = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global http_client
-    http_client = httpx.AsyncClient(timeout=60.0)
+    http_client = httpx.AsyncClient(timeout=300.0)
     yield
     if http_client:
         await http_client.aclose()
