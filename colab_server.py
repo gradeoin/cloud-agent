@@ -34,15 +34,19 @@ API_KEY = secrets.token_urlsafe(32)
 
 # [1/6] MOUNT GOOGLE DRIVE & SYNC TO HIGH-SPEED LOCAL NVME SSD
 DRIVE_AVAILABLE = False
+DRIVE_MODELS = '/content/drive/MyDrive/ollama_models'
+LOCAL_MODELS = '/root/.ollama/models'
+
 try:
     from google.colab import drive
     print("📁 [1/6] Mounting Google Drive for permanent model cache...")
     drive.mount('/content/drive')
-    os.makedirs('/content/drive/MyDrive/ollama_models', exist_ok=True)
-    os.makedirs('/content/ollama_local', exist_ok=True)
-    print("⚡ Syncing cached models to ultra-fast NVMe local SSD for instant loading...")
-    os.system("cp -ru /content/drive/MyDrive/ollama_models/* /content/ollama_local/ 2>/dev/null || true")
-    os.environ['OLLAMA_MODELS'] = '/content/ollama_local'
+    os.makedirs(DRIVE_MODELS, exist_ok=True)
+    os.makedirs(LOCAL_MODELS, exist_ok=True)
+    if os.path.exists(f"{DRIVE_MODELS}/manifests"):
+        print("⚡ Syncing cached models from Google Drive to local SSD...")
+        os.system(f"cp -rn {DRIVE_MODELS}/* {LOCAL_MODELS}/ 2>/dev/null || true")
+    os.environ['OLLAMA_MODELS'] = LOCAL_MODELS
     DRIVE_AVAILABLE = True
 except Exception:
     print("⚠️ Running outside Colab or Drive skipped. Using local disk.")
@@ -101,9 +105,9 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 os.environ['OLLAMA_ORIGINS'] = '*'
 os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
 os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
-os.environ['OLLAMA_NUM_PARALLEL'] = '2'
+os.environ['OLLAMA_NUM_PARALLEL'] = '1'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
-os.environ['OLLAMA_MAX_LOADED_MODELS'] = '2'
+os.environ['OLLAMA_MAX_LOADED_MODELS'] = '1'
 
 import urllib.request
 
@@ -224,7 +228,7 @@ for model in REQUIRED_MODELS:
 # Background sync newly pulled models to Google Drive for permanent persistence
 if DRIVE_AVAILABLE:
     threading.Thread(
-        target=lambda: os.system("cp -ru /content/ollama_local/* /content/drive/MyDrive/ollama_models/ 2>/dev/null"),
+        target=lambda: os.system(f"cp -rn {LOCAL_MODELS}/* {DRIVE_MODELS}/ 2>/dev/null"),
         daemon=True
     ).start()
 
