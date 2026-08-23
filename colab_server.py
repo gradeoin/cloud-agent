@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🚀 BULLETPROOF GOOGLE COLAB BACKEND (ZERO 403 ERRORS)
+# 🚀 BULLETPROOF GOOGLE COLAB BACKEND (FAST GPU INFERENCE)
 # Uses Cloudflare Tunnel: 100% Free, Zero Tokens Needed, Zero 403 Issues!
 # ==============================================================================
 
@@ -23,10 +23,10 @@ print("⚡ [3/4] Starting Ollama Engine...")
 subprocess.Popen(["ollama", "serve"], env=dict(os.environ))
 time.sleep(4)
 
-# Load model from Google Drive
-MODEL = "deepseek-r1:7b"
-print(f"📥 Loading {MODEL} from Google Drive...")
-!ollama pull {MODEL}
+# Pre-load DeepSeek models (7B for deep reasoning, 1.5B for instant speed)
+print("📥 Loading DeepSeek-R1 (7B) and Ultra-Fast (1.5B) models...")
+!ollama pull deepseek-r1:7b
+!ollama pull deepseek-r1:1.5b
 
 print("🌐 [4/4] Starting Cloudflare Tunnel...")
 tunnel_process = subprocess.Popen(
