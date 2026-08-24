@@ -282,8 +282,8 @@
         </button>
       </div>
 
-      <!-- Right Header Action (Single Clean Log in Button) -->
-      <div class="flex items-center gap-2">
+      <!-- Right Header Action (Dynamic Auth Container) -->
+      <div id="header-auth-container" class="flex items-center gap-2">
         <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-[#18181b] hover:bg-black text-white text-xs font-medium px-4 py-1.5 rounded-lg transition shadow-xs cursor-pointer">
           Log in
         </button>
@@ -593,27 +593,16 @@
           auth.onAuthStateChanged(user => {
             const loader = document.getElementById("auth-loading-screen");
             if (loader) loader.classList.add("hidden");
+            
             if (user) {
-              if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
-                showAuthError(`Access Denied: ${user.email} is not authorized.`);
-                auth.signOut();
-                return;
-              }
-              if (!allowedEmail) {
-                allowedEmail = user.email.toLowerCase();
-                localStorage.setItem("ai_allowed_email", allowedEmail);
-                const eEl = document.getElementById("allowed-email-input");
-                if (eEl) eEl.value = allowedEmail;
-              }
               currentUser = user;
               const overlay = document.getElementById("auth-overlay");
               if (overlay) overlay.classList.add("hidden");
-              const nameEl = document.getElementById("user-name");
-              if (nameEl) nameEl.textContent = user.displayName || user.email;
-              
+              updateAuthUI(user);
               loadFirestoreConversations();
             } else {
               currentUser = null;
+              updateAuthUI(null);
             }
           });
         }).catch(() => {
@@ -628,15 +617,72 @@
     }
     initFirebase();
 
+    function updateAuthUI(user) {
+      const headerAuth = document.getElementById("header-auth-container");
+      const nameEl = document.getElementById("user-name");
+      const avatarEl = document.getElementById("user-avatar-initials");
+
+      if (user) {
+        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+        const photoUrl = user.photoURL;
+
+        if (headerAuth) {
+          headerAuth.innerHTML = `
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <div class="flex items-center gap-1.5 bg-[#f1f3f4] border border-[#dadce0] pl-1 pr-2.5 py-1 rounded-full text-xs font-medium text-[#202124] shadow-xs">
+                ${photoUrl ? `<img src="${photoUrl}" class="w-4 h-4 rounded-full object-cover">` : `<span class="w-4 h-4 rounded-full bg-[#18181b] text-white flex items-center justify-center text-[9px] font-bold">${displayName.charAt(0).toUpperCase()}</span>`}
+                <span class="max-w-[100px] sm:max-w-[130px] truncate font-medium">${displayName}</span>
+              </div>
+              <button onclick="handleSignOut()" class="text-xs text-[#5f6368] hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 transition cursor-pointer font-medium" title="Sign out">Log out</button>
+            </div>
+          `;
+        }
+
+        if (nameEl) nameEl.textContent = displayName;
+        if (avatarEl) {
+          if (photoUrl) {
+            avatarEl.innerHTML = `<img src="${photoUrl}" class="w-full h-full rounded-full object-cover">`;
+          } else {
+            avatarEl.innerHTML = `<span class="font-semibold text-xs text-[#202124]">${displayName.charAt(0).toUpperCase()}</span>`;
+          }
+        }
+      } else {
+        if (headerAuth) {
+          headerAuth.innerHTML = `
+            <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-[#18181b] hover:bg-black text-white text-xs font-medium px-4 py-1.5 rounded-lg transition shadow-xs cursor-pointer">
+              Log in
+            </button>
+          `;
+        }
+        if (nameEl) nameEl.textContent = "Guest User";
+        if (avatarEl) {
+          avatarEl.innerHTML = `<svg class="w-3.5 h-3.5 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        }
+      }
+    }
+
     function handleGoogleSignIn() {
       const provider = new firebase.auth.GoogleAuthProvider();
       hideAuthError();
-      auth.signInWithPopup(provider).catch(err => {
+      auth.signInWithPopup(provider).then(result => {
+        if (result && result.user) {
+          document.getElementById('auth-overlay').classList.add('hidden');
+          updateAuthUI(result.user);
+          showToast(`Welcome back, ${result.user.displayName || 'User'}!`);
+        }
+      }).catch(err => {
         showAuthError(err.message || "Failed to sign in with Google.");
       });
     }
 
-    function handleSignOut() { auth.signOut(); }
+    function handleSignOut() { 
+      if (auth) {
+        auth.signOut().then(() => {
+          showToast("Signed out successfully");
+          updateAuthUI(null);
+        });
+      }
+    }
     function showAuthError(msg) {
       const errBox = document.getElementById("auth-error-msg");
       if (errBox) {
