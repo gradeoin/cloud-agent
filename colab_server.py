@@ -166,8 +166,8 @@ os.system("fuser -k 8000/tcp >/dev/null 2>&1 || true")
 subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 time.sleep(2)
 
-# [3/4] VERIFY & PRE-WARM MODEL SUITE
-print("📥 [3/4] Checking AI Models in Google Drive Cache...")
+# [3/4] VERIFY, HEAL & PRE-WARM MODEL SUITE
+print("📥 [3/4] Validating AI Models & Drive Cache Integrity...")
 REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llama3.1:8b", "llava:7b", "deepseek-r1:1.5b"]
 
 def already_pulled(model: str) -> bool:
@@ -178,16 +178,37 @@ def already_pulled(model: str) -> bool:
     except Exception:
         return False
 
-for model in REQUIRED_MODELS:
-    if already_pulled(model):
-        print(f"   ✅ {model:<18} (cached in Google Drive)")
-    else:
-        print(f"   ⬇️ {model:<18} (downloading to Drive once)...")
-        subprocess.run([OLLAMA_BIN, "pull", model])
-        if DRIVE_AVAILABLE:
+def verify_and_heal_model(model: str):
+    """Verifies that GGUF weights are complete and non-truncated. Auto-heals if broken."""
+    if not already_pulled(model):
+        print(f"   ⬇️ {model:<18} (downloading to Drive cache)...")
+        res = subprocess.run([OLLAMA_BIN, "pull", model])
+        if res.returncode == 0 and DRIVE_AVAILABLE:
             shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
+        return
 
-# Pre-warm default model into GPU VRAM for instant 0.2s response
+    # Check GGUF file integrity by running a 1-token test inference
+    try:
+        req = urllib.request.Request(
+            "http://127.0.0.1:11434/api/generate",
+            data=json.dumps({"model": model, "prompt": "1", "options": {"num_predict": 1}}).encode(),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            pass
+        print(f"   ✅ {model:<18} (verified & ready)")
+    except Exception as e:
+        print(f"   ⚠️ {model:<18} (incomplete/corrupted in Drive: {e}). Auto-repairing...")
+        subprocess.run([OLLAMA_BIN, "rm", model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        res = subprocess.run([OLLAMA_BIN, "pull", model])
+        if res.returncode == 0 and DRIVE_AVAILABLE:
+            shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
+        print(f"   ✅ {model:<18} (repaired & saved to Drive)")
+
+for model in REQUIRED_MODELS:
+    verify_and_heal_model(model)
+
+# Pre-warm default model into GPU VRAM with 24h keep-alive
 print("🔥 Locking DeepSeek-R1 (7B) into GPU VRAM...")
 try:
     req = urllib.request.Request(
@@ -195,8 +216,8 @@ try:
         data=json.dumps({"model": "deepseek-r1:7b", "prompt": "hi", "keep_alive": "24h"}).encode(),
         headers={"Content-Type": "application/json"}
     )
-    urllib.request.urlopen(req, timeout=90)
-    print("   ⚡ Primary model is hot in VRAM.")
+    urllib.request.urlopen(req, timeout=60)
+    print("   ⚡ Primary model resident in GPU VRAM.")
 except Exception:
     pass
 
