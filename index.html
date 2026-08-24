@@ -1142,11 +1142,11 @@
       const html = `
         <div id="${msgId}" class="flex gap-3 items-start msg-fade-in ${isUser ? 'justify-end' : 'justify-start'}">
           ${!isUser ? `
-            <div id="avatar-${msgId}" class="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-black select-none neural-avatar-box">
-              <svg id="svg-${msgId}" class="w-5 h-5 text-black ${isGenerating ? 'neural-generating' : ''}" viewBox="0 0 32 32" fill="none">
-                <path class="logo-top" d="M16 6L7 11l9 5 9-5-9-5z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path class="logo-mid" d="M7 16l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path class="logo-bot" d="M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <div id="avatar-${msgId}" class="w-8 h-8 flex items-center justify-center shrink-0 mt-0.5 text-black select-none neural-avatar-box">
+              <svg id="svg-${msgId}" class="w-7 h-7 text-black ${isGenerating ? 'neural-generating' : ''}" viewBox="0 0 32 32" fill="none">
+                <path class="logo-top" d="M16 6L7 11l9 5 9-5-9-5z" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="logo-mid" d="M7 16l9 5 9-5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="logo-bot" d="M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
           ` : ''}
