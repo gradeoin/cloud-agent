@@ -282,7 +282,7 @@
         <div class="relative" onclick="event.stopPropagation()">
           <button onclick="toggleModelDropdown()" id="model-selector-btn" class="flex items-center gap-2 bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] hover:border-white/[0.16] h-8 px-3 rounded-xl text-xs font-medium text-white transition shadow-sm active:scale-95 cursor-pointer">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="current-model-display" class="font-medium">DeepSeek-R1 (7B)</span>
+            <span id="current-model-display" class="font-medium">Qwen 2.5 Coder (7B)</span>
             <svg class="w-3 h-3 text-m3-onSurfaceVariant transition-transform duration-200" id="model-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </button>
 
@@ -290,6 +290,16 @@
           <div id="model-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-72 bg-[#1e1f20] border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1 backdrop-blur-xl">
             <div class="text-[10px] uppercase font-bold text-m3-onSurfaceVariant/70 px-3 pt-2 pb-1 tracking-wider">Select AI Model</div>
             
+            <button onclick="selectModel('qwen2.5-coder:7b', 'Qwen 2.5 Coder (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
+              <div>
+                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
+                  <span>Qwen 2.5 Coder (7B)</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal">🏆 Flagship</span>
+                </div>
+                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Top-tier full-stack websites, UI & apps</div>
+              </div>
+            </button>
+
             <button onclick="selectModel('deepseek-r1:7b', 'DeepSeek-R1 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
               <div>
                 <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
@@ -542,7 +552,7 @@
 
     let backendUrl = localStorage.getItem("ai_backend_url") || "https://promo-argued-induced-positions.trycloudflare.com";
     let backendApiKey = localStorage.getItem("ai_backend_key") || "";
-    let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
+    let modelName = localStorage.getItem("ai_model_name") || "qwen2.5-coder:7b";
     let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
 
     // 🚀 AUTOMATIC 1-CLICK COLAB AUTO-CONNECT FROM URL PARAMETERS
@@ -1791,19 +1801,21 @@
 
         const systemPrompt = {
           role: "system",
-          content: `You are BuckBuck AI, an expert, concise, and world-class developer assistant with GPU Execution & Multimodal Vision support.
+          content: `You are BuckBuck AI, an elite Full-Stack Web Architect and Senior Software Engineer powered by Qwen 2.5 Coder.
 Current Date: ${dateString}, ${timeString} (${timezone}).
 
-Directives:
-- For Web Apps: Always write modern, production-grade single-file HTML/JS with Tailwind CSS & Lucide Icons.
-- For Python / Data Science: Write complete executable Python scripts (using matplotlib, numpy, pandas, seaborn, scikit-learn) as they can be run directly on the Colab GPU.
-- Enclose all code in triple backtick markdown blocks with the exact language identifier (\`\`\`html, \`\`\`python, \`\`\`javascript).`
+Core Directives for Web & App Creation:
+1. Complete & Production-Grade: When asked to build a website, UI, tool, or app, always provide complete, fully functional, and self-contained code. Never leave placeholders like "// implement later" or cut off code.
+2. Modern Design Standards: Use modern HTML5, Tailwind CSS, clean typography (Inter / Google Sans), glassmorphism, responsive flex/grid layouts, smooth CSS transitions, and SVG icons.
+3. Interactive Functionality: Include complete vanilla JavaScript with realistic state management, event listeners, local storage, animations, and clean UI feedback.
+4. Python & Data Science: For data science, machine learning, and math tasks, write complete executable Python code with matplotlib/seaborn plots and calculations.
+5. Markdown Code Blocks: Always wrap code in appropriate triple-backtick markdown blocks (\`\`\`html, \`\`\`python, \`\`\`javascript, \`\`\`css).`
         };
         messagesPayload = [systemPrompt, ...historyPayload];
       }
 
       try {
-        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Streaming tokens...</span><span class="cursor-blink"></span>');
+        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Crafting code & streaming tokens...</span><span class="cursor-blink"></span>');
 
         let activeModelForChat = modelName;
         if (attachedBase64Images.length > 0 && !modelName.includes("llava") && !modelName.includes("vl")) {
@@ -1819,11 +1831,11 @@ Directives:
             stream: true,
             options: {
               num_gpu: 99,
-              num_ctx: 2048,
+              num_ctx: 4096,
               num_batch: 512,
-              temperature: 0.3,
-              top_p: 0.9,
-              num_predict: 1024
+              temperature: 0.2,
+              top_p: 0.95,
+              num_predict: 2048
             }
           })
         });
