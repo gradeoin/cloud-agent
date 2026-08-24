@@ -109,13 +109,48 @@ os.environ['OLLAMA_NUM_PARALLEL'] = '1'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 os.environ['OLLAMA_MAX_LOADED_MODELS'] = '1'
 
-import urllib.request
+DRIVE_BIN = '/content/drive/MyDrive/buckbuck_bin'
+
+def restore_binaries_from_drive() -> bool:
+    if not DRIVE_AVAILABLE or not os.path.exists(DRIVE_BIN):
+        return False
+    ollama_drive = os.path.join(DRIVE_BIN, "ollama")
+    cloudflared_drive = os.path.join(DRIVE_BIN, "cloudflared")
+    if os.path.exists(ollama_drive) and os.path.exists(cloudflared_drive):
+        try:
+            shutil.copy(ollama_drive, "/usr/local/bin/ollama")
+            shutil.copy(cloudflared_drive, "/usr/local/bin/cloudflared")
+            os.system("chmod +x /usr/local/bin/ollama /usr/local/bin/cloudflared")
+            # Also restore any cuda library bundle if saved
+            ollama_lib_drive = os.path.join(DRIVE_BIN, "ollama_lib")
+            if os.path.exists(ollama_lib_drive):
+                shutil.copytree(ollama_lib_drive, "/usr/local/lib/ollama", dirs_exist_ok=True)
+            print("⚡ Restored Ollama & Cloudflare binaries directly from Google Drive (0s download)!")
+            return True
+        except Exception as e:
+            print(f"⚠️ Notice restoring binaries from Drive: {e}")
+    return False
+
+def save_binaries_to_drive(ollama_path: str):
+    if not DRIVE_AVAILABLE:
+        return
+    try:
+        os.makedirs(DRIVE_BIN, exist_ok=True)
+        if os.path.exists(ollama_path):
+            shutil.copy(ollama_path, os.path.join(DRIVE_BIN, "ollama"))
+        cf_path = shutil.which("cloudflared") or "/usr/local/bin/cloudflared"
+        if os.path.exists(cf_path):
+            shutil.copy(cf_path, os.path.join(DRIVE_BIN, "cloudflared"))
+        if os.path.exists("/usr/local/lib/ollama"):
+            shutil.copytree("/usr/local/lib/ollama", os.path.join(DRIVE_BIN, "ollama_lib"), dirs_exist_ok=True)
+        print("💾 Cached Ollama & Cloudflare binaries into Google Drive for instant next-session startup.")
+    except Exception as e:
+        print(f"⚠️ Notice saving binaries to Drive: {e}")
 
 def get_ollama_path() -> str:
     """
     Locate (or install) the ollama binary.
-    Resilient to Ollama release format updates by querying GitHub Releases API
-    directly for the latest Linux AMD64 asset (.tar.zst or .tgz) and extracting with zstd/tar.
+    First checks Google Drive cache, then standard system paths, then official installer/GitHub releases.
     """
     def _first_existing(paths):
         for p in paths:
@@ -185,13 +220,19 @@ def get_ollama_path() -> str:
     )
 
 # [3/6] INSTALL SYSTEM DEPENDENCIES & DATA SCIENCE/VISION/VOICE PACKAGES
-print("⏳ [2/6] Installing Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
+print("⏳ [2/6] Setting up Ollama, Cloudflare Tunnel, ML/Vision & Audio Suite...")
 os.system("sudo apt-get update -qq && sudo apt-get install -y -q zstd > /dev/null 2>&1")
-OLLAMA_BIN = get_ollama_path()
-os.system(
-    "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
-    "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
-)
+
+if not restore_binaries_from_drive():
+    OLLAMA_BIN = get_ollama_path()
+    os.system(
+        "curl -s -L https://github.com/cloudflare/cloudflared/releases/latest/download/"
+        "cloudflared-linux-amd64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb > /dev/null 2>&1"
+    )
+    save_binaries_to_drive(OLLAMA_BIN)
+else:
+    OLLAMA_BIN = "/usr/local/bin/ollama"
+
 os.system(
     "pip install -q fastapi uvicorn httpx pydantic nest_asyncio matplotlib numpy pandas scipy "
     "scikit-learn seaborn sympy pillow torch torchaudio openai-whisper > /dev/null 2>&1"
