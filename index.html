@@ -544,6 +544,39 @@
     let backendApiKey = localStorage.getItem("ai_backend_key") || "";
     let modelName = localStorage.getItem("ai_model_name") || "deepseek-r1:7b";
     let allowedEmail = localStorage.getItem("ai_allowed_email") || "";
+
+    // 🚀 AUTOMATIC 1-CLICK COLAB AUTO-CONNECT FROM URL PARAMETERS
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      let autoConnected = false;
+      if (urlParams.has("colab") || urlParams.has("url")) {
+        const newUrl = (urlParams.get("colab") || urlParams.get("url")).trim().replace(/\/+$/, "");
+        if (newUrl.startsWith("http")) {
+          backendUrl = newUrl;
+          localStorage.setItem("ai_backend_url", backendUrl);
+          autoConnected = true;
+        }
+      }
+      if (urlParams.has("key") || urlParams.has("api_key")) {
+        const newKey = (urlParams.get("key") || urlParams.get("api_key")).trim();
+        if (newKey) {
+          backendApiKey = newKey;
+          localStorage.setItem("ai_backend_key", backendApiKey);
+          autoConnected = true;
+        }
+      }
+      if (autoConnected) {
+        // Clean URL in address bar without reloading
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        setTimeout(() => {
+          if (typeof showToast === 'function') showToast("⚡ Auto-connected to Colab GPU Backend!");
+        }, 500);
+      }
+    } catch (e) {
+      console.warn("URL param auto-connect:", e);
+    }
+
     let currentChatId = getChatIdFromURL() || "chat_" + Date.now();
     let db = null, auth = null, currentUser = null;
     let conversations = JSON.parse(localStorage.getItem("ai_conversations") || "{}");
