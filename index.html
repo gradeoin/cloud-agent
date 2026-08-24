@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuckBuck AI • Enterprise Neural Workspace</title>
+  <title>BuckBuck AI • Studio</title>
   
   <!-- Dynamic SVG Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%2338bdf8'/><stop offset='50%' stop-color='%23818cf8'/><stop offset='100%' stop-color='%23c084fc'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='%23131314'/><path d='M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6' stroke='url(%23g)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2318181b'/><path d='M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 
-  <!-- Google Fonts: Google Sans & JetBrains Mono -->
+  <!-- Google Fonts: Inter & Roboto -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Markdown & Code Highlighting -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 
   <!-- KaTeX LaTeX Math Typesetting Engine -->
@@ -31,26 +31,20 @@
 
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Google Sans"', 'Roboto', 'sans-serif'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            m3: {
-              surface: '#131314',
-              surfaceContainerLow: '#18181a',
-              surfaceContainer: '#1e1f20',
-              surfaceContainerHigh: '#282a2c',
-              surfaceContainerHighest: '#333538',
-              primary: '#a8c7fa',
-              primaryContainer: '#0842a0',
-              onSurface: '#e3e3e3',
-              onSurfaceVariant: '#c4c7c5',
-              outline: '#444746',
-              outlineVariant: '#282a2c',
+            brand: {
+              black: '#18181b',
+              gray: '#f4f4f5',
+              border: '#e4e4e7',
+              text: '#09090b',
+              subtext: '#71717a',
+              blue: '#2563eb'
             }
           }
         }
@@ -59,7 +53,6 @@
   </script>
 
   <style>
-    /* 100% INVISIBLE SCROLLBARS WORLDWIDE WHILE PRESERVING SMOOTH SCROLL */
     *, *::before, *::after {
       scrollbar-width: none !important;
       -ms-overflow-style: none !important;
@@ -68,142 +61,117 @@
       display: none !important;
       width: 0px !important;
       height: 0px !important;
-      background: transparent !important;
     }
     
     html, body {
-      width: 100vw !important;
-      height: 100vh !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: hidden !important;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #ffffff;
+      color: #09090b;
     }
-    
-    /* ENHANCED READABLE FULL-WIDTH TYPOGRAPHY */
+
     .prose-readable {
-      font-size: 15.5px;
-      line-height: 1.75;
-      color: #e3e3e3;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #18181b;
       width: 100%;
     }
-    .prose-readable p {
-      margin-bottom: 1.15em;
-    }
-    .prose-readable h1, .prose-readable h2, .prose-readable h3, .prose-readable h4 {
-      color: #f1f3f4;
+    .prose-readable p { margin-bottom: 1em; }
+    .prose-readable h1, .prose-readable h2, .prose-readable h3 {
+      color: #09090b;
       font-weight: 600;
-      margin-top: 1.4em;
-      margin-bottom: 0.6em;
-      letter-spacing: -0.01em;
+      margin-top: 1.2em;
+      margin-bottom: 0.5em;
     }
-    .prose-readable h1 { font-size: 1.45em; color: #a8c7fa; }
-    .prose-readable h2 { font-size: 1.25em; border-bottom: 1px solid rgba(68, 71, 70, 0.35); padding-bottom: 0.35em; }
-    .prose-readable h3 { font-size: 1.1em; }
-    .prose-readable ul, .prose-readable ol {
-      margin-bottom: 1.15em;
-      padding-left: 1.35em;
-    }
+    .prose-readable h1 { font-size: 1.4em; }
+    .prose-readable h2 { font-size: 1.2em; }
+    .prose-readable ul, .prose-readable ol { margin-bottom: 1em; padding-left: 1.3em; }
     .prose-readable ul { list-style-type: disc; }
     .prose-readable ol { list-style-type: decimal; }
-    .prose-readable li {
-      margin-bottom: 0.45em;
+    .prose-readable code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88em;
+      background: #f4f4f5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #09090b;
     }
-    .prose-readable blockquote {
-      border-left: 3px solid #a8c7fa;
-      background: rgba(168, 199, 250, 0.06);
-      padding: 10px 16px;
-      border-radius: 0 14px 14px 0;
-      margin: 1.2em 0;
-      color: #c4c7c5;
+    .prose pre {
+      background: #18181b !important;
+      color: #f4f4f5;
+      padding: 14px;
+      margin: 12px 0;
+      border-radius: 14px;
+      overflow-x: auto;
     }
-    .prose-readable strong {
-      color: #ffffff;
-      font-weight: 600;
+    .prose pre code {
+      background: transparent !important;
+      color: #f4f4f5 !important;
+      padding: 0;
     }
-    .prose-readable table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.2em 0;
-      font-size: 0.9em;
-    }
-    .prose-readable th, .prose-readable td {
-      border: 1px solid #282a2c;
-      padding: 8px 12px;
-      text-align: left;
-    }
-    .prose-readable th {
-      background: #1e1f20;
-      color: #a8c7fa;
-      font-weight: 600;
-    }
-    
-    .prose pre { background: #18181a !important; border: 1px solid #282a2c; padding: 14px; margin: 0 0 14px 0; border-radius: 16px; overflow-x: auto; }
-    .prose code { color: #a8c7fa; font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
-    .cursor-blink { display: inline-block; width: 6px; height: 15px; background: #a8c7fa; animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    
-    .katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidden; padding: 6px 0; }
-    .katex { font-size: 1.08em; color: #e3e3e3; }
-    
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes float-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-    @keyframes pulse-glow { 0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 12px rgba(168, 199, 250, 0.4)); } 50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(168, 199, 250, 0.7)); } }
 
-    .msg-fade-in { animation: fadeIn 0.25s ease-out forwards; }
-    .anim-spin { animation: spin-slow 10s linear infinite; }
-    .anim-float { animation: float-slow 4s ease-in-out infinite; }
-    .anim-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    .cursor-blink {
+      display: inline-block;
+      width: 5px;
+      height: 14px;
+      background: #18181b;
+      animation: blink 1s infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-fade-in { animation: fadeIn 0.22s ease-out forwards; }
 
     #sidebar {
       width: 260px;
       min-width: 260px;
-      transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #sidebar.sidebar-hidden {
       width: 0px !important;
       min-width: 0px !important;
-      border-right: none !important;
       opacity: 0;
       pointer-events: none;
       visibility: hidden;
     }
   </style>
 </head>
-<body class="bg-m3-surface text-m3-onSurface flex h-screen w-screen overflow-hidden font-sans antialiased selection:bg-m3-primary/30 selection:text-m3-primary" onclick="closeAllDropdowns(event)">
+<body class="bg-white text-brand-text flex h-screen w-screen overflow-hidden font-sans antialiased">
 
   <!-- SILENT INITIAL AUTH CHECK LOADER -->
-  <div id="auth-loading-screen" class="fixed inset-0 bg-m3-surface z-50 flex flex-col items-center justify-center space-y-4">
-    <div class="w-14 h-14 rounded-2xl bg-m3-surfaceContainerHigh flex items-center justify-center shadow-xl anim-float">
-      <svg class="w-7 h-7 text-m3-primary anim-glow" viewBox="0 0 32 32" fill="none">
-        <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <div id="auth-loading-screen" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-3">
+    <div class="w-10 h-10 rounded-xl bg-brand-black flex items-center justify-center shadow-md">
+      <svg class="w-5 h-5 text-white" viewBox="0 0 32 32" fill="none">
+        <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <div class="flex items-center gap-2 text-xs text-m3-onSurfaceVariant font-medium">
-      <svg class="w-4 h-4 text-m3-primary anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
-      <span>Initializing workspace...</span>
+    <div class="flex items-center gap-2 text-xs text-brand-subtext font-medium">
+      <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
+      <span>Loading Studio...</span>
     </div>
   </div>
 
-  <!-- GOOGLE LOGIN SCREEN (Overlay) -->
-  <div id="auth-overlay" class="fixed inset-0 bg-m3-surface/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-m3-surfaceContainer border border-m3-outline/40 w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center space-y-6">
-      
-      <!-- Logo -->
-      <div class="w-16 h-16 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/30 flex items-center justify-center mx-auto shadow-xl anim-float">
-        <svg class="w-8 h-8 text-m3-primary anim-glow" viewBox="0 0 32 32" fill="none">
-          <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- GOOGLE LOGIN MODAL -->
+  <div id="auth-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white border border-brand-border w-full max-w-sm rounded-2xl p-7 shadow-2xl text-center space-y-5">
+      <div class="w-12 h-12 rounded-xl bg-brand-black flex items-center justify-center mx-auto shadow-sm">
+        <svg class="w-6 h-6 text-white" viewBox="0 0 32 32" fill="none">
+          <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-
       <div>
-        <h2 class="text-xl font-semibold text-m3-onSurface tracking-tight">BuckBuck AI</h2>
-        <p class="text-xs text-m3-onSurfaceVariant mt-1">Enterprise Neural Workspace</p>
+        <h2 class="text-lg font-semibold text-brand-text">Welcome to BuckBuck</h2>
+        <p class="text-xs text-brand-subtext mt-1">Sign in to save and sync your conversations</p>
       </div>
 
-      <div id="auth-error-msg" class="hidden text-xs bg-rose-500/10 text-rose-300 border border-rose-500/20 p-3 rounded-2xl text-left font-medium"></div>
+      <div id="auth-error-msg" class="hidden text-xs bg-rose-50 text-rose-600 border border-rose-200 p-2.5 rounded-xl text-left font-medium"></div>
 
-      <button id="google-login-btn" onclick="handleGoogleSignIn()" class="w-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 font-medium py-3 px-4 rounded-full text-sm flex items-center justify-center gap-3 transition shadow-md">
+      <button onclick="handleGoogleSignIn()" class="w-full bg-brand-black hover:bg-black active:scale-98 text-white font-medium py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2.5 transition shadow-sm cursor-pointer">
         <svg class="w-4 h-4" viewBox="0 0 24 24">
           <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.9 5 12 5z"/>
           <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
@@ -212,209 +180,188 @@
         </svg>
         Sign in with Google
       </button>
+      <button onclick="document.getElementById('auth-overlay').classList.add('hidden')" class="text-xs text-brand-subtext hover:text-brand-text">Continue as Guest</button>
     </div>
   </div>
 
-  <!-- COLLAPSIBLE GOOGLE MATERIAL 3 SIDEBAR -->
-  <aside id="sidebar" class="bg-m3-surfaceContainerLow border-r border-m3-outline/20 flex flex-col z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden select-none">
-    
-    <!-- Unified Sidebar Header -->
-    <div class="px-3.5 py-3 flex items-center gap-2.5 min-w-[260px]">
-      <button onclick="toggleSidebar()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface p-2 rounded-full hover:bg-m3-surfaceContainer transition" title="Collapse sidebar">
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-      </button>
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="sidebar" class="bg-[#fafafa] border-r border-brand-border flex flex-col z-30 shrink-0 md:static fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 overflow-hidden select-none">
+    <div class="px-4 py-3 flex items-center justify-between min-w-[260px] border-b border-brand-border/60">
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHigh flex items-center justify-center text-m3-primary shrink-0 shadow-sm">
+        <div class="w-6 h-6 rounded-lg bg-brand-black flex items-center justify-center text-white shrink-0">
           <svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none">
-            <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="font-semibold text-sm tracking-tight text-m3-onSurface whitespace-nowrap">BuckBuck</span>
+        <span class="font-semibold text-sm tracking-tight text-brand-text">BuckBuck Studio</span>
       </div>
+      <button onclick="toggleSidebar()" class="text-brand-subtext hover:text-brand-text p-1.5 rounded-lg hover:bg-gray-200/60 transition" title="Toggle sidebar">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
 
-    <!-- M3 Pill "New Chat" Action -->
-    <div class="px-3 py-1.5 min-w-[260px]">
-      <button onclick="startNewChat()" class="w-full bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh text-m3-onSurface hover:text-white font-medium px-4 py-2.5 rounded-full text-xs flex items-center gap-3 transition shadow-sm border border-m3-outline/30 active:scale-98 whitespace-nowrap">
-        <svg class="w-4 h-4 text-m3-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    <div class="px-3 py-2 min-w-[260px]">
+      <button onclick="startNewChat()" class="w-full bg-white hover:bg-gray-100 text-brand-text font-medium px-3.5 py-2 rounded-xl text-xs flex items-center gap-2.5 transition border border-brand-border shadow-sm cursor-pointer">
+        <svg class="w-3.5 h-3.5 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         <span>New chat</span>
       </button>
     </div>
 
-    <!-- Conversation History List -->
     <div class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 min-w-[260px]" id="chat-history-list">
-      <div class="text-[11px] font-medium text-m3-onSurfaceVariant px-3 py-1.5 whitespace-nowrap">Recent</div>
+      <div class="text-[11px] font-semibold text-brand-subtext uppercase tracking-wider px-3 py-1.5">Recent</div>
       <div id="history-items" class="space-y-0.5"></div>
     </div>
 
-    <!-- M3 Account Footer -->
-    <div class="p-2 border-t border-m3-outline/20 bg-m3-surfaceContainerLow min-w-[260px]">
-      <div class="flex items-center justify-between p-2 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceContainerHigh transition">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <img id="user-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" class="w-7 h-7 rounded-full bg-m3-surfaceContainerHighest border border-m3-outline/30 shrink-0">
-          <div class="min-w-0">
-            <div id="user-name" class="font-medium text-xs text-m3-onSurface truncate">Admin</div>
-            <div id="firebase-status" class="text-[10px] text-m3-onSurfaceVariant truncate">Firestore synced</div>
+    <div class="p-3 border-t border-brand-border/60 min-w-[260px] bg-white">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <div class="w-7 h-7 rounded-full bg-brand-gray border border-brand-border flex items-center justify-center text-xs font-semibold text-brand-text shrink-0" id="user-avatar-initials">
+            <svg class="w-3.5 h-3.5 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
+          <span id="user-name" class="text-xs font-medium text-brand-text truncate max-w-[120px]">Guest User</span>
         </div>
-        <button onclick="handleSignOut()" class="text-m3-onSurfaceVariant hover:text-rose-400 p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition" title="Sign out">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <button onclick="toggleSettingsModal()" class="text-brand-subtext hover:text-brand-text p-1.5 rounded-lg hover:bg-gray-100 transition" title="Settings">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- Sidebar Overlay for Mobile -->
-  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 hidden md:hidden"></div>
-
-  <!-- MAIN CHAT & WORKSPACE AREA -->
-  <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-m3-surface relative overflow-hidden">
+  <!-- MAIN CANVAS AREA -->
+  <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-white relative overflow-hidden">
     
-    <!-- Main Header -->
-    <header class="bg-[#131314]/90 backdrop-blur-xl px-3 sm:px-6 py-2.5 flex justify-between items-center z-10 border-b border-white/[0.07] shrink-0">
-      <div class="flex items-center gap-2">
-        <!-- Hamburger Button -->
-        <button id="main-hamburger-btn" onclick="toggleSidebar()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition hidden" title="Expand sidebar">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    <!-- TOP HEADER (Qwen Studio Style) -->
+    <header class="bg-white px-4 sm:px-8 py-3.5 flex justify-between items-center z-10 shrink-0 select-none">
+      <div class="flex items-center gap-3">
+        <!-- Sidebar Toggle -->
+        <button onclick="toggleSidebar()" class="text-brand-subtext hover:text-brand-text p-1.5 rounded-lg hover:bg-gray-100 transition" title="Toggle Sidebar">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
 
-        <!-- ACTIVE FLAGSHIP MODEL BADGE -->
-        <div class="flex items-center gap-2 bg-[#1e1f20] border border-white/[0.08] h-8 px-3 rounded-xl text-xs font-medium text-white shadow-sm select-none">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="font-medium">Qwen 2.5 Coder (7B)</span>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal hidden sm:inline-block">🏆 Web & Apps</span>
+        <!-- Model Selector (Qwen Studio Pill) -->
+        <div class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-brand-border px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-text shadow-sm cursor-pointer" onclick="toggleSettingsModal()">
+          <svg class="w-3.5 h-3.5 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+          <span id="current-model-display">Qwen 2.5 Coder (7B)</span>
+          <svg class="w-3 h-3 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
         </div>
 
-        <!-- GPU / System Health Badge -->
-        <span id="status-badge" class="text-[11px] h-8 px-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-medium hidden sm:inline-flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>T4 GPU</span>
+        <!-- GPU Status Tag -->
+        <span id="status-badge" class="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 hidden sm:inline-flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>GPU Connected</span>
         </span>
       </div>
 
-      <!-- Unified Controls Toolbar -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- Live Search Toggle Button -->
-        <button id="websearch-btn" onclick="toggleWebSearch()" class="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-onSurfaceVariant hover:text-white border border-white/[0.08] transition active:scale-95 cursor-pointer" title="Toggle Live Web Grounding">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-          <span class="hidden sm:inline">Search</span>
-        </button>
-
-        <!-- Artifacts Studio Button -->
-        <button onclick="toggleArtifactDrawerQuick()" class="flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-primary border border-m3-primary/25 hover:border-m3-primary/50 transition active:scale-95 shadow-sm cursor-pointer" title="Open Artifact Studio">
+      <!-- Right Header Actions (Log in / Sign up buttons) -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleArtifactDrawerQuick()" class="text-xs font-medium text-brand-subtext hover:text-brand-text px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition hidden sm:inline-flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-          <span class="hidden sm:inline">Artifacts</span>
+          <span>Artifacts</span>
         </button>
 
-        <div class="h-4 w-px bg-white/10 mx-0.5 hidden sm:block"></div>
-
-        <!-- Export Chat as HTML -->
-        <button onclick="exportChatAsHTML()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer" title="Export conversation as HTML document">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-brand-black hover:bg-black text-white text-xs font-medium px-4 py-1.5 rounded-lg transition shadow-sm cursor-pointer">
+          Log in
         </button>
-
-        <!-- Settings Button -->
-        <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-xl bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] text-m3-onSurfaceVariant hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer" title="Settings">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-white hover:bg-gray-50 border border-brand-border text-brand-text text-xs font-medium px-4 py-1.5 rounded-lg transition cursor-pointer">
+          Sign up
         </button>
       </div>
     </header>
 
-    <!-- Chat Messages Scroll Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-7 max-w-5xl w-full mx-auto relative">
+    <!-- CHAT MESSAGES SCROLL CONTAINER -->
+    <main id="chat-container" class="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 max-w-3xl w-full mx-auto relative flex flex-col justify-start">
       
-      <!-- Minimal Gemini-Style Welcome Header -->
-      <div id="welcome-banner" class="space-y-4 pt-16 pb-6 msg-fade-in">
-        <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
-          <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
-            <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-          <span class="text-m3-primary">Hello,</span>
-        </h2>
-        <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
+      <!-- HERO IDLE STATE (Qwen Studio Centered Heading) -->
+      <div id="welcome-banner" class="my-auto text-center space-y-3 py-16 msg-fade-in">
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-brand-text">
+          How can I help you ?
+        </h1>
+        <p class="text-xs sm:text-sm text-brand-subtext font-normal max-w-md mx-auto">
+          Build websites, write code, run Python analysis, or ask questions with GPU acceleration.
+        </p>
       </div>
     </main>
 
-    <!-- Floating Scroll-To-Bottom Indicator -->
-    <div id="scroll-bottom-container" class="absolute bottom-24 right-8 z-20 hidden">
-      <button onclick="scrollToBottom(true)" class="bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-primary p-2.5 rounded-full shadow-xl border border-m3-outline/40 flex items-center gap-2 text-xs font-medium transition hover:scale-105 active:scale-95">
+    <!-- FLOATING SCROLL BOTTOM BUTTON -->
+    <div id="scroll-bottom-container" class="absolute bottom-28 right-8 z-20 hidden">
+      <button onclick="scrollToBottom(true)" class="bg-white hover:bg-gray-50 text-brand-text p-2.5 rounded-full shadow-lg border border-brand-border flex items-center gap-1.5 text-xs font-medium transition cursor-pointer">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        <span class="pr-1 text-xs text-m3-onSurface">Bottom</span>
       </button>
     </div>
 
-    <!-- M3 Floating Pill Input Bar -->
-    <footer class="p-3 sm:p-5 bg-gradient-to-t from-m3-surface via-m3-surface to-transparent">
-      <div class="max-w-5xl mx-auto space-y-2">
-        <!-- Attachment Chips Container -->
+    <!-- FLOATING INPUT PILL & FOOTER (Qwen Studio Exact Architecture) -->
+    <footer class="p-4 sm:p-6 bg-gradient-to-t from-white via-white to-transparent">
+      <div class="max-w-2xl mx-auto space-y-3">
+        
+        <!-- Attachment Chips -->
         <div class="flex items-center gap-2 flex-wrap">
-          <!-- Text/Code File Attachment Chip -->
-          <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-m3-outline/30 px-3 py-1.5 rounded-full text-xs text-m3-primary shadow-sm">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-            <span id="attached-file-name" class="font-medium truncate max-w-xs">document.txt</span>
-            <button onclick="removeAttachedFile()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1 cursor-pointer">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
+          <div id="file-attachment-chip" class="hidden flex items-center gap-2 bg-brand-gray border border-brand-border px-3 py-1 rounded-full text-xs text-brand-text shadow-sm">
+            <span id="attached-file-name" class="font-medium truncate max-w-xs">file.txt</span>
+            <button onclick="removeAttachedFile()" class="text-brand-subtext hover:text-rose-500 ml-1 cursor-pointer">×</button>
           </div>
-
-          <!-- Image Attachment Chip (Vision / Screenshots) -->
-          <div id="image-attachment-chip" class="hidden flex items-center gap-2 bg-m3-surfaceContainerHigh border border-pink-500/30 px-2.5 py-1 rounded-2xl text-xs text-pink-300 shadow-sm">
-            <img id="attached-image-thumb" src="" class="w-6 h-6 object-cover rounded-lg border border-pink-500/40">
-            <span id="attached-image-name" class="font-medium truncate max-w-xs">screenshot.png</span>
-            <button onclick="removeAttachedImage()" class="text-m3-onSurfaceVariant hover:text-rose-400 ml-1 cursor-pointer">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
+          <div id="image-attachment-chip" class="hidden flex items-center gap-2 bg-brand-gray border border-brand-border px-2.5 py-1 rounded-full text-xs text-brand-text shadow-sm">
+            <img id="attached-image-thumb" src="" class="w-5 h-5 object-cover rounded-md">
+            <span id="attached-image-name" class="font-medium truncate max-w-xs">image.png</span>
+            <button onclick="removeAttachedImage()" class="text-brand-subtext hover:text-rose-500 ml-1 cursor-pointer">×</button>
           </div>
         </div>
 
-        <!-- M3 Surface Container Pill -->
-        <div class="bg-m3-surfaceContainer border border-m3-outline/30 rounded-[28px] px-4 py-2.5 flex items-center gap-2 sm:gap-3 focus-within:border-m3-primary/60 focus-within:bg-m3-surfaceContainerHigh transition shadow-sm">
+        <!-- Central Floating Input Pill -->
+        <div class="bg-white border border-gray-200/90 hover:border-gray-300 focus-within:border-gray-400 rounded-full px-4 py-2.5 flex items-center gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all">
+          
           <input type="file" id="file-upload-input" class="hidden" accept="image/*,.txt,.csv,.json,.py,.js,.html,.css,.md" onchange="handleFileUpload(event)">
-          <button onclick="document.getElementById('file-upload-input').click()" class="text-m3-onSurfaceVariant hover:text-m3-primary p-1.5 rounded-full hover:bg-m3-surfaceContainerHighest transition shrink-0 cursor-pointer" title="Attach file or screenshot">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          
+          <!-- Left Plus (+) Icon -->
+          <button onclick="document.getElementById('file-upload-input').click()" class="text-gray-400 hover:text-gray-800 text-2xl font-light leading-none p-1 transition cursor-pointer shrink-0" title="Attach file or image">
+            +
           </button>
 
-          <textarea id="prompt-input" rows="1" placeholder="Ask anything, paste screenshots (Ctrl+V), or speak..."
-            class="flex-1 bg-transparent text-sm text-m3-onSurface placeholder-m3-onSurfaceVariant focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
+          <!-- Input Textarea -->
+          <textarea id="prompt-input" rows="1" placeholder="Ask BuckBuck"
+            class="flex-1 bg-transparent text-sm text-brand-text placeholder-gray-400 focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
 
-          <!-- Voice Input Button -->
-          <button id="voice-input-btn" onclick="toggleVoiceRecording()" class="w-8 h-8 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-primary flex items-center justify-center transition shrink-0 active:scale-95 shadow-sm cursor-pointer" title="Voice Input (Speech-to-Text)">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
+          <!-- Auto / Mode Dropdown Selector -->
+          <div class="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-800 cursor-pointer select-none px-2 py-1 rounded-lg hover:bg-gray-100 transition shrink-0" onclick="toggleWebSearch()" id="websearch-btn" title="Toggle Search Grounding">
+            <span>Auto</span>
+            <svg class="w-3 h-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
 
-          <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-m3-primary text-m3-surfaceContainer flex items-center justify-center transition font-bold shrink-0 hover:opacity-90 active:scale-95 disabled:opacity-40 shadow-sm cursor-pointer">
-            <svg class="w-4 h-4 text-m3-surface" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <!-- Circular Action Button (Voice / Send) -->
+          <button id="send-btn" onclick="handleSend()" class="w-8 h-8 rounded-full bg-brand-black hover:bg-black text-white flex items-center justify-center transition shrink-0 active:scale-95 shadow-sm cursor-pointer">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
+        </div>
+
+        <!-- Footer Disclaimer (Qwen Studio Style) -->
+        <div class="text-center text-[11px] text-gray-400 font-normal">
+          By using BuckBuck Studio, you agree to our <a href="#" class="underline hover:text-gray-600">Terms of Service</a> and <a href="#" class="underline hover:text-gray-600">Privacy Policy</a>.
         </div>
       </div>
     </footer>
   </div>
 
-  <!-- CLAUDE ARTIFACTS / PREVIEW DRAWER -->
-  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-m3-surfaceContainerLow border-l border-m3-outline/20 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden">
-    <div class="p-3.5 border-b border-m3-outline/20 bg-m3-surfaceContainer flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-6 h-6 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center text-xs">
+  <!-- ARTIFACTS / PREVIEW DRAWER -->
+  <div id="artifact-drawer" class="fixed inset-y-0 right-0 w-full lg:w-3/5 bg-white border-l border-brand-border shadow-2xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col hidden">
+    <div class="p-3 border-b border-brand-border bg-white flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-brand-gray flex items-center justify-center text-xs font-bold text-brand-text">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
         </div>
-        <h3 id="artifact-title" class="font-medium text-xs text-m3-onSurface truncate max-w-xs">Artifact Preview</h3>
+        <h3 id="artifact-title" class="font-medium text-xs text-brand-text truncate max-w-xs">Artifact Preview</h3>
       </div>
 
       <div class="flex items-center gap-1.5">
-        <div class="flex bg-m3-surfaceContainerHigh p-0.5 rounded-full border border-m3-outline/20 text-xs font-medium">
-          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer">Preview</button>
-          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer">Code</button>
+        <div class="flex bg-brand-gray p-0.5 rounded-lg border border-brand-border text-xs font-medium">
+          <button onclick="switchArtifactTab('preview')" id="art-tab-preview" class="px-2.5 py-1 rounded-md bg-white text-brand-text font-semibold shadow-xs cursor-pointer">Preview</button>
+          <button onclick="switchArtifactTab('code')" id="art-tab-code" class="px-2.5 py-1 rounded-md text-brand-subtext hover:text-brand-text cursor-pointer">Code</button>
         </div>
-
-        <button onclick="downloadArtifactCurrentFile()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer" title="Download File">
+        <button onclick="downloadArtifactCurrentFile()" class="p-1.5 rounded-lg hover:bg-brand-gray text-brand-subtext hover:text-brand-text text-xs cursor-pointer" title="Download">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         </button>
-        <button onclick="copyArtifactCode()" class="p-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer" title="Copy code">
+        <button onclick="copyArtifactCode()" class="p-1.5 rounded-lg hover:bg-brand-gray text-brand-subtext hover:text-brand-text text-xs cursor-pointer" title="Copy code">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         </button>
-        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-full hover:bg-m3-surfaceContainerHigh text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">
+        <button onclick="closeArtifactDrawer()" class="p-1.5 rounded-lg hover:bg-brand-gray text-brand-subtext hover:text-brand-text text-xs cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -422,56 +369,53 @@
 
     <div class="flex-1 relative overflow-hidden bg-white">
       <iframe id="artifact-iframe" class="w-full h-full border-none bg-white"></iframe>
-      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#18181a] font-mono text-xs text-m3-onSurface">
+      <div id="artifact-code-view" class="w-full h-full overflow-auto p-4 hidden bg-[#18181b] font-mono text-xs text-white">
         <pre class="m-0 border-none bg-transparent p-0"><code id="artifact-code-raw"></code></pre>
       </div>
     </div>
   </div>
 
-  <!-- Settings Modal (M3 Dialog) -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-m3-surfaceContainer border border-m3-outline/30 w-full max-w-md rounded-[28px] p-6 shadow-2xl space-y-5">
-      <div class="flex justify-between items-center border-b border-m3-outline/20 pb-3">
-        <h3 class="font-medium text-base text-m3-onSurface flex items-center gap-2">
-          <svg class="w-4 h-4 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          Settings
-        </h3>
-        <button onclick="toggleSettingsModal()" class="text-m3-onSurfaceVariant hover:text-m3-onSurface">
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white border border-brand-border w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5">
+      <div class="flex justify-between items-center border-b border-brand-border pb-3">
+        <h3 class="font-semibold text-sm text-brand-text">Backend & GPU Settings</h3>
+        <button onclick="toggleSettingsModal()" class="text-brand-subtext hover:text-brand-text">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="space-y-4">
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">Google Colab Backend URL</label>
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-brand-subtext">Google Colab Backend URL</label>
           <input type="text" id="backend-url-input" placeholder="https://your-tunnel.trycloudflare.com" 
-            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
+            class="w-full bg-brand-gray border border-brand-border rounded-xl px-3.5 py-2 text-xs text-brand-text focus:outline-none focus:border-brand-black font-mono">
         </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">API Secret Key (from Colab Output)</label>
-          <input type="password" id="backend-key-input" placeholder="Paste generated key (e.g. a8f7...)" 
-            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-brand-subtext">API Secret Key (from Colab Output)</label>
+          <input type="password" id="backend-key-input" placeholder="Paste generated key" 
+            class="w-full bg-brand-gray border border-brand-border rounded-xl px-3.5 py-2 text-xs text-brand-text focus:outline-none focus:border-brand-black font-mono">
         </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">Active Model Tag</label>
-          <input type="text" id="model-name-input" value="deepseek-r1:7b" 
-            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-brand-subtext">Active Model Tag</label>
+          <input type="text" id="model-name-input" value="qwen2.5-coder:7b" 
+            class="w-full bg-brand-gray border border-brand-border rounded-xl px-3.5 py-2 text-xs text-brand-text focus:outline-none focus:border-brand-black font-mono">
         </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-m3-onSurfaceVariant">Whitelisted Admin Email</label>
+        <div class="space-y-1">
+          <label class="text-xs font-medium text-brand-subtext">Whitelisted Admin Email</label>
           <input type="email" id="allowed-email-input" placeholder="your-email@gmail.com" 
-            class="w-full bg-m3-surfaceContainerHighest border border-m3-outline/30 rounded-xl px-3.5 py-2.5 text-xs text-m3-onSurface focus:outline-none focus:border-m3-primary font-mono">
+            class="w-full bg-brand-gray border border-brand-border rounded-xl px-3.5 py-2 text-xs text-brand-text focus:outline-none focus:border-brand-black font-mono">
         </div>
       </div>
 
       <div class="pt-2 flex justify-end gap-2">
-        <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-full text-xs font-medium text-m3-onSurfaceVariant hover:bg-m3-surfaceContainerHigh">Cancel</button>
-        <button onclick="saveSettings()" class="px-5 py-2 rounded-full bg-m3-primary text-m3-surface font-semibold text-xs shadow-sm">Save</button>
+        <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-brand-subtext hover:bg-gray-100">Cancel</button>
+        <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-brand-black text-white font-medium text-xs shadow-sm">Save Settings</button>
       </div>
     </div>
   </div>
 
-  <!-- Application Logic -->
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
     const defaultFirebaseConfig = {
       apiKey: "AIzaSyA_sMdU-ahrAdQYiZkYCQZGk9RopwFh1w0",
@@ -501,24 +445,14 @@
         }
       }
       if (urlParams.has("key") || urlParams.has("api_key")) {
-        const newKey = (urlParams.get("key") || urlParams.get("api_key")).trim();
-        if (newKey) {
-          backendApiKey = newKey;
-          localStorage.setItem("ai_backend_key", backendApiKey);
-          autoConnected = true;
-        }
+        backendApiKey = (urlParams.get("key") || urlParams.get("api_key")).trim();
+        localStorage.setItem("ai_backend_key", backendApiKey);
+        autoConnected = true;
       }
       if (autoConnected) {
-        // Clean URL in address bar without reloading
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-        setTimeout(() => {
-          if (typeof showToast === 'function') showToast("⚡ Auto-connected to Colab GPU Backend!");
-        }, 500);
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
-    } catch (e) {
-      console.warn("URL param auto-connect:", e);
-    }
+    } catch(e) {}
 
     let currentChatId = getChatIdFromURL() || "chat_" + Date.now();
     let db = null, auth = null, currentUser = null;
@@ -537,7 +471,6 @@
       return headers;
     }
     
-    // SAFE IN-MEMORY REGISTRY TO PREVENT QUOTE/ESCAPING BUGS & SUPPORT MULTI-FILE BUNDLING
     window.codeRegistry = {};
     let snippetIdCounter = 0;
     const rawMessageStore = {};
@@ -555,56 +488,17 @@
       isWebSearchEnabled = !isWebSearchEnabled;
       const btn = document.getElementById("websearch-btn");
       if (isWebSearchEnabled) {
-        btn.className = "flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-m3-primary/20 text-m3-primary border border-m3-primary/50 shadow-[0_0_12px_rgba(168,199,250,0.25)] transition active:scale-95 cursor-pointer";
-        btn.title = "Live Web Search Grounding: Active";
-        showToast("Live Web Search Enabled");
+        btn.className = "flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 cursor-pointer select-none px-2 py-1 rounded-lg transition shrink-0";
+        showToast("Web Search Active");
       } else {
-        btn.className = "flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-xl text-xs font-medium bg-[#1e1f20] hover:bg-[#282a2c] text-m3-onSurfaceVariant hover:text-white border border-white/[0.08] transition active:scale-95 cursor-pointer";
-        btn.title = "Live Web Search Grounding: Disabled";
-        showToast("Live Web Search Disabled");
-      }
-    }
-
-    function toggleModelDropdown() {
-      const menu = document.getElementById("model-dropdown-menu");
-      const arrow = document.getElementById("model-dropdown-arrow");
-      if (menu) menu.classList.toggle("hidden");
-      if (arrow) arrow.classList.toggle("rotate-180");
-    }
-
-    function closeAllDropdowns() {
-      const menu = document.getElementById("model-dropdown-menu");
-      const arrow = document.getElementById("model-dropdown-arrow");
-      if (menu && !menu.classList.contains("hidden")) {
-        menu.classList.add("hidden");
-      }
-      if (arrow) arrow.classList.remove("rotate-180");
-    }
-
-    function selectModel(tag, label) {
-      modelName = tag;
-      localStorage.setItem("ai_model_name", modelName);
-      const inputEl = document.getElementById("model-name-input");
-      if (inputEl) inputEl.value = modelName;
-      const dispEl = document.getElementById("current-model-display");
-      if (dispEl) dispEl.textContent = label;
-      closeAllDropdowns();
-    }
-
-    function updateModelDisplayFromStorage() {
-      const dispEl = document.getElementById("current-model-display");
-      if (dispEl) {
-        dispEl.textContent = "Qwen 2.5 Coder (7B)";
+        btn.className = "flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-800 cursor-pointer select-none px-2 py-1 rounded-lg hover:bg-gray-100 transition shrink-0";
+        showToast("Auto Mode");
       }
     }
 
     function getChatIdFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
-      const queryId = urlParams.get('c');
-      if (queryId) return queryId;
-      const hashMatch = window.location.hash.match(/#\/?c\/(.+)/);
-      if (hashMatch) return hashMatch[1];
-      return null;
+      return urlParams.get('c') || null;
     }
 
     function updateChatURL(chatId) {
@@ -614,15 +508,6 @@
         window.history.pushState({ chatId }, "", `?c=${chatId}`);
       }
     }
-
-    window.addEventListener('popstate', (e) => {
-      const idFromURL = getChatIdFromURL();
-      if (idFromURL && conversations[idFromURL]) {
-        loadChatSession(idFromURL, false);
-      } else if (!idFromURL) {
-        startNewChat(false);
-      }
-    });
 
     // SMART AUTO-SCROLL
     let isUserScrolledUp = false;
@@ -662,16 +547,13 @@
       if (mEl) mEl.value = modelName;
       const eEl = document.getElementById("allowed-email-input");
       if (eEl) eEl.value = allowedEmail;
-      updateModelDisplayFromStorage();
     } catch(e) {}
 
     // GLOBAL SAFETY DISMISSAL FOR AUTH LOADER
     setTimeout(() => {
       const loader = document.getElementById("auth-loading-screen");
-      if (loader && !loader.classList.contains("hidden")) {
-        loader.classList.add("hidden");
-      }
-    }, 1200);
+      if (loader) loader.classList.add("hidden");
+    }, 1000);
 
     // PERSISTENT AUTHENTICATION
     function initFirebase() {
@@ -706,16 +588,10 @@
               if (overlay) overlay.classList.add("hidden");
               const nameEl = document.getElementById("user-name");
               if (nameEl) nameEl.textContent = user.displayName || user.email;
-              if (user.photoURL) {
-                const avEl = document.getElementById("user-avatar");
-                if (avEl) avEl.src = user.photoURL;
-              }
               
               loadFirestoreConversations();
             } else {
               currentUser = null;
-              const overlay = document.getElementById("auth-overlay");
-              if (overlay) overlay.classList.remove("hidden");
             }
           });
         }).catch(() => {
@@ -724,7 +600,6 @@
         });
 
       } catch (e) {
-        console.warn("Firebase note:", e);
         const loader = document.getElementById("auth-loading-screen");
         if (loader) loader.classList.add("hidden");
       }
@@ -742,10 +617,15 @@
     function handleSignOut() { auth.signOut(); }
     function showAuthError(msg) {
       const errBox = document.getElementById("auth-error-msg");
-      errBox.textContent = msg;
-      errBox.classList.remove("hidden");
+      if (errBox) {
+        errBox.textContent = msg;
+        errBox.classList.remove("hidden");
+      }
     }
-    function hideAuthError() { document.getElementById("auth-error-msg").classList.add("hidden"); }
+    function hideAuthError() { 
+      const errBox = document.getElementById("auth-error-msg");
+      if (errBox) errBox.classList.add("hidden"); 
+    }
 
     const promptInput = document.getElementById("prompt-input");
     promptInput.addEventListener("input", function() {
@@ -759,28 +639,14 @@
       }
     });
 
-    // UNIFIED SIDEBAR TOGGLE
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("sidebar-overlay");
-      const mainHamburger = document.getElementById("main-hamburger-btn");
-      
-      if (window.innerWidth >= 768) {
-        sidebar.classList.toggle("sidebar-hidden");
-        const isHidden = sidebar.classList.contains("sidebar-hidden");
-        if (isHidden) {
-          mainHamburger.classList.remove("hidden");
-        } else {
-          mainHamburger.classList.add("hidden");
-        }
-      } else {
-        sidebar.classList.toggle("-translate-x-full");
-        overlay.classList.toggle("hidden");
-      }
+      if (sidebar) sidebar.classList.toggle("sidebar-hidden");
     }
 
     function toggleSettingsModal() {
-      document.getElementById("settings-modal").classList.toggle("hidden");
+      const modal = document.getElementById("settings-modal");
+      if (modal) modal.classList.toggle("hidden");
     }
 
     function saveSettings() {
@@ -794,9 +660,12 @@
       localStorage.setItem("ai_model_name", modelName);
       localStorage.setItem("ai_allowed_email", allowedEmail);
 
-      updateModelDisplayFromStorage();
+      const dispEl = document.getElementById("current-model-display");
+      if (dispEl) dispEl.textContent = modelName;
+
       toggleSettingsModal();
       checkBackendStatus();
+      showToast("Settings saved");
     }
 
     let currentAttachedImage = null;
@@ -847,13 +716,12 @@
       document.getElementById("file-upload-input").value = "";
     }
 
-    // CLIPBOARD SCREENSHOT PASTE LISTENER (Ctrl + V)
     window.addEventListener("paste", function(e) {
-      const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
-      if (!items) return;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const file = items[i].getAsFile();
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
           const reader = new FileReader();
           reader.onload = function(evt) {
             currentAttachedImage = {
@@ -864,635 +732,172 @@
             document.getElementById("attached-image-thumb").src = currentAttachedImage.dataUrl;
             document.getElementById("attached-image-name").textContent = currentAttachedImage.name;
             document.getElementById("image-attachment-chip").classList.remove("hidden");
-            showToast("Screenshot attached from clipboard!");
+            showToast("Screenshot pasted!");
           };
-          reader.readAsDataURL(file);
-          break;
+          reader.readAsDataURL(blob);
         }
       }
     });
 
-    // REAL-TIME VOICE INPUT (Speech-to-Text)
-    let speechRecognition = null;
-    let isRecordingVoice = false;
-
-    function toggleVoiceRecording() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Brave.");
-        return;
-      }
-
-      const voiceBtn = document.getElementById("voice-input-btn");
-
-      if (!isRecordingVoice) {
-        speechRecognition = new SpeechRecognition();
-        speechRecognition.continuous = true;
-        speechRecognition.interimResults = true;
-        speechRecognition.lang = 'en-US';
-
-        speechRecognition.onstart = function() {
-          isRecordingVoice = true;
-          voiceBtn.className = "w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center transition font-bold shrink-0 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.5)] cursor-pointer";
-          showToast("Listening... speak naturally.");
-        };
-
-        speechRecognition.onresult = function(event) {
-          let transcript = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            transcript += event.results[i][0].transcript;
-          }
-          const promptInput = document.getElementById("prompt-input");
-          promptInput.value = (promptInput.value.trim() ? promptInput.value.trim() + " " : "") + transcript;
-          promptInput.style.height = "auto";
-          promptInput.style.height = promptInput.scrollHeight + "px";
-        };
-
-        speechRecognition.onerror = function(event) {
-          console.warn("Speech recognition note:", event.error);
-          stopVoiceRecording();
-        };
-
-        speechRecognition.onend = function() {
-          stopVoiceRecording();
-        };
-
-        speechRecognition.start();
-      } else {
-        stopVoiceRecording();
-      }
-    }
-
-    function stopVoiceRecording() {
-      isRecordingVoice = false;
-      if (speechRecognition) {
-        try { speechRecognition.stop(); } catch(e){}
-      }
-      const voiceBtn = document.getElementById("voice-input-btn");
-      if (voiceBtn) {
-        voiceBtn.className = "w-8 h-8 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-m3-primary flex items-center justify-center transition shrink-0 active:scale-95 shadow-sm cursor-pointer";
-      }
-    }
-
-    // TEXT-TO-SPEECH (READ ALOUD)
-    function readAloudMessage(msgId, btnEl) {
-      if (!window.speechSynthesis) return alert("Text-to-speech not supported in this browser.");
-
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        if (btnEl) {
-          const span = btnEl.querySelector("span");
-          if (span) span.textContent = "Speak";
-        }
-        return;
-      }
-
-      const rawText = rawMessageStore[msgId];
-      if (!rawText) return;
-      const clean = rawText
-        .replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "")
-        .replace(/```[\s\S]*?```/g, "Code block omitted.")
-        .replace(/`([^`]+)`/g, "$1")
-        .replace(/[\*#_]/g, "")
-        .trim();
-
-      const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.rate = 1.05;
-      utterance.pitch = 1.0;
-
-      utterance.onstart = () => {
-        if (btnEl) {
-          const span = btnEl.querySelector("span");
-          if (span) span.textContent = "Stop";
-        }
-      };
-      utterance.onend = () => {
-        if (btnEl) {
-          const span = btnEl.querySelector("span");
-          if (span) span.textContent = "Speak";
-        }
-      };
-      utterance.onerror = () => {
-        if (btnEl) {
-          const span = btnEl.querySelector("span");
-          if (span) span.textContent = "Speak";
-        }
-      };
-
-      window.speechSynthesis.speak(utterance);
-    }
-
-    // CLAUDE ARTIFACTS & FULL PREVIEW SYSTEM
     function toggleArtifactDrawerQuick() {
       const drawer = document.getElementById("artifact-drawer");
-      if (drawer.classList.contains("hidden")) {
-        if (!activeArtifactCode) {
-          openArtifactDrawer("Interactive Canvas", `
-            <div style="font-family: sans-serif; padding: 40px; text-align: center; color: #1e1f20;">
-              <h2>🎨 BuckBuck Live Artifact Canvas</h2>
-              <p>Ask the AI to generate code, web apps, diagrams, or components, and preview them live here!</p>
-            </div>
-          `, "html");
-        } else {
-          drawer.classList.remove("hidden");
-          setTimeout(() => drawer.classList.remove("translate-x-full"), 10);
-        }
-      } else {
-        closeArtifactDrawer();
-      }
-    }
-
-    // MULTI-FILE COMPILER: Merges separate HTML, CSS, and JS into a unified bundle
-    function buildCombinedWebApp(htmlCode = "", cssCode = "", jsCode = "") {
-      let baseHtml = htmlCode.trim();
-      if (!baseHtml) {
-        baseHtml = `<div class="p-8 text-center"><h1 class="text-2xl font-bold">Interactive Web App</h1></div>`;
-      }
-
-      const hasDoctype = baseHtml.toLowerCase().includes('<!doctype') || baseHtml.toLowerCase().includes('<html');
-
-      if (!hasDoctype) {
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <script src="https://unpkg.com/lucide@latest"><\/script>
-  <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    ${cssCode ? `\n/* Custom Styles */\n${cssCode}\n` : ''}
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-900">
-  ${baseHtml}
-  ${jsCode ? `<script>\n// Custom Application Logic\n${jsCode}\n<\/script>` : ''}
-  <script>if(window.lucide) lucide.createIcons();<\/script>
-</body>
-</html>`;
-      } else {
-        let compiled = baseHtml;
-        if (cssCode && !compiled.includes(cssCode)) {
-          if (compiled.includes('</head>')) {
-            compiled = compiled.replace('</head>', `<style>\n${cssCode}\n</style>\n</head>`);
-          } else {
-            compiled = `<style>\n${cssCode}\n</style>\n` + compiled;
-          }
-        }
-        if (jsCode && !compiled.includes(jsCode)) {
-          if (compiled.includes('</body>')) {
-            compiled = compiled.replace('</body>', `<script>\n${jsCode}\n<\/script>\n</body>`);
-          } else {
-            compiled = compiled + `\n<script>\n${jsCode}\n<\/script>`;
-          }
-        }
-        return compiled;
-      }
-    }
-
-    function openArtifactDrawer(title, code, lang = "html") {
-      activeArtifactCode = code || "";
-      activeArtifactTitle = title || "Artifact Preview";
-      activeArtifactLang = (lang || "html").toLowerCase();
-
-      document.getElementById("artifact-title").textContent = activeArtifactTitle;
-      
-      const iframe = document.getElementById("artifact-iframe");
-      
-      if (['html', 'htm', 'svg', 'xml', 'javascript', 'js', 'jsx'].includes(activeArtifactLang)) {
-        let previewHtml = activeArtifactCode;
-        if (activeArtifactLang === 'svg') {
-          previewHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;margin:0;">${activeArtifactCode}</div>`;
-        } else if (!activeArtifactCode.toLowerCase().includes('<html') && !activeArtifactCode.toLowerCase().includes('<!doctype')) {
-          previewHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <script src="https://unpkg.com/lucide@latest"><\/script>
-  <style>body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }</style>
-</head>
-<body>
-  ${activeArtifactCode}
-  <script>if(window.lucide) lucide.createIcons();<\/script>
-</body>
-</html>`;
-        }
-        iframe.srcdoc = previewHtml;
-      } else if (activeArtifactLang === 'markdown' || activeArtifactLang === 'md') {
-        iframe.srcdoc = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
-  <style>body { padding: 30px; font-family: sans-serif; line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto; }</style>
-</head>
-<body>
-  <div id="content"></div>
-  <script>document.getElementById('content').innerHTML = marked.parse(${JSON.stringify(activeArtifactCode)});<\/script>
-</body>
-</html>`;
-      } else {
-        const escaped = activeArtifactCode.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        iframe.srcdoc = `<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
-  <style>body { margin: 0; padding: 20px; background: #1e1f20; color: #e3e3e3; font-family: monospace; }</style>
-</head>
-<body>
-  <pre><code class="language-${activeArtifactLang}">${escaped}</code></pre>
-  <script>hljs.highlightAll();<\/script>
-</body>
-</html>`;
-      }
-
-      document.getElementById("artifact-code-raw").textContent = activeArtifactCode;
-      hljs.highlightElement(document.getElementById("artifact-code-raw"));
-
-      const drawer = document.getElementById("artifact-drawer");
       drawer.classList.remove("hidden");
-      setTimeout(() => {
-        drawer.classList.remove("translate-x-full");
-      }, 10);
-
-      switchArtifactTab('preview');
+      drawer.classList.toggle("translate-x-full");
     }
 
     function closeArtifactDrawer() {
       const drawer = document.getElementById("artifact-drawer");
       drawer.classList.add("translate-x-full");
-      setTimeout(() => {
-        drawer.classList.add("hidden");
-      }, 300);
+    }
+
+    function previewSnippet(cardId) {
+      const data = window.codeRegistry[cardId];
+      if (!data) return;
+
+      activeArtifactCode = data.code;
+      activeArtifactTitle = data.filename || "Artifact Preview";
+      activeArtifactLang = data.lang;
+
+      document.getElementById("artifact-title").textContent = activeArtifactTitle;
+      const iframe = document.getElementById("artifact-iframe");
+      
+      if (['html', 'htm', 'svg', 'xml'].includes(data.lang)) {
+        iframe.srcdoc = data.code;
+      } else {
+        iframe.srcdoc = `<html><body style="font-family:sans-serif;padding:24px;background:#f4f4f5;"><pre style="background:#fff;padding:16px;border-radius:8px;border:1px solid #e4e4e7;"><code>${escapeHtml(data.code)}</code></pre></body></html>`;
+      }
+
+      document.getElementById("artifact-code-raw").textContent = data.code;
+      switchArtifactTab('preview');
+
+      const drawer = document.getElementById("artifact-drawer");
+      drawer.classList.remove("hidden");
+      drawer.classList.remove("translate-x-full");
     }
 
     function switchArtifactTab(tab) {
+      const pTab = document.getElementById("art-tab-preview");
+      const cTab = document.getElementById("art-tab-code");
+      const iframe = document.getElementById("artifact-iframe");
+      const codeView = document.getElementById("artifact-code-view");
+
       if (tab === 'preview') {
-        document.getElementById("artifact-iframe").classList.remove("hidden");
-        document.getElementById("artifact-code-view").classList.add("hidden");
-        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer";
-        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer";
+        pTab.className = "px-2.5 py-1 rounded-md bg-white text-brand-text font-semibold shadow-xs cursor-pointer";
+        cTab.className = "px-2.5 py-1 rounded-md text-brand-subtext hover:text-brand-text cursor-pointer";
+        iframe.classList.remove("hidden");
+        codeView.classList.add("hidden");
       } else {
-        document.getElementById("artifact-iframe").classList.add("hidden");
-        document.getElementById("artifact-code-view").classList.remove("hidden");
-        document.getElementById("art-tab-code").className = "px-3 py-1 rounded-full bg-m3-primary text-m3-surface font-semibold cursor-pointer";
-        document.getElementById("art-tab-preview").className = "px-3 py-1 rounded-full text-m3-onSurfaceVariant hover:text-white cursor-pointer";
+        cTab.className = "px-2.5 py-1 rounded-md bg-white text-brand-text font-semibold shadow-xs cursor-pointer";
+        pTab.className = "px-2.5 py-1 rounded-md text-brand-subtext hover:text-brand-text cursor-pointer";
+        iframe.classList.add("hidden");
+        codeView.classList.remove("hidden");
       }
     }
 
-    // REGISTRY-BACKED PREVIEW, DOWNLOAD, AND COPY
-    function previewSnippet(snipId) {
-      const item = window.codeRegistry[snipId];
-      if (!item) return;
-      
-      if (item.bundleId && window.codeRegistry[item.bundleId]) {
-        const bundle = window.codeRegistry[item.bundleId];
-        openArtifactDrawer(bundle.filename || "Full Web App", bundle.code, "html");
-      } else {
-        openArtifactDrawer(item.filename || `${item.lang.toUpperCase()} Canvas`, item.code, item.lang);
-      }
-    }
-
-    function downloadSnippet(snipId) {
-      const item = window.codeRegistry[snipId];
-      if (!item) return;
-      const mime = (item.lang === 'html' || item.lang === 'htm') ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
-      downloadFileContent(item.code, item.filename, mime);
-    }
-
-    function copySnippet(buttonEl, snipId) {
-      const item = window.codeRegistry[snipId];
-      if (!item) return;
-      copyToClipboardSafe(item.code);
-      const span = buttonEl ? buttonEl.querySelector("span") : null;
-      if (span) {
-        const orig = span.textContent;
-        span.textContent = "Copied!";
-        setTimeout(() => { span.textContent = orig; }, 2000);
-      }
-      showToast("Code copied to clipboard!");
-    }
-
-    // LIVE PYTHON GPU EXECUTION ON COLAB BACKEND
-    async function runPythonOnBackend(snipId, buttonEl) {
-      const item = window.codeRegistry[snipId];
-      if (!item) return;
-
-      // Find nearest suitable parent container (works for both code header and bottom artifact card)
-      const parentContainer = buttonEl.closest('.mt-4') || buttonEl.closest('.code-header-bar')?.parentElement || buttonEl.closest('.p-3.5') || buttonEl.parentElement;
-      if (!parentContainer) return;
-
-      let termBox = parentContainer.nextElementSibling;
-      if (!termBox || !termBox.classList.contains('python-terminal-box')) {
-        termBox = document.createElement('div');
-        termBox.className = 'python-terminal-box mt-3 mb-4 p-4 rounded-2xl bg-[#0e1015] border border-emerald-500/30 font-mono text-xs shadow-xl space-y-3';
-        parentContainer.parentNode.insertBefore(termBox, parentContainer.nextSibling);
-      }
-
-      termBox.innerHTML = `
-        <div class="flex items-center justify-between border-b border-white/10 pb-2 text-emerald-400 font-semibold">
-          <span class="flex items-center gap-2">
-            <svg class="w-3.5 h-3.5 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
-            Executing on Colab T4 GPU...
-          </span>
-          <span class="text-[10px] text-m3-onSurfaceVariant">/api/exec</span>
-        </div>
-      `;
-
-      try {
-        const res = await fetch(`${backendUrl}/api/exec`, {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ code: item.code })
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        let plotsHtml = "";
-        if (data.plots && data.plots.length > 0) {
-          plotsHtml = `<div class="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">`;
-          data.plots.forEach(b64 => {
-            plotsHtml += `
-              <div class="rounded-xl overflow-hidden border border-white/10 bg-white p-2 shadow-lg">
-                <img src="data:image/png;base64,${b64}" class="w-full h-auto object-contain rounded-lg">
-              </div>
-            `;
-          });
-          plotsHtml += `</div>`;
-        }
-
-        const statusColor = data.success ? "text-emerald-400" : "text-rose-400";
-        const statusText = data.success ? `Execution Succeeded (${data.execution_time_seconds}s)` : "Execution Error";
-
-        termBox.innerHTML = `
-          <div class="flex items-center justify-between border-b border-white/10 pb-2">
-            <span class="font-semibold text-xs flex items-center gap-1.5 ${statusColor}">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-              ${statusText}
-            </span>
-            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">Close</button>
-          </div>
-          ${data.stdout ? `<div class="text-slate-200 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">${data.stdout}</div>` : ''}
-          ${data.stderr ? `<div class="text-rose-300 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-rose-950/20 p-2 rounded-lg border border-rose-500/20">${data.stderr}</div>` : ''}
-          ${(!data.stdout && !data.stderr && data.success) ? `<div class="text-gray-400 italic">Script executed with no console output.</div>` : ''}
-          ${plotsHtml}
-        `;
-
-      } catch (err) {
-        termBox.innerHTML = `
-          <div class="flex items-center justify-between border-b border-white/10 pb-2 text-rose-400 font-semibold text-xs">
-            <span>Execution Failed</span>
-            <button onclick="this.closest('.python-terminal-box').remove()" class="text-m3-onSurfaceVariant hover:text-white text-xs cursor-pointer">Close</button>
-          </div>
-          <div class="text-rose-300 text-xs">Could not reach Colab Python executor. Ensure the updated backend is running.</div>
-        `;
+    function copyArtifactCode() {
+      if (activeArtifactCode) {
+        navigator.clipboard.writeText(activeArtifactCode);
+        showToast("Code copied to clipboard!");
       }
     }
 
     function downloadArtifactCurrentFile() {
       if (!activeArtifactCode) return;
-      const ext = EXT_MAP[activeArtifactLang] || 'txt';
-      const mime = (ext === 'html' || ext === 'htm') ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
-      downloadFileContent(activeArtifactCode, `artifact_${Date.now()}.${ext}`, mime);
-    }
-
-    function copyArtifactCode() {
-      if (!activeArtifactCode) return;
-      copyToClipboardSafe(activeArtifactCode);
-      showToast("Artifact code copied to clipboard!");
-    }
-
-    function downloadFileContent(content, filename, mimeType = "text/html;charset=utf-8") {
-      const blob = new Blob([content], { type: mimeType });
+      const blob = new Blob([activeArtifactCode], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = filename || "download.html";
+      a.download = activeArtifactTitle || "code.txt";
       a.click();
       URL.revokeObjectURL(a.href);
-      showToast(`Downloaded ${filename}!`);
+      showToast(`Downloaded ${activeArtifactTitle}`);
     }
 
-    function copyToClipboardSafe(text) {
-      if (!text) return;
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
-      } else {
-        fallbackCopy(text);
+    function downloadSnippet(cardId) {
+      const data = window.codeRegistry[cardId];
+      if (!data) return;
+      const blob = new Blob([data.code], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = data.filename || "file.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast(`Downloaded ${data.filename}`);
+    }
+
+    async function runPythonOnBackend(cardId, btnEl) {
+      const data = window.codeRegistry[cardId];
+      if (!data) return;
+
+      const origHtml = btnEl.innerHTML;
+      btnEl.innerHTML = `<span class="animate-spin text-xs">⚡</span><span>Executing on GPU...</span>`;
+      btnEl.disabled = true;
+
+      try {
+        const response = await fetch(`${backendUrl}/api/exec`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ code: data.code })
+        });
+        const result = await response.json();
+        
+        let outputHtml = `<div class="mt-3 p-3 bg-gray-50 border border-brand-border rounded-xl font-mono text-xs">`;
+        if (result.stdout) outputHtml += `<div class="text-gray-800"><span class="text-gray-400 font-bold">Output:</span>\n${escapeHtml(result.stdout)}</div>`;
+        if (result.error) outputHtml += `<div class="text-rose-600 mt-1"><span class="font-bold">Error:</span>\n${escapeHtml(result.error)}</div>`;
+        if (result.plots && result.plots.length > 0) {
+          result.plots.forEach(imgB64 => {
+            outputHtml += `<img src="data:image/png;base64,${imgB64}" class="mt-2 rounded-lg border border-brand-border shadow-sm max-w-full">`;
+          });
+        }
+        outputHtml += `<div class="text-[10px] text-gray-400 mt-2">Executed in ${result.execution_time_seconds || 0.1}s on Tesla T4 GPU</div></div>`;
+        
+        btnEl.closest('.p-4').insertAdjacentHTML('beforeend', outputHtml);
+        showToast("Execution completed");
+      } catch (err) {
+        showToast(`GPU Execution failed: ${err.message}`);
+      } finally {
+        btnEl.innerHTML = origHtml;
+        btnEl.disabled = false;
       }
-    }
-
-    function fallbackCopy(text) {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.top = "-9999px";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try { document.execCommand('copy'); } catch(e){}
-      document.body.removeChild(ta);
-    }
-
-    function copyFullMessage(msgId) {
-      const rawText = rawMessageStore[msgId];
-      if (!rawText) return;
-      const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-      copyToClipboardSafe(clean);
-      showToast("Message copied to clipboard!");
-    }
-
-    // DOWNLOAD RESPONSE AS BEAUTIFULLY STYLED STANDALONE HTML
-    function downloadMessageFile(msgId) {
-      const rawText = rawMessageStore[msgId];
-      if (!rawText) return;
-      const clean = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-      
-      let parsed = clean
-        .replace(/\[\s*(\\text|\\boxed|\\begin|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => `\n$$\n${match.slice(1, -1).trim()}\n$$\n`)
-        .replace(/\(\s*([QKVqkvi-z0-9\\]+)\s*\)/g, (match, p1) => (p1.length <= 4 || p1.startsWith('\\')) ? `$${p1}$` : match);
-
-      const htmlBody = marked.parse(parsed);
-
-      const standaloneHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuckBuck AI • Export</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"><\/script>
-  <style>
-    body { background: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; line-height: 1.75; font-size: 15.5px; }
-    .container { max-width: 860px; margin: 0 auto; padding: 40px 20px; }
-    pre { background: #1e1f20 !important; border: 1px solid #282a2c; padding: 14px; border-radius: 14px; color: #a8c7fa; font-family: 'JetBrains Mono', monospace; overflow-x: auto; margin: 1.2em 0; }
-    code { font-family: 'JetBrains Mono', monospace; }
-    h1, h2, h3 { color: #f1f3f4; font-weight: 600; margin-top: 1.4em; }
-    h1 { color: #a8c7fa; font-size: 1.5em; }
-    h2 { font-size: 1.25em; border-bottom: 1px solid #282a2c; padding-bottom: 0.3em; }
-    blockquote { border-left: 3px solid #a8c7fa; background: rgba(168, 199, 250, 0.06); padding: 10px 16px; border-radius: 0 12px 12px 0; color: #c4c7c5; }
-    table { width: 100%; border-collapse: collapse; margin: 1.2em 0; }
-    th, td { border: 1px solid #282a2c; padding: 8px 12px; }
-    th { background: #1e1f20; color: #a8c7fa; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div style="border-bottom: 1px solid #282a2c; padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h1 style="margin: 0; font-size: 1.3em;">BuckBuck AI Workspace</h1>
-        <div style="font-size: 0.75rem; color: #c4c7c5; margin-top: 2px;">Exported on ${new Date().toLocaleString()}</div>
-      </div>
-      <div style="font-size: 0.75rem; background: #1e1f20; padding: 4px 10px; border-radius: 9999px; border: 1px solid #282a2c; color: #a8c7fa;">HTML Export</div>
-    </div>
-    <div id="content">${htmlBody}</div>
-  </div>
-  <script>
-    renderMathInElement(document.body, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false},
-        {left: '\\\\[', right: '\\\\]', display: true},
-        {left: '\\\\(', right: '\\\\)', display: false}
-      ],
-      throwOnError: false
-    });
-  <\/script>
-</body>
-</html>`;
-
-      downloadFileContent(standaloneHTML, `response_${Date.now()}.html`, "text/html;charset=utf-8");
-    }
-
-    // EXPORT FULL CHAT CONVERSATION AS STANDALONE HTML
-    function exportChatAsHTML() {
-      const chat = conversations[currentChatId];
-      if (!chat || !chat.messages.length) return alert("No messages to export.");
-
-      let chatHTML = "";
-      chat.messages.forEach(m => {
-        const isUser = m.role === 'user';
-        const clean = m.content.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-        const parsed = marked.parse(clean);
-        chatHTML += `
-          <div style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'};">
-            <div style="font-size: 0.75rem; font-weight: 600; color: ${isUser ? '#a8c7fa' : '#818cf8'}; margin-bottom: 4px;">
-              ${isUser ? 'User' : 'Assistant (BuckBuck AI)'}
-            </div>
-            <div style="background: ${isUser ? '#282a2c' : '#1e1f20'}; border: 1px solid #282a2c; border-radius: 18px; padding: 14px 18px; max-width: 90%;">
-              ${parsed}
-            </div>
-          </div>
-        `;
-      });
-
-      const fullDoc = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${chat.title || 'Conversation'} • BuckBuck AI Export</title>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"><\/script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"><\/script>
-  <style>
-    body { background: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; line-height: 1.7; font-size: 15px; }
-    .container { max-width: 860px; margin: 0 auto; padding: 40px 20px; }
-    pre { background: #18181a !important; border: 1px solid #282a2c; padding: 12px; border-radius: 12px; color: #a8c7fa; font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
-    code { font-family: 'JetBrains Mono', monospace; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div style="border-bottom: 1px solid #282a2c; padding-bottom: 14px; margin-bottom: 28px;">
-      <h1 style="margin: 0; font-size: 1.4em; color: #a8c7fa;">${chat.title || 'Conversation'}</h1>
-      <div style="font-size: 0.75rem; color: #c4c7c5; margin-top: 4px;">BuckBuck AI Workspace • Exported on ${new Date().toLocaleString()}</div>
-    </div>
-    ${chatHTML}
-  </div>
-  <script>
-    renderMathInElement(document.body, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
-      ],
-      throwOnError: false
-    });
-  <\/script>
-</body>
-</html>`;
-
-      downloadFileContent(fullDoc, `${chat.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, "text/html;charset=utf-8");
     }
 
     function showToast(msg) {
-      let toast = document.getElementById("app-toast");
-      if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "app-toast";
-        toast.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-m3-surfaceContainerHighest text-m3-onSurface border border-m3-outline/40 px-4 py-2 rounded-full text-xs font-medium shadow-2xl z-50 transition-all duration-300 pointer-events-none opacity-0 translate-y-2";
-        document.body.appendChild(toast);
-      }
+      const toast = document.createElement("div");
+      toast.className = "fixed bottom-5 left-1/2 -translate-x-1/2 bg-brand-black text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl z-50 msg-fade-in";
       toast.textContent = msg;
-      toast.classList.remove("opacity-0", "translate-y-2");
-      setTimeout(() => {
-        toast.classList.add("opacity-0", "translate-y-2");
-      }, 2400);
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
     }
 
-    function generateUniqueChatId() {
-      return "c_" + Math.random().toString(36).substr(2, 9);
-    }
-
-    function startNewChat(updateHistoryState = true) {
-      currentChatId = generateUniqueChatId();
-      if (updateHistoryState) updateChatURL(null);
-      isUserScrolledUp = false;
+    function startNewChat(updateState = true) {
+      currentChatId = "chat_" + Date.now();
       document.getElementById("chat-container").innerHTML = `
-        <div id="welcome-banner" class="space-y-4 pt-16 pb-6 msg-fade-in">
-          <div class="w-10 h-10 rounded-2xl bg-m3-surfaceContainerHigh border border-m3-outline/20 flex items-center justify-center mb-3 shadow-md">
-            <svg class="w-5 h-5 text-m3-primary" viewBox="0 0 32 32" fill="none">
-              <path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h2 class="text-3xl sm:text-4xl font-medium tracking-tight text-m3-onSurface">
-            <span class="text-m3-primary">Hello,</span>
-          </h2>
-          <p class="text-2xl sm:text-3xl font-medium text-m3-onSurfaceVariant">How can I help you today?</p>
+        <div id="welcome-banner" class="my-auto text-center space-y-3 py-16 msg-fade-in">
+          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-brand-text">
+            How can I help you ?
+          </h1>
+          <p class="text-xs sm:text-sm text-brand-subtext font-normal max-w-md mx-auto">
+            Build websites, write code, run Python analysis, or ask questions with GPU acceleration.
+          </p>
         </div>
       `;
+      if (updateState) updateChatURL(currentChatId);
       renderSidebarHistory();
-      if (window.innerWidth < 768) toggleSidebar();
     }
 
-    function loadChatSession(chatId, updateHistoryState = true) {
+    function loadChatSession(chatId, updateState = true) {
+      if (!conversations[chatId]) return;
       currentChatId = chatId;
-      if (updateHistoryState) updateChatURL(chatId);
       const chat = conversations[chatId];
-      if (!chat) return;
-
       const container = document.getElementById("chat-container");
       container.innerHTML = "";
-      isUserScrolledUp = false;
 
       chat.messages.forEach(msg => {
-        appendMessageUI(msg.role, msg.content, msg.role === 'assistant');
+        appendMessageUI(msg.role, msg.content, true);
       });
 
+      if (updateState) updateChatURL(chatId);
       renderSidebarHistory();
       scrollToBottom(true);
-      if (window.innerWidth < 768) toggleSidebar();
     }
 
     function deleteChatSession(chatId, e) {
@@ -1539,16 +944,11 @@
         const item = conversations[id];
         const isActive = id === currentChatId;
         const div = document.createElement("div");
-        div.className = `group flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs cursor-pointer transition ${isActive ? 'bg-m3-surfaceContainerHigh text-m3-primary font-medium' : 'text-m3-onSurfaceVariant hover:bg-m3-surfaceContainer hover:text-m3-onSurface'}`;
+        div.className = `group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${isActive ? 'bg-gray-200/80 font-semibold text-brand-text' : 'text-brand-subtext hover:bg-gray-100 hover:text-brand-text'}`;
         div.onclick = () => loadChatSession(id);
         div.innerHTML = `
-          <div class="flex items-center gap-2.5 truncate">
-            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            <span class="truncate">${item.title || "Conversation"}</span>
-          </div>
-          <button onclick="deleteChatSession('${id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-400 p-1 transition shrink-0" title="Delete">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </button>
+          <span class="truncate pr-2">${item.title || "Conversation"}</span>
+          <button onclick="deleteChatSession('${id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-rose-500 p-0.5 transition shrink-0" title="Delete">×</button>
         `;
         list.appendChild(div);
       });
@@ -1563,234 +963,247 @@
         });
         localStorage.setItem("ai_conversations", JSON.stringify(conversations));
         renderSidebarHistory();
-
-        const urlChatId = getChatIdFromURL();
-        if (urlChatId && conversations[urlChatId]) {
-          loadChatSession(urlChatId, false);
-        }
-      } catch (err) {
-        console.warn("Firestore fetch note:", err);
-      }
+      } catch (err) {}
     }
 
-    // QUERY FASTAPI HEALTHCHECK FOR LIVE VRAM STATS & SESSION COUNTDOWN
     async function checkBackendStatus() {
       const badge = document.getElementById("status-badge");
       try {
         const res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(5000) });
         if (res.ok) {
           const data = await res.json();
-          let label = "T4 GPU";
-          let colorClasses = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-          
-          if (data.session_remaining_minutes !== undefined) {
-            const mins = data.session_remaining_minutes;
-            if (mins <= 15) {
-              colorClasses = "bg-amber-500/15 text-amber-300 border-amber-500/30";
-              label = `T4 (${mins}m left ⚠️)`;
-            } else if (mins >= 60) {
-              const h = Math.floor(mins / 60);
-              const m = mins % 60;
-              label = `T4 (${h}h ${m}m left)`;
-            } else {
-              label = `T4 (${mins}m left)`;
-            }
-          } else if (data.vram_free) {
-            label = `T4 (${data.vram_free} Free)`;
-          }
-
-          badge.className = `text-[10px] px-2.5 py-0.5 rounded-full border font-medium hidden sm:inline ${colorClasses}`;
-          badge.textContent = label;
+          badge.className = "text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 hidden sm:inline-flex items-center gap-1.5";
+          badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>T4 GPU (${data.session_remaining_minutes || 60}m)</span>`;
           return true;
-        } else if (res.status === 401) {
-          badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium hidden sm:inline";
-          badge.textContent = "T4 (Auth Required 🔑)";
-          return false;
         }
-      } catch (e) {
-        try {
-          const res2 = await fetch(`${backendUrl}/api/tags`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(4000) });
-          if (res2.ok) {
-            badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline";
-            badge.textContent = "T4 GPU";
-            return true;
-          }
-        } catch (err) {}
-      }
+      } catch (e) {}
 
-      badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium hidden sm:inline";
-      badge.textContent = "Offline";
+      badge.className = "text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 hidden sm:inline-flex items-center gap-1.5";
+      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Offline</span>`;
       return false;
     }
 
-    // Auto-poll backend status and session countdown every 30 seconds
     setInterval(checkBackendStatus, 30000);
 
-    async function searchDuckDuckGo(query) {
-      try {
-        const cleanQuery = query.replace(/[^\w\s]/gi, ' ').trim();
-        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanQuery)}&format=json&no_html=1&skip_disambig=1`);
-        const data = await res.json();
-        let context = "";
-        if (data.AbstractText) context += `Summary: ${data.AbstractText}\n`;
-        if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-          context += "Related Search Results:\n";
-          data.RelatedTopics.slice(0, 4).forEach(t => { 
-            if (t.Text) context += `- ${t.Text}\n`; 
-            if (t.Topics && Array.isArray(t.Topics)) {
-              t.Topics.slice(0, 2).forEach(st => { if (st.Text) context += `- ${st.Text}\n`; });
-            }
-          });
-        }
+    // MESSAGE RENDERING WITH COLLAPSIBLE THINKING & ARTIFACTS
+    function renderResponseWithArtifacts(text, msgId) {
+      if (!text) return "";
 
-        // Fallback to Wikipedia summary if DDG returned no direct abstract
-        if (!context || context.length < 50) {
-          const firstTerm = cleanQuery.split(' ').slice(0, 2).join(' ');
-          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstTerm)}`);
-          if (wikiRes.ok) {
-            const wikiData = await wikiRes.json();
-            if (wikiData.extract) context += `\nWikipedia Overview (${wikiData.title}):\n${wikiData.extract}`;
-          }
+      let thinkHtml = "";
+      const thinkMatch = text.match(/<think>([\s\S]*?)<\/think>/i);
+      let contentToParse = text;
+
+      if (thinkMatch) {
+        const thoughtContent = escapeHtml(thinkMatch[1].trim());
+        thinkHtml = `
+          <details class="mb-4 bg-gray-50 border border-brand-border rounded-xl p-3 text-xs text-brand-subtext group">
+            <summary class="cursor-pointer font-medium text-brand-text flex items-center justify-between select-none">
+              <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                <span>Thinking completed</span>
+              </span>
+              <svg class="w-3 h-3 transition-transform group-open:rotate-180 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="mt-2.5 pt-2 border-t border-brand-border/60 leading-relaxed font-mono whitespace-pre-wrap">${thoughtContent}</div>
+          </details>
+        `;
+        contentToParse = text.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+      }
+
+      marked.setOptions({
+        highlight: function(code, lang) {
+          const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+          return highlight.highlight(code, { language }).value;
+        },
+        breaks: true,
+        gfm: true
+      });
+
+      let parsedHtml = marked.parse(contentToParse);
+
+      const codeRegex = /<pre><code class="language-([a-zA-Z0-9_-]+)">([\s\S]*?)<\/code><\/(pre)>/gi;
+      let match;
+      const discoveredCodeSnippets = [];
+
+      while ((match = codeRegex.exec(parsedHtml)) !== null) {
+        const lang = match[1].toLowerCase();
+        let rawCode = match[2].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        rawCode = rawCode.replace(/<span class="[^"]*">([\s\S]*?)<\/span>/gi, '$1');
+
+        discoveredCodeSnippets.push({
+          fullMatch: match[0],
+          lang: lang,
+          rawCode: rawCode
+        });
+      }
+
+      if (discoveredCodeSnippets.length > 0) {
+        for (const snip of discoveredCodeSnippets) {
+          const lang = snip.lang;
+          const rawCode = snip.rawCode;
+          const ext = EXT_MAP[lang] || 'txt';
+          const autoFilename = `generated_file_${Date.now()}.${ext}`;
+          const cardId = 'card_' + (msgId || 'art') + '_' + (++snippetIdCounter);
+
+          window.codeRegistry[cardId] = {
+            code: rawCode,
+            lang: lang,
+            filename: autoFilename
+          };
+
+          const isPython = ['python', 'py'].includes(lang);
+
+          const artifactPill = `
+            <div class="mt-3 p-3 rounded-xl bg-gray-50 border border-brand-border flex items-center justify-between shadow-xs flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-md bg-white border border-brand-border flex items-center justify-center text-xs font-bold text-brand-text">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                </div>
+                <div>
+                  <div class="font-medium text-xs text-brand-text">${autoFilename}</div>
+                  <div class="text-[10px] text-brand-subtext">${lang.toUpperCase()} • ${(rawCode.length / 1024).toFixed(1)} KB</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                ${isPython ? `
+                  <button type="button" onclick="runPythonOnBackend('${cardId}', this)" 
+                    class="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 font-medium text-xs transition flex items-center gap-1 cursor-pointer">
+                    <span>⚡ Run on GPU</span>
+                  </button>
+                ` : ''}
+                <button type="button" onclick="downloadSnippet('${cardId}')" 
+                  class="px-2.5 py-1 rounded-lg bg-white border border-brand-border text-brand-subtext hover:text-brand-text font-medium text-xs transition cursor-pointer">
+                  Download
+                </button>
+                <button type="button" onclick="previewSnippet('${cardId}')" 
+                  class="px-3 py-1 rounded-lg bg-brand-black text-white font-medium text-xs transition active:scale-95 shadow-xs cursor-pointer">
+                  Live Preview
+                </button>
+              </div>
+            </div>
+          `;
+          parsedHtml += artifactPill;
         }
-        return context.trim();
-      } catch (err) { return ""; }
+      }
+
+      return thinkHtml + parsedHtml;
     }
 
-    // MULTI-TURN CONVERSATIONAL CHAT ENGINE
+    function escapeHtml(text) {
+      if (!text) return "";
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML.replace(/\n/g, "<br>");
+    }
+
+    function appendMessageUI(role, content, isMarkdown = false) {
+      const banner = document.getElementById("welcome-banner");
+      if (banner) banner.remove();
+
+      const container = document.getElementById("chat-container");
+      const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
+      const isUser = role === "user";
+
+      rawMessageStore[msgId] = content;
+
+      let bodyHtml = "";
+      if (isUser) {
+        bodyHtml = escapeHtml(content);
+      } else {
+        bodyHtml = isMarkdown ? renderResponseWithArtifacts(content, msgId) : content;
+      }
+
+      const html = `
+        <div id="${msgId}" class="flex gap-3 items-start msg-fade-in ${isUser ? 'justify-end' : 'justify-start'}">
+          ${!isUser ? `
+            <div class="w-7 h-7 rounded-lg bg-brand-black text-white flex items-center justify-center shrink-0 mt-1 shadow-xs">
+              <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+                <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          ` : ''}
+          <div class="${isUser ? 'bg-[#f4f4f5] text-brand-text rounded-2xl px-4 py-2.5 text-[14px] font-normal max-w-[80%] break-words' : 'prose-readable text-brand-text leading-relaxed max-w-full flex-1'}">
+            ${bodyHtml}
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML("beforeend", html);
+      return msgId;
+    }
+
+    function updateMessageUI(msgId, content) {
+      const el = document.getElementById(msgId);
+      if (el) {
+        el.querySelector("div:last-child").innerHTML = content;
+      }
+    }
+
     async function handleSend() {
       const text = promptInput.value.trim();
       if (!text && !currentAttachedFile && !currentAttachedImage) return;
 
-      const isWebSearch = isWebSearchEnabled;
-      promptInput.value = "";
-      promptInput.style.height = "auto";
-
-      let userDisplayContent = text;
-      let userImageHtml = "";
+      let finalUserMessage = text;
       let attachedBase64Images = [];
 
       if (currentAttachedImage) {
-        userImageHtml = `<div class="mb-2"><img src="${currentAttachedImage.dataUrl}" class="max-w-xs max-h-48 rounded-xl border border-white/10 shadow-md object-contain"></div>`;
         attachedBase64Images.push(currentAttachedImage.base64);
-        removeAttachedImage();
+        finalUserMessage = `[Attached Image: ${currentAttachedImage.name}]\n` + finalUserMessage;
       }
-
       if (currentAttachedFile) {
-        userDisplayContent = `[Attached File: ${currentAttachedFile.name}]\n\n${text}`;
+        finalUserMessage = `--- ATTACHED FILE (${currentAttachedFile.name}) ---\n${currentAttachedFile.content}\n--- END ATTACHED FILE ---\n\n` + finalUserMessage;
       }
 
-      const userFullHtml = userImageHtml + escapeHtml(userDisplayContent || "Analyze this image.");
-      appendMessageUI("user", userFullHtml, false);
+      promptInput.value = "";
+      promptInput.style.height = "auto";
+      removeAttachedFile();
+      removeAttachedImage();
 
-      let finalPrompt = text;
-      if (currentAttachedFile) {
-        finalPrompt = `[Attached File: ${currentAttachedFile.name}]\n\`\`\`\n${currentAttachedFile.content}\n\`\`\`\n\n[User Instruction]:\n${text || 'Please analyze this document.'}`;
-        
-        // Asynchronously ingest document into Colab RAG Vector engine
-        fetch(`${backendUrl}/api/rag/ingest`, {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify({ document_id: currentAttachedFile.name, text: currentAttachedFile.content })
-        }).catch(() => {});
-        
-        removeAttachedFile();
-      }
+      appendMessageUI("user", finalUserMessage, false);
+      saveMessageToHistory("user", finalUserMessage);
+      scrollToBottom(true);
 
-      if (attachedBase64Images.length > 0 && !finalPrompt) {
-        finalPrompt = "Please analyze this image, extract key details or code/diagrams, and explain thoroughly.";
-      }
+      const aiMsgId = appendMessageUI("assistant", '<span class="text-brand-subtext text-xs italic">Crafting response...</span><span class="cursor-blink"></span>', false);
 
-      const existingHistory = conversations[currentChatId]?.messages || [];
-      const recentHistory = existingHistory.slice(-4);
+      const historyPayload = (conversations[currentChatId]?.messages || []).map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
-      const historyPayload = recentHistory.map(m => {
-        let cleanContent = m.content;
-        if (m.role === 'assistant') {
-          cleanContent = cleanContent.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-        }
-        return {
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: cleanContent
-        };
-      });
+      const now = new Date();
+      const dateString = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      const userMsgPayload = {
-        role: "user",
-        content: finalPrompt
-      };
-      if (attachedBase64Images.length > 0) {
-        userMsgPayload.images = attachedBase64Images;
-      }
-      historyPayload.push(userMsgPayload);
-
-      saveMessageToHistory("user", userDisplayContent || "Image Query");
-
-      const aiMsgId = appendMessageUI("assistant", '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Starting neural engine...</div>', false);
-      
-      setTimeout(() => {
-        const el = document.getElementById(aiMsgId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 40);
-
-      if (isWebSearch) {
-        updateMessageUI(aiMsgId, '<div class="flex items-center gap-2.5 text-m3-primary font-medium text-xs"><svg class="w-4 h-4 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg> Searching web for context...</div>');
-        const searchResults = await searchDuckDuckGo(text);
-        if (searchResults) {
-          historyPayload[historyPayload.length - 1].content = `[Live Web Search Context]:\n${searchResults}\n\n[User Question]:\n${finalPrompt}\n\nAnswer concisely using search context above.`;
-        }
-      }
-
-      const isR1 = modelName.includes("r1");
-      let messagesPayload = historyPayload;
-
-      if (!isR1) {
-        const now = new Date();
-        const dateString = now.toLocaleDateString(undefined, { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        });
-        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        const systemPrompt = {
-          role: "system",
-          content: `You are BuckBuck AI, an elite Product Designer, Creative Director, and Senior Full-Stack Web Architect.
+      const systemPrompt = {
+        role: "system",
+        content: `You are BuckBuck AI, an elite Product Designer and Senior Full-Stack Web Architect.
 Current Date: ${dateString}, ${timeString} (${timezone}).
 
 CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
 1. Apple-Tier Aesthetics & Design Systems:
-   - Typography: Use sleek Apple-style system font stack (-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif) or Tailwind font-sans. Use clamp() for massive bold headlines, gradient text fills, and high-contrast styling.
-   - Glassmorphism & Depth: Use modern frosted glass navigation (backdrop-filter: blur(20px)), subtle borders (rgba(255,255,255,0.1)), and refined dark/light backgrounds (#000, #f5f5f7, #ffffff).
-   - Real High-Res Photography: Always embed real, high-resolution Unsplash photography (e.g., https://images.unsplash.com/photo-... with ?w=1200&q=80) matching the product, lifestyle, or brand. Never use empty boxes or placeholder text.
-   - Vector Icons & Details: Use clean inline SVGs (stroke-width="2", stroke-linecap="round") for features, specs, and badges.
-   - Dynamic Interactivity & Motion: Include subtle CSS animations (@keyframes float), IntersectionObserver scroll reveals (.fade-in), interactive tabs, and complete working JavaScript.
+   - Typography: Use sleek Apple-style system font stack (-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif) or Tailwind. Use clamp() for massive bold headlines and gradient text fills.
+   - Glassmorphism & Depth: Use modern frosted glass navigation (backdrop-filter: blur(20px)), subtle borders (rgba(0,0,0,0.1)), and refined backgrounds (#000, #f5f5f7, #ffffff).
+   - Real High-Res Photography: Always embed real, high-resolution Unsplash photography (e.g., https://images.unsplash.com/photo-... with ?w=1200&q=80) matching the product or brand.
+   - Vector Icons: Use clean inline SVGs (stroke-width="2", stroke-linecap="round") for features and specs.
+   - 3D Motion & Interactions: Include CSS animations (@keyframes float), 3D perspective layers, and IntersectionObserver scroll reveals (.fade-in).
 
 2. Complete & Self-Contained:
-   - Always output complete, ready-to-run single-file HTML/CSS/JS. Never use placeholders like "// implement later".
+   - Always output complete, ready-to-run single-file HTML/CSS/JS. Never leave placeholders like "// implement later".
 
 3. Markdown Code Blocks:
    - Always enclose complete code in standard triple-backtick markdown blocks (\`\`\`html, \`\`\`python, \`\`\`javascript).`
-        };
-        messagesPayload = [systemPrompt, ...historyPayload];
-      }
+      };
+
+      const messagesPayload = [systemPrompt, ...historyPayload];
 
       try {
-        updateMessageUI(aiMsgId, '<span class="text-m3-onSurfaceVariant text-xs italic">Crafting code & streaming tokens...</span><span class="cursor-blink"></span>');
-
-        let activeModelForChat = modelName;
-        if (attachedBase64Images.length > 0 && !modelName.includes("llava") && !modelName.includes("vl")) {
-          activeModelForChat = "llava:7b";
-        }
+        updateMessageUI(aiMsgId, '<span class="text-brand-subtext text-xs italic">Generating...</span><span class="cursor-blink"></span>');
 
         const response = await fetch(`${backendUrl}/api/chat`, {
           method: "POST",
           headers: getAuthHeaders(),
           body: JSON.stringify({
-            model: activeModelForChat,
+            model: modelName,
             messages: messagesPayload,
             stream: true,
             options: {
@@ -1805,15 +1218,7 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
         });
 
         if (!response.ok) {
-          let errorDetail = "";
-          try {
-            const errJson = await response.json();
-            if (errJson && errJson.error) errorDetail = errJson.error;
-          } catch(e) {}
-          if (response.status === 404) throw new Error(`Model '${activeModelForChat}' is not cached on Colab yet or is currently downloading.`);
-          if (response.status === 502 || response.status === 504) throw new Error("GPU backend is busy loading weights into VRAM. Please retry in a few seconds.");
-          if (response.status === 401) throw new Error("API Key mismatch. Please use the 1-Click Launch link from Colab.");
-          throw new Error(errorDetail || `GPU Backend returned HTTP ${response.status}`);
+          throw new Error(`Colab GPU backend returned status ${response.status}. Make sure Colab is active.`);
         }
 
         const reader = response.body.getReader();
@@ -1843,7 +1248,6 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
           }
         }
 
-        // Process any trailing line left in buffer
         if (lineBuffer && lineBuffer.trim()) {
           try {
             const parsed = JSON.parse(lineBuffer);
@@ -1855,347 +1259,11 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
 
         rawMessageStore[aiMsgId] = accumulatedText;
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText, aiMsgId));
-        const aiMsgElement = document.getElementById(aiMsgId);
-        enhanceCodeBlocksInElement(aiMsgElement, aiMsgId);
-        renderMathInMsg(aiMsgElement);
         saveMessageToHistory("assistant", accumulatedText);
-        scrollToBottom(false);
+        scrollToBottom(true);
 
-      } catch (error) {
-        const errorMsg = error && error.message ? error.message : "Could not reach Colab GPU backend. Make sure Colab is active.";
-        updateMessageUI(aiMsgId, `<div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium space-y-1">
-          <div class="flex items-center gap-2 text-rose-400 font-semibold">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            <span>Connection Notice</span>
-          </div>
-          <div>${escapeHtml(errorMsg)}</div>
-        </div>`);
-      }
-    }
-
-    function renderMathInMsg(element) {
-      if (!element || !window.renderMathInElement) return;
-      renderMathInElement(element, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\[', right: '\\]', display: true},
-          {left: '\\(', right: '\\)', display: false}
-        ],
-        throwOnError: false
-      });
-    }
-
-    function enhanceCodeBlocksInElement(containerEl, msgId = "") {
-      if (!containerEl) return;
-      const preElements = containerEl.querySelectorAll('pre');
-      const bundleId = msgId ? ('bundle_' + msgId) : null;
-      const hasBundle = bundleId && window.codeRegistry[bundleId];
-      
-      preElements.forEach(pre => {
-        if (pre.previousElementSibling && pre.previousElementSibling.classList.contains('code-header-bar')) return;
-
-        const codeEl = pre.querySelector('code');
-        if (!codeEl) return;
-
-        const langMatch = codeEl.className.match(/language-(\w+)/);
-        const lang = langMatch ? langMatch[1] : 'code';
-        const rawCode = codeEl.innerText;
-        const ext = EXT_MAP[lang.toLowerCase()] || 'txt';
-        const snipId = 'snip_' + (++snippetIdCounter);
-        const filename = `snippet_${Date.now()}.${ext}`;
-
-        window.codeRegistry[snipId] = {
-          code: rawCode,
-          lang: lang,
-          filename: filename,
-          bundleId: (['html', 'htm', 'css', 'javascript', 'js', 'jsx'].includes(lang.toLowerCase()) && hasBundle) ? bundleId : null
-        };
-
-        const isWebLang = ['html', 'htm', 'css', 'javascript', 'js', 'jsx', 'svg'].includes(lang.toLowerCase());
-        const isPython = ['python', 'py'].includes(lang.toLowerCase());
-        const previewBtnLabel = (isWebLang && hasBundle) ? 'Preview App' : 'Preview';
-
-        const header = document.createElement('div');
-        header.className = 'code-header-bar flex items-center justify-between px-4 py-2 bg-[#1e1f20] border-t border-x border-[#282a2c] text-[11px] text-m3-onSurfaceVariant font-mono rounded-t-2xl';
-        
-        let runPythonBtn = "";
-        if (isPython) {
-          runPythonBtn = `
-            <button type="button" onclick="runPythonOnBackend('${snipId}', this)" 
-              class="hover:text-emerald-400 flex items-center gap-1 text-xs font-sans font-medium text-emerald-400 transition cursor-pointer" title="Execute script on Google Colab T4 GPU">
-              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Run GPU</span>
-            </button>
-          `;
-        }
-
-        header.innerHTML = `
-          <span class="text-m3-onSurfaceVariant font-bold uppercase tracking-wider text-[10px]">${lang}</span>
-          <div class="flex items-center gap-3">
-            ${runPythonBtn}
-            <button type="button" onclick="previewSnippet('${snipId}')" 
-              class="hover:text-m3-primary flex items-center gap-1.5 text-xs font-sans font-medium text-m3-primary transition cursor-pointer" title="Preview / Run in Sandbox">
-              <svg class="w-3.5 h-3.5 text-m3-primary fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>${previewBtnLabel}</span>
-            </button>
-            <button type="button" onclick="downloadSnippet('${snipId}')" 
-              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition cursor-pointer" title="Download as ${filename}">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              <span>Download</span>
-            </button>
-            <button type="button" onclick="copySnippet(this, '${snipId}')" 
-              class="hover:text-white flex items-center gap-1 text-xs font-sans font-medium text-m3-onSurfaceVariant transition cursor-pointer" title="Copy code">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              <span>Copy</span>
-            </button>
-          </div>
-        `;
-
-        pre.parentNode.insertBefore(header, pre);
-        pre.classList.add('rounded-t-none', 'mt-0', 'border-t-0');
-        hljs.highlightElement(codeEl);
-      });
-    }
-
-    function renderResponseWithArtifacts(text, msgId = "") {
-      let thinkHtml = "";
-      let mainText = text;
-
-      const thinkMatch = text.match(/<think>([\s\S]*?)(?:<\/think>|$)/i);
-      if (thinkMatch) {
-        const thinkContent = thinkMatch[1].trim();
-        const isStillThinking = !text.includes("</think>");
-        mainText = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/i, "").trim();
-
-        if (isStillThinking) {
-          thinkHtml = `
-            <div class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/30 rounded-2xl p-3.5 shadow-sm">
-              <div class="flex items-center gap-2 text-xs font-medium text-m3-primary mb-2">
-                <svg class="w-3.5 h-3.5 anim-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
-                Thinking in real-time...
-              </div>
-              <div class="text-xs text-m3-onSurfaceVariant/90 font-mono whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
-                ${thinkContent || 'Generating initial reasoning tokens...'}
-              </div>
-            </div>
-          `;
-        } else if (thinkContent.length > 0) {
-          thinkHtml = `
-            <details class="mb-4 bg-m3-surfaceContainerLow border border-m3-outline/20 rounded-2xl overflow-hidden group shadow-sm">
-              <summary class="px-4 py-2.5 cursor-pointer font-medium text-xs text-m3-primary flex items-center justify-between select-none hover:bg-m3-surfaceContainer transition">
-                <span class="flex items-center gap-2">
-                  <svg class="w-3.5 h-3.5 text-m3-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 00-8 8c0 3 2 5.5 4 7v3h8v-3c2-1.5 4-4 4-7a8 8 0 00-8-8z"/><path d="M9 22h6"/></svg>
-                  Thought Process (${Math.max(1, Math.round(thinkContent.split(' ').length / 20))}s)
-                </span>
-                <svg class="w-3.5 h-3.5 text-m3-onSurfaceVariant transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
-              </summary>
-              <div class="px-4 py-3 border-t border-m3-outline/20 text-xs text-m3-onSurfaceVariant/85 font-mono whitespace-pre-wrap leading-relaxed bg-[#151517]">
-                ${thinkContent}
-              </div>
-            </details>
-          `;
-        }
-      }
-
-      let normalized = mainText
-        .replace(/\[\s*(\\text|\\boxed|\\begin|\\frac|\\sum|\\int|\\sqrt|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\sigma|\\omega|\\mathbf|\\mathcal|\\left|\\mathbf|Attention)[\s\S]*?\]/g, match => {
-          return `\n$$\n${match.slice(1, -1).trim()}\n$$\n`;
-        })
-        .replace(/\(\s*([QKVqkvi-z0-9\\]+)\s*\)/g, (match, p1) => {
-          if (p1.length <= 4 || p1.startsWith('\\')) return `$${p1}$`;
-          return match;
-        });
-
-      let parsedHtml = marked.parse(normalized);
-
-      // MULTI-SNIPPET PARSER: EXTRACT ALL HTML, CSS, AND JS BLOCKS
-      const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-      let match;
-      let htmlSnippets = [];
-      let cssSnippets = [];
-      let jsSnippets = [];
-      let totalBlocks = 0;
-
-      while ((match = codeBlockRegex.exec(mainText)) !== null) {
-        totalBlocks++;
-        const lang = (match[1] || 'code').toLowerCase();
-        const codeContent = match[2].trim();
-        if (['html', 'htm'].includes(lang)) htmlSnippets.push(codeContent);
-        else if (lang === 'css') cssSnippets.push(codeContent);
-        else if (['js', 'javascript', 'jsx'].includes(lang)) jsSnippets.push(codeContent);
-      }
-
-      const hasMultiWebFiles = (htmlSnippets.length > 0 && (cssSnippets.length > 0 || jsSnippets.length > 0)) || (totalBlocks > 1 && (htmlSnippets.length + cssSnippets.length + jsSnippets.length >= 2));
-
-      if (hasMultiWebFiles && msgId) {
-        const combinedHTML = buildCombinedWebApp(
-          htmlSnippets.join('\n\n'),
-          cssSnippets.join('\n\n'),
-          jsSnippets.join('\n\n')
-        );
-
-        const bundleId = 'bundle_' + msgId;
-        window.codeRegistry[bundleId] = {
-          code: combinedHTML,
-          lang: 'html',
-          filename: `full_webapp_${Date.now()}.html`,
-          isBundle: true
-        };
-
-        const bundleCard = `
-          <div class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-m3-surfaceContainer to-indigo-950/30 border border-indigo-500/30 flex items-center justify-between shadow-lg flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 flex items-center justify-center shadow-inner">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-              </div>
-              <div>
-                <div class="font-medium text-xs text-white flex items-center gap-2">
-                  <span>Interactive Full-Stack Web App</span>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal">HTML + CSS + JS Unified</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Automatically merged separate files into a working executable sandbox</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="downloadSnippet('${bundleId}')" 
-                class="px-3.5 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurface font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                <span>Download App (.html)</span>
-              </button>
-              <button type="button" onclick="previewSnippet('${bundleId}')" 
-                class="px-4 py-1.5 rounded-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-indigo-500/20 cursor-pointer">
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>Live Preview Unified App</span>
-              </button>
-            </div>
-          </div>
-        `;
-        parsedHtml += bundleCard;
-
-      } else {
-        const codeMatch = mainText.match(/```(\w+)?\n([\s\S]*?)```/);
-        if (codeMatch && codeMatch[2].trim().length > 40) {
-          const lang = (codeMatch[1] || 'code').toLowerCase();
-          const rawCode = codeMatch[2].trim();
-          const ext = EXT_MAP[lang] || 'txt';
-          const autoFilename = `generated_file_${Date.now()}.${ext}`;
-          const cardId = 'card_' + (msgId || 'art') + '_' + (++snippetIdCounter);
-
-          window.codeRegistry[cardId] = {
-            code: rawCode,
-            lang: lang,
-            filename: autoFilename
-          };
-
-          const isPython = ['python', 'py'].includes(lang);
-
-          const artifactPill = `
-            <div class="mt-4 p-3.5 rounded-2xl bg-m3-surfaceContainer border border-m3-outline/30 flex items-center justify-between shadow-sm flex-wrap gap-2">
-              <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-lg bg-m3-surfaceContainerHighest text-m3-primary flex items-center justify-center">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-                </div>
-                <div>
-                  <div class="font-medium text-xs text-m3-onSurface">${autoFilename}</div>
-                  <div class="text-[10px] text-m3-onSurfaceVariant">${lang.toUpperCase()} • ${(rawCode.length / 1024).toFixed(1)} KB</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-1.5">
-                ${isPython ? `
-                  <button type="button" onclick="runPythonOnBackend('${cardId}', this)" 
-                    class="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    <span>Run on GPU</span>
-                  </button>
-                ` : ''}
-                <button type="button" onclick="downloadSnippet('${cardId}')" 
-                  class="px-3 py-1.5 rounded-full bg-m3-surfaceContainerHigh hover:bg-m3-surfaceContainerHighest text-m3-onSurfaceVariant hover:text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                  <span>Download</span>
-                </button>
-                <button type="button" onclick="previewSnippet('${cardId}')" 
-                  class="px-3.5 py-1.5 rounded-full bg-m3-primary hover:opacity-90 text-m3-surface font-semibold text-xs transition flex items-center gap-1.5 active:scale-95 shadow-sm cursor-pointer">
-                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>Live Preview</span>
-                </button>
-              </div>
-            </div>
-          `;
-          parsedHtml += artifactPill;
-        }
-      }
-
-      if (msgId) {
-        const actionToolbar = `
-          <div class="flex items-center gap-1 mt-2 text-[11px] text-m3-onSurfaceVariant/80">
-            <button type="button" onclick="readAloudMessage('${msgId}', this)" class="px-2 py-1 rounded-md hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1 cursor-pointer" title="Read response aloud">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-              <span>Speak</span>
-            </button>
-            <button type="button" onclick="copyFullMessage('${msgId}')" class="px-2 py-1 rounded-md hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1 cursor-pointer" title="Copy response">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              <span>Copy</span>
-            </button>
-            <button type="button" onclick="downloadMessageFile('${msgId}')" class="px-2 py-1 rounded-md hover:bg-m3-surfaceContainerHigh hover:text-m3-onSurface transition flex items-center gap-1 cursor-pointer" title="Export as standalone HTML">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              <span>Download HTML</span>
-            </button>
-          </div>
-        `;
-        parsedHtml += actionToolbar;
-      }
-
-      return thinkHtml + parsedHtml;
-    }
-
-    function escapeHtml(text) {
-      if (!text) return "";
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML.replace(/\n/g, "<br>");
-    }
-
-    function appendMessageUI(role, content, isMarkdown = false) {
-      const container = document.getElementById("chat-container");
-      const msgId = "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 4);
-      const isUser = role === "user";
-
-      rawMessageStore[msgId] = content;
-
-      let bodyHtml = "";
-      if (isUser) {
-        bodyHtml = escapeHtml(content);
-      } else {
-        bodyHtml = isMarkdown ? renderResponseWithArtifacts(content, msgId) : content;
-      }
-
-      const html = `
-        <div id="${msgId}" class="flex gap-2.5 sm:gap-3 items-start msg-fade-in ${isUser ? 'flex-row-reverse' : ''}">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface' : 'bg-m3-surfaceContainerHighest text-m3-primary shadow-sm'}">
-            ${isUser ? 
-              `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` : 
-              `<svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none"><path d="M16 4L6 10l10 6 10-6-10-6zM6 16l10 6 10-6M6 22l10 6 10-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
-          </div>
-          <div class="${isUser ? 'bg-m3-surfaceContainerHigh text-m3-onSurface rounded-2xl rounded-tr-sm px-3.5 py-2 text-[14px] font-medium max-w-[80%] sm:max-w-[70%] break-words shadow-sm leading-relaxed' : 'prose-readable text-m3-onSurface leading-relaxed max-w-full flex-1'}">
-            ${bodyHtml}
-          </div>
-        </div>
-      `;
-      container.insertAdjacentHTML("beforeend", html);
-      const el = document.getElementById(msgId);
-      if (isMarkdown && !isUser) {
-        enhanceCodeBlocksInElement(el, msgId);
-        renderMathInMsg(el);
-      }
-      return msgId;
-    }
-
-    function updateMessageUI(msgId, content) {
-      const el = document.getElementById(msgId);
-      if (el) {
-        el.querySelector("div:last-child").innerHTML = content;
-        renderMathInMsg(el);
+      } catch (err) {
+        updateMessageUI(aiMsgId, `<div class="p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-medium">Notice: ${err.message}</div>`);
       }
     }
 
