@@ -127,6 +127,48 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .msg-fade-in { animation: fadeIn 0.22s ease-out forwards; }
 
+    /* ==========================================================================
+       BUCKBUCK NEURAL LAYER LOGO ANIMATION (CLAUDE / GEMINI WAVE ENGINE)
+       ========================================================================== */
+    @keyframes layerWaveTop {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.9; }
+      50% { transform: translateY(-3.5px) scale(1.08); opacity: 1; stroke: #38bdf8; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.7)); }
+    }
+    @keyframes layerWaveMid {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.85; }
+      50% { transform: translateY(0px) scale(1.12); opacity: 1; stroke: #818cf8; filter: drop-shadow(0 0 4px rgba(129, 140, 248, 0.7)); }
+    }
+    @keyframes layerWaveBot {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.9; }
+      50% { transform: translateY(3.5px) scale(1.08); opacity: 1; stroke: #c084fc; filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.7)); }
+    }
+    @keyframes neuralBreathing {
+      0%, 100% { transform: scale(1); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+      50% { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,0,0,0.22); }
+    }
+
+    .neural-generating .logo-top {
+      animation: layerWaveTop 1.35s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      transform-origin: 16px 11px;
+    }
+    .neural-generating .logo-mid {
+      animation: layerWaveMid 1.35s cubic-bezier(0.45, 0, 0.55, 1) infinite 0.16s;
+      transform-origin: 16px 16px;
+    }
+    .neural-generating .logo-bot {
+      animation: layerWaveBot 1.35s cubic-bezier(0.45, 0, 0.55, 1) infinite 0.32s;
+      transform-origin: 16px 21px;
+    }
+    .neural-generating-box {
+      animation: neuralBreathing 1.35s ease-in-out infinite;
+    }
+
+    .neural-avatar-box .logo-top, .neural-avatar-box .logo-mid, .neural-avatar-box .logo-bot {
+      transition: transform 0.25s ease, stroke 0.25s ease;
+    }
+    .neural-avatar-box:hover .logo-top { transform: translateY(-2px); stroke: #38bdf8; }
+    .neural-avatar-box:hover .logo-bot { transform: translateY(2px); stroke: #c084fc; }
+
     #sidebar {
       width: 260px;
       min-width: 260px;
@@ -1087,7 +1129,7 @@
       return div.innerHTML.replace(/\n/g, "<br>");
     }
 
-    function appendMessageUI(role, content, isMarkdown = false) {
+    function appendMessageUI(role, content, isMarkdown = false, isGenerating = false) {
       const banner = document.getElementById("welcome-banner");
       if (banner) banner.remove();
 
@@ -1107,9 +1149,11 @@
       const html = `
         <div id="${msgId}" class="flex gap-3 items-start msg-fade-in ${isUser ? 'justify-end' : 'justify-start'}">
           ${!isUser ? `
-            <div class="w-7 h-7 rounded-lg bg-brand-black text-white flex items-center justify-center shrink-0 mt-1 shadow-xs">
-              <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
-                <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <div id="avatar-${msgId}" class="w-7 h-7 rounded-lg bg-brand-black text-white flex items-center justify-center shrink-0 mt-1 shadow-xs neural-avatar-box ${isGenerating ? 'neural-generating-box' : ''}">
+              <svg id="svg-${msgId}" class="w-4 h-4 ${isGenerating ? 'neural-generating' : ''}" viewBox="0 0 32 32" fill="none">
+                <path class="logo-top" d="M16 6L7 11l9 5 9-5-9-5z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="logo-mid" d="M7 16l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="logo-bot" d="M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
           ` : ''}
@@ -1149,11 +1193,11 @@
       removeAttachedFile();
       removeAttachedImage();
 
-      appendMessageUI("user", finalUserMessage, false);
+      appendMessageUI("user", finalUserMessage, false, false);
       saveMessageToHistory("user", finalUserMessage);
       scrollToBottom(true);
 
-      const aiMsgId = appendMessageUI("assistant", '<span class="text-brand-subtext text-xs italic">Crafting response...</span><span class="cursor-blink"></span>', false);
+      const aiMsgId = appendMessageUI("assistant", '<span class="text-brand-subtext text-xs italic">Crafting response...</span><span class="cursor-blink"></span>', false, true);
 
       const historyPayload = (conversations[currentChatId]?.messages || []).map(m => ({
         role: m.role,
@@ -1251,9 +1295,20 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
         rawMessageStore[aiMsgId] = accumulatedText;
         updateMessageUI(aiMsgId, renderResponseWithArtifacts(accumulatedText, aiMsgId));
         saveMessageToHistory("assistant", accumulatedText);
+        
+        // Settle animation smoothly
+        const avBox = document.getElementById(`avatar-${aiMsgId}`);
+        const avSvg = document.getElementById(`svg-${aiMsgId}`);
+        if (avBox) avBox.classList.remove("neural-generating-box");
+        if (avSvg) avSvg.classList.remove("neural-generating");
+
         scrollToBottom(true);
 
       } catch (err) {
+        const avBox = document.getElementById(`avatar-${aiMsgId}`);
+        const avSvg = document.getElementById(`svg-${aiMsgId}`);
+        if (avBox) avBox.classList.remove("neural-generating-box");
+        if (avSvg) avSvg.classList.remove("neural-generating");
         updateMessageUI(aiMsgId, `<div class="p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-medium">Notice: ${err.message}</div>`);
       }
     }
