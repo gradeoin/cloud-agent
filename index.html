@@ -230,39 +230,26 @@
   <!-- MAIN CANVAS AREA -->
   <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-white relative overflow-hidden">
     
-    <!-- TOP HEADER (Qwen Studio Style) -->
-    <header class="bg-white px-4 sm:px-8 py-3.5 flex justify-between items-center z-10 shrink-0 select-none">
+    <!-- TOP HEADER (Exact Qwen Studio Minimalist Style) -->
+    <header class="bg-white px-5 sm:px-8 py-4 flex justify-between items-center z-10 shrink-0 select-none">
       <div class="flex items-center gap-3">
-        <!-- Sidebar Toggle -->
-        <button onclick="toggleSidebar()" class="text-brand-subtext hover:text-brand-text p-1.5 rounded-lg hover:bg-gray-100 transition" title="Toggle Sidebar">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-        </button>
-
-        <!-- Model Selector (Qwen Studio Pill) -->
-        <div class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-brand-border px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-text shadow-sm cursor-pointer" onclick="toggleSettingsModal()">
-          <svg class="w-3.5 h-3.5 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
-          <span id="current-model-display">Qwen 2.5 Coder (7B)</span>
-          <svg class="w-3 h-3 text-brand-subtext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        <!-- Minimalist Model Selector -->
+        <div class="flex items-center gap-2 cursor-pointer select-none text-[15px] font-semibold text-gray-900 hover:text-gray-600 transition" onclick="toggleSettingsModal()">
+          <svg class="w-4 h-4 text-gray-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+          <span id="current-model-display">Qwen3.7-Plus</span>
+          <svg class="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </div>
 
-        <!-- GPU Status Tag -->
-        <span id="status-badge" class="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 hidden sm:inline-flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>GPU Connected</span>
-        </span>
+        <!-- Hidden Discreet Status Badge -->
+        <span id="status-badge" class="hidden"></span>
       </div>
 
       <!-- Right Header Actions (Log in / Sign up buttons) -->
-      <div class="flex items-center gap-2">
-        <button onclick="toggleArtifactDrawerQuick()" class="text-xs font-medium text-brand-subtext hover:text-brand-text px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition hidden sm:inline-flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-          <span>Artifacts</span>
-        </button>
-
-        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-brand-black hover:bg-black text-white text-xs font-medium px-4 py-1.5 rounded-lg transition shadow-sm cursor-pointer">
+      <div class="flex items-center gap-2.5">
+        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-[#18181b] hover:bg-black text-white text-xs font-medium px-4 py-1.5 rounded-lg transition shadow-xs cursor-pointer">
           Log in
         </button>
-        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-white hover:bg-gray-50 border border-brand-border text-brand-text text-xs font-medium px-4 py-1.5 rounded-lg transition cursor-pointer">
+        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 text-xs font-medium px-4 py-1.5 rounded-lg transition cursor-pointer">
           Sign up
         </button>
       </div>
