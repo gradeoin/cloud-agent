@@ -1,6 +1,6 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • FLAGSHIP WEB & CODING GPU BACKEND (LEAN v6.1)
-# POWERED BY QWEN 2.5 CODER (7B) · 100% TESLA T4 GPU ACCELERATION · ZERO 500 ERRORS
+# 🚀 BUCKBUCK AI • FLAGSHIP WEB & CODING GPU BACKEND (LEAN v6.2)
+# POWERED BY QWEN 2.5 CODER (7B) · 100% TESLA T4 GPU ACCELERATION · INSTANT BOOT
 # ==============================================================================
 
 import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile, shutil, urllib.request
@@ -164,7 +164,7 @@ time.sleep(1)
 subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # Wait for Ollama to be completely ready
-for _ in range(30):
+for _ in range(40):
     try:
         with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=1) as r:
             if r.status == 200:
@@ -184,48 +184,34 @@ def already_pulled(model: str) -> bool:
         return False
 
 def verify_and_pull_primary():
-    need_pull = not already_pulled(PRIMARY_MODEL)
-    if not need_pull:
-        try:
-            req = urllib.request.Request(
-                "http://127.0.0.1:11434/api/generate",
-                data=json.dumps({"model": PRIMARY_MODEL, "prompt": "1", "options": {"num_predict": 1}}).encode(),
-                headers={"Content-Type": "application/json"}
-            )
-            with urllib.request.urlopen(req, timeout=25) as resp:
-                pass
-            print(f"   ✅ {PRIMARY_MODEL} (verified in cache)")
-            if DRIVE_AVAILABLE and not os.path.exists(os.path.join(DRIVE_MODELS, "manifests")):
-                print("   💾 Saving verified model to Google Drive for next sessions...")
-                shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
-            return
-        except Exception as e:
-            print(f"   ⚠️ Re-pulling clean model ({e})...")
-            subprocess.run([OLLAMA_BIN, "rm", PRIMARY_MODEL], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            need_pull = True
+    if already_pulled(PRIMARY_MODEL):
+        print(f"   ✅ {PRIMARY_MODEL} is ready in cache.")
+        return
 
-    if need_pull:
-        print(f"   ⬇️ Downloading {PRIMARY_MODEL} into Google Drive cache (one-time setup)...")
-        res = subprocess.run([OLLAMA_BIN, "pull", PRIMARY_MODEL])
-        if res.returncode == 0 and DRIVE_AVAILABLE:
-            shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
-            print(f"   💾 Saved {PRIMARY_MODEL} permanently into Google Drive!")
+    print(f"   ⬇️ Downloading {PRIMARY_MODEL} into Google Drive cache (one-time setup)...")
+    res = subprocess.run([OLLAMA_BIN, "pull", PRIMARY_MODEL])
+    if res.returncode == 0 and DRIVE_AVAILABLE:
+        shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
+        print(f"   💾 Saved {PRIMARY_MODEL} permanently into Google Drive!")
 
 verify_and_pull_primary()
 
-# Lock flagship model into GPU VRAM with 24h keep-alive & 100% GPU offload
+# Lock flagship model into GPU VRAM in background (non-blocking)
 print(f"🔥 Locking {PRIMARY_MODEL} into Tesla T4 GPU VRAM...")
-try:
-    req = urllib.request.Request(
-        "http://127.0.0.1:11434/api/generate",
-        data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h"}).encode(),
-        headers={"Content-Type": "application/json"}
-    )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+def _warmup_gpu():
+    try:
+        req = urllib.request.Request(
+            "http://127.0.0.1:11434/api/generate",
+            data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h"}).encode(),
+            headers={"Content-Type": "application/json"}
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            pass
+        print(f"   ⚡ {PRIMARY_MODEL} is 100% resident in Tesla T4 GPU VRAM (40+ tok/s).")
+    except Exception as e:
         pass
-    print(f"   ⚡ {PRIMARY_MODEL} is 100% resident in Tesla T4 GPU VRAM (40+ tok/s).")
-except Exception as e:
-    print(f"   Note: GPU warmup ({e})")
+
+threading.Thread(target=_warmup_gpu, daemon=True).start()
 
 # [4/4] FASTAPI SERVER SETUP & 1-CLICK LAUNCH
 import nest_asyncio
@@ -406,7 +392,7 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     headers.pop("host", None); headers.pop("authorization", None); headers.pop("x-api-key", None)
     req_body = await request.body()
 
-    # Route requests to flagship model if requested model is alias
+    # Force flagship model fallback
     if request.method == "POST" and (path == "api/chat" or path == "api/generate"):
         try:
             body_json = json.loads(req_body.decode())
