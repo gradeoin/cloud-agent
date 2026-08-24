@@ -1828,7 +1828,17 @@ Directives:
           })
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+          let errorDetail = "";
+          try {
+            const errJson = await response.json();
+            if (errJson && errJson.error) errorDetail = errJson.error;
+          } catch(e) {}
+          if (response.status === 404) throw new Error(`Model '${activeModelForChat}' is not cached on Colab yet or is currently downloading.`);
+          if (response.status === 502 || response.status === 504) throw new Error("GPU backend is busy loading weights into VRAM. Please retry in a few seconds.");
+          if (response.status === 401) throw new Error("API Key mismatch. Please use the 1-Click Launch link from Colab.");
+          throw new Error(errorDetail || `GPU Backend returned HTTP ${response.status}`);
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -1841,7 +1851,6 @@ Directives:
 
           lineBuffer += decoder.decode(value, { stream: true });
           const lines = lineBuffer.split("\n");
-          // Keep the last incomplete fragment in the buffer
           lineBuffer = lines.pop();
 
           for (const line of lines) {
@@ -1877,7 +1886,14 @@ Directives:
         scrollToBottom(false);
 
       } catch (error) {
-        updateMessageUI(aiMsgId, `<p class="text-rose-400 text-xs">Could not reach Colab GPU backend. Make sure Colab is active and model is pulled.</p>`);
+        const errorMsg = error && error.message ? error.message : "Could not reach Colab GPU backend. Make sure Colab is active.";
+        updateMessageUI(aiMsgId, `<div class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium space-y-1">
+          <div class="flex items-center gap-2 text-rose-400 font-semibold">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span>Connection Notice</span>
+          </div>
+          <div>${escapeHtml(errorMsg)}</div>
+        </div>`);
       }
     }
 

@@ -166,7 +166,8 @@ os.system("fuser -k 8000/tcp >/dev/null 2>&1 || true")
 subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 time.sleep(2)
 
-# Ensure core models
+# [3/4] VERIFY & PRE-WARM MODEL SUITE
+print("📥 [3/4] Checking AI Models in Google Drive Cache...")
 REQUIRED_MODELS = ["deepseek-r1:7b", "qwen2.5:7b", "llama3.1:8b", "llava:7b", "deepseek-r1:1.5b"]
 
 def already_pulled(model: str) -> bool:
@@ -177,25 +178,27 @@ def already_pulled(model: str) -> bool:
     except Exception:
         return False
 
-# Model sync in background to not block launch
-def _background_model_ensurance():
-    for model in REQUIRED_MODELS:
-        if not already_pulled(model):
-            subprocess.run([OLLAMA_BIN, "pull", model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            if DRIVE_AVAILABLE:
-                shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
-    # Warm up primary reasoning model into VRAM
-    try:
-        req = urllib.request.Request(
-            "http://127.0.0.1:11434/api/generate",
-            data=json.dumps({"model": "deepseek-r1:7b", "prompt": "hi", "keep_alive": "24h"}).encode(),
-            headers={"Content-Type": "application/json"}
-        )
-        urllib.request.urlopen(req, timeout=90)
-    except Exception:
-        pass
+for model in REQUIRED_MODELS:
+    if already_pulled(model):
+        print(f"   ✅ {model:<18} (cached in Google Drive)")
+    else:
+        print(f"   ⬇️ {model:<18} (downloading to Drive once)...")
+        subprocess.run([OLLAMA_BIN, "pull", model])
+        if DRIVE_AVAILABLE:
+            shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
 
-threading.Thread(target=_background_model_ensurance, daemon=True).start()
+# Pre-warm default model into GPU VRAM for instant 0.2s response
+print("🔥 Locking DeepSeek-R1 (7B) into GPU VRAM...")
+try:
+    req = urllib.request.Request(
+        "http://127.0.0.1:11434/api/generate",
+        data=json.dumps({"model": "deepseek-r1:7b", "prompt": "hi", "keep_alive": "24h"}).encode(),
+        headers={"Content-Type": "application/json"}
+    )
+    urllib.request.urlopen(req, timeout=90)
+    print("   ⚡ Primary model is hot in VRAM.")
+except Exception:
+    pass
 
 # [3/4] FASTAPI SERVER SETUP
 import nest_asyncio
@@ -375,16 +378,18 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     headers.pop("host", None); headers.pop("authorization", None); headers.pop("x-api-key", None)
     req_body = await request.body()
 
-    # On-demand auto-pull
+    # On-demand auto-pull (non-blocking async to prevent freezing the event loop)
     if request.method == "POST" and (path == "api/chat" or path == "api/generate"):
         try:
             body_json = json.loads(req_body.decode())
             req_model = body_json.get("model")
             if req_model and not already_pulled(req_model):
-                subprocess.run([OLLAMA_BIN, "pull", req_model], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print(f"📥 [ON-DEMAND] Pulling '{req_model}' into Google Drive cache...")
+                await asyncio.to_thread(subprocess.run, [OLLAMA_BIN, "pull", req_model])
                 if DRIVE_AVAILABLE:
                     threading.Thread(target=lambda: shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True), daemon=True).start()
-        except Exception: pass
+        except Exception as e:
+            print(f"⚠️ Notice on-demand pull: {e}")
 
     try:
         ollama_req = http_client.build_request(method=request.method, url=target_url, headers=headers, params=request.query_params, content=req_body)
