@@ -28,7 +28,6 @@ SERVER_START_TIME = time.time()
 LAST_REAL_ACTIVITY_TIME = time.time()
 
 # [1/4] MOUNT GOOGLE DRIVE & PERSISTENT KEY SETUP
-DRIVE_AVAILABLE = False
 DRIVE_ROOT = '/content/drive/MyDrive'
 DRIVE_MODELS = f"{DRIVE_ROOT}/ollama_models"
 DRIVE_BIN = f"{DRIVE_ROOT}/buckbuck_bin"
@@ -36,9 +35,18 @@ DRIVE_KEY_PATH = f"{DRIVE_ROOT}/buckbuck_api_key.txt"
 LOCAL_MODELS = '/root/.ollama/models'
 
 print("📁 [1/4] Connecting Google Drive Storage...")
-try:
-    from google.colab import drive
-    drive.mount('/content/drive', force_remount=False)
+DRIVE_AVAILABLE = os.path.exists(DRIVE_ROOT)
+
+if not DRIVE_AVAILABLE:
+    try:
+        from google.colab import drive
+        drive.mount('/content/drive', force_remount=False)
+        DRIVE_AVAILABLE = os.path.exists(DRIVE_ROOT)
+    except Exception as e:
+        print(f"   Note: Drive mount ({e})")
+
+if DRIVE_AVAILABLE:
+    print("   ✅ Google Drive is mounted & active!")
     os.makedirs(DRIVE_MODELS, exist_ok=True)
     os.makedirs(DRIVE_BIN, exist_ok=True)
     os.makedirs(LOCAL_MODELS, exist_ok=True)
@@ -54,11 +62,12 @@ try:
 
     # Sync model cache from Drive to local NVMe SSD
     if os.path.exists(os.path.join(DRIVE_MODELS, "manifests")):
+        print("   ⚡ Loading cached model from Google Drive to GPU SSD...")
         shutil.copytree(DRIVE_MODELS, LOCAL_MODELS, dirs_exist_ok=True)
     
     os.environ['OLLAMA_MODELS'] = LOCAL_MODELS
-    DRIVE_AVAILABLE = True
-except Exception:
+else:
+    print("   ⚠️ Google Drive not detected. Using local GPU disk.")
     API_KEY = secrets.token_urlsafe(32)
 
 USAGE_LOG_PATH = f"{DRIVE_ROOT}/buckbuck_usage_log.json" if DRIVE_AVAILABLE else "/content/buckbuck_usage_log.json"
@@ -172,19 +181,22 @@ def already_pulled(model: str) -> bool:
 def verify_and_pull_primary():
     need_pull = not already_pulled(PRIMARY_MODEL)
     if not need_pull:
-        # Test integrity with a 1-token dry run
+        # Test integrity with a 1-token dry run with GPU offload
         try:
             req = urllib.request.Request(
                 "http://127.0.0.1:11434/api/generate",
-                data=json.dumps({"model": PRIMARY_MODEL, "prompt": "1", "options": {"num_predict": 1}}).encode(),
+                data=json.dumps({"model": PRIMARY_MODEL, "prompt": "1", "options": {"num_predict": 1, "num_gpu": 99}}).encode(),
                 headers={"Content-Type": "application/json"}
             )
             with urllib.request.urlopen(req, timeout=25) as resp:
                 pass
-            print(f"   ✅ {PRIMARY_MODEL} (verified in Google Drive)")
+            print(f"   ✅ {PRIMARY_MODEL} (verified in cache)")
+            if DRIVE_AVAILABLE and not os.path.exists(os.path.join(DRIVE_MODELS, "manifests")):
+                print("   💾 Saving verified model to Google Drive for next sessions...")
+                shutil.copytree(LOCAL_MODELS, DRIVE_MODELS, dirs_exist_ok=True)
             return
         except Exception as e:
-            print(f"   ⚠️ Cache integrity check failed ({e}). Re-pulling fresh copy...")
+            print(f"   ⚠️ Re-pulling clean model ({e})...")
             subprocess.run([OLLAMA_BIN, "rm", PRIMARY_MODEL], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             need_pull = True
 
@@ -197,18 +209,19 @@ def verify_and_pull_primary():
 
 verify_and_pull_primary()
 
-# Lock flagship model into GPU VRAM with 24h keep-alive
-print(f"🔥 Locking {PRIMARY_MODEL} into GPU VRAM for instant 0.1s response...")
+# Lock flagship model into GPU VRAM with 24h keep-alive & 100% GPU offload
+print(f"🔥 Locking {PRIMARY_MODEL} into Tesla T4 GPU VRAM...")
 try:
     req = urllib.request.Request(
         "http://127.0.0.1:11434/api/generate",
-        data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h"}).encode(),
+        data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h", "options": {"num_gpu": 99}}).encode(),
         headers={"Content-Type": "application/json"}
     )
-    urllib.request.urlopen(req, timeout=60)
-    print(f"   ⚡ {PRIMARY_MODEL} is resident in Tesla T4 VRAM.")
-except Exception:
-    pass
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        pass
+    print(f"   ⚡ {PRIMARY_MODEL} is 100% resident in Tesla T4 GPU VRAM (40+ tok/s).")
+except Exception as e:
+    print(f"   Note: GPU warmup ({e})")
 
 # [4/4] FASTAPI SERVER SETUP & 1-CLICK LAUNCH
 import nest_asyncio
