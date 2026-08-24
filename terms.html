@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service • BuckBuck Studio</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2318181b'/><path d='M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  </style>
+</head>
+<body class="bg-white text-[#09090b] min-h-screen flex flex-col antialiased selection:bg-gray-200">
+
+  <!-- Minimal Header -->
+  <header class="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 sm:px-12 py-4 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2.5 group">
+      <div class="w-7 h-7 rounded-lg bg-[#18181b] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition">
+        <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+          <path d="M16 6L7 11l9 5 9-5-9-5zM7 16l9 5 9-5M7 21l9 5 9-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="font-semibold text-sm tracking-tight text-[#09090b]">BuckBuck Studio</span>
+    </a>
+    <a href="index.html" class="text-xs font-medium text-gray-500 hover:text-black px-3.5 py-1.5 rounded-lg hover:bg-gray-100 transition flex items-center gap-1.5">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back to Studio</span>
+    </a>
+  </header>
+
+  <!-- Main Legal Content -->
+  <main class="flex-1 max-w-3xl w-full mx-auto px-6 py-12 sm:py-16 space-y-10">
+    <div class="space-y-2 border-b border-gray-100 pb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#09090b]">Terms of Service</h1>
+      <p class="text-sm text-gray-400">Effective Date: August 24, 2026 • Last updated: August 2026</p>
+    </div>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">1. Acceptance of Terms</h2>
+      <p>By accessing, browsing, or using BuckBuck Studio ("Service", "Application"), you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must refrain from using the Service.</p>
+    </section>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">2. Service Description & GPU Backend</h2>
+      <p>BuckBuck Studio provides high-performance AI inference, automated code generation, web application synthesis, and execution acceleration. Computation is powered either by connected self-hosted Google Colab GPU backends or authorized model gateways.</p>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+        <li>You are responsible for the management and runtime limits of any custom GPU hardware or tunnel endpoints you connect.</li>
+        <li>BuckBuck Studio does not warrant uninterrupted availability or sub-second latency from external tunnel providers (e.g. Cloudflare Tunnels).</li>
+      </ul>
+    </section>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">3. Intellectual Property & Output Ownership</h2>
+      <p>As between you and BuckBuck Studio, you retain full ownership and intellectual property rights in and to the inputs (prompts, code, files) you provide, as well as the generated software code, artifacts, and output produced by the AI models during your sessions.</p>
+      <p>You may freely use, modify, distribute, license, and commercialize any applications, websites, or algorithms created using BuckBuck Studio.</p>
+    </section>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">4. Acceptable Use Policy</h2>
+      <p>You agree not to use the Service to:</p>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+        <li>Develop malware, malicious payloads, phishing kits, or automated vulnerability exploit scanners.</li>
+        <li>Generate hate speech, non-consensual imagery, harassment, or illegal content.</li>
+        <li>Attempt unauthorized access, penetration testing, or denial-of-service against third-party servers.</li>
+      </ul>
+    </section>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">5. Disclaimer of Warranties & Code Execution</h2>
+      <p>AI models generate code probabilistically. While BuckBuck Studio strives to synthesize state-of-the-art architectures, all code, scripts, and applications generated are provided <strong class="text-black">"AS IS"</strong> without warranties of any kind. You are solely responsible for reviewing and testing code before executing it in production environments.</p>
+    </section>
+
+    <section class="space-y-4 text-[15px] leading-relaxed text-[#374151]">
+      <h2 class="text-lg font-semibold text-[#111827]">6. Changes to Terms</h2>
+      <p>We reserve the right to modify these Terms at any time. Continued use of BuckBuck Studio following any updates constitutes your acceptance of the revised Terms.</p>
+    </section>
+  </main>
+
+  <!-- Minimal Footer -->
+  <footer class="border-t border-gray-100 bg-gray-50/50 py-8 px-6 text-center text-xs text-gray-400">
+    <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>© 2026 BuckBuck Studio. All rights reserved.</span>
+      <div class="flex items-center gap-4">
+        <a href="terms.html" class="text-gray-600 font-medium hover:text-black">Terms of Service</a>
+        <span>•</span>
+        <a href="privacy.html" class="text-gray-600 font-medium hover:text-black">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
