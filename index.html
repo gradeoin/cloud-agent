@@ -1281,9 +1281,6 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
             messages: messagesPayload,
             stream: true,
             options: {
-              num_gpu: 99,
-              num_ctx: 4096,
-              num_batch: 512,
               temperature: 0.2,
               top_p: 0.95,
               num_predict: 2048
@@ -1292,7 +1289,12 @@ CORE DIRECTIVES FOR WORLD-CLASS WEBSITES & APPS:
         });
 
         if (!response.ok) {
-          throw new Error(`Colab GPU backend returned status ${response.status}. Make sure Colab is active.`);
+          let errDetail = `Server returned status ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData && errData.error) errDetail = errData.error;
+          } catch(e){}
+          throw new Error(errDetail);
         }
 
         const reader = response.body.getReader();

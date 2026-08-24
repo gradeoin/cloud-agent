@@ -1,6 +1,6 @@
 # ==============================================================================
-# 🚀 BUCKBUCK AI • FLAGSHIP WEB & CODING GPU BACKEND (LEAN v6.0)
-# POWERED BY QWEN 2.5 CODER (7B) · 5-SECOND BOOT · 1-CLICK LAUNCH · ZERO QUOTA WASTE
+# 🚀 BUCKBUCK AI • FLAGSHIP WEB & CODING GPU BACKEND (LEAN v6.1)
+# POWERED BY QWEN 2.5 CODER (7B) · 100% TESLA T4 GPU ACCELERATION · ZERO 500 ERRORS
 # ==============================================================================
 
 import os, sys, time, subprocess, threading, re, json, io, base64, secrets, traceback, asyncio, signal, tempfile, shutil, urllib.request
@@ -22,8 +22,6 @@ ALLOWED_ORIGIN = "https://buckbuck.pages.dev"
 FRONTEND_BASE_URL = "https://buckbuck.pages.dev"
 
 WEEKLY_BUDGET_MINUTES = 12 * 60     # 12 hours/week quota protector
-GPU_TRUE_IDLE_UTIL_PCT = 3          # Idle GPU util threshold
-
 SERVER_START_TIME = time.time()
 LAST_REAL_ACTIVITY_TIME = time.time()
 
@@ -34,7 +32,7 @@ DRIVE_BIN = f"{DRIVE_ROOT}/buckbuck_bin"
 DRIVE_KEY_PATH = f"{DRIVE_ROOT}/buckbuck_api_key.txt"
 LOCAL_MODELS = '/root/.ollama/models'
 
-print("📁 [1/4] Connecting Google Drive Storage...")
+print("📁 [1/4] Connecting Google Drive & Permanent Storage...")
 DRIVE_AVAILABLE = os.path.exists(DRIVE_ROOT)
 
 if not DRIVE_AVAILABLE:
@@ -51,7 +49,6 @@ if DRIVE_AVAILABLE:
     os.makedirs(DRIVE_BIN, exist_ok=True)
     os.makedirs(LOCAL_MODELS, exist_ok=True)
     
-    # Persistent API Key: reused across all sessions
     if os.path.exists(DRIVE_KEY_PATH):
         with open(DRIVE_KEY_PATH, 'r') as f:
             API_KEY = f.read().strip()
@@ -60,9 +57,8 @@ if DRIVE_AVAILABLE:
         with open(DRIVE_KEY_PATH, 'w') as f:
             f.write(API_KEY)
 
-    # Sync model cache from Drive to local NVMe SSD
     if os.path.exists(os.path.join(DRIVE_MODELS, "manifests")):
-        print("   ⚡ Loading cached model from Google Drive to GPU SSD...")
+        print("   ⚡ Syncing model from Google Drive to local GPU SSD...")
         shutil.copytree(DRIVE_MODELS, LOCAL_MODELS, dirs_exist_ok=True)
     
     os.environ['OLLAMA_MODELS'] = LOCAL_MODELS
@@ -103,7 +99,6 @@ os.environ['LD_LIBRARY_PATH'] = f"/usr/local/lib/ollama:/usr/local/cuda/lib64:/u
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 os.environ['OLLAMA_ORIGINS'] = '*'
 os.environ['OLLAMA_HOST'] = '127.0.0.1:11434'
-os.environ['OLLAMA_FLASH_ATTENTION'] = '1'
 os.environ['OLLAMA_NUM_PARALLEL'] = '1'
 os.environ['OLLAMA_KEEP_ALIVE'] = '24h'
 os.environ['OLLAMA_MAX_LOADED_MODELS'] = '1'
@@ -160,12 +155,22 @@ def _bg_install_ml():
     os.system("pip install -q openai-whisper torchaudio seaborn sympy >/dev/null 2>&1")
 threading.Thread(target=_bg_install_ml, daemon=True).start()
 
-# Free port 8000
+# Free port 8000 & kill old instances
 os.system("fuser -k 8000/tcp >/dev/null 2>&1 || true")
+os.system("killall -9 ollama >/dev/null 2>&1 || true")
+time.sleep(1)
 
 # Start Ollama Engine
 subprocess.Popen([OLLAMA_BIN, "serve"], env=dict(os.environ), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-time.sleep(2)
+
+# Wait for Ollama to be completely ready
+for _ in range(30):
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=1) as r:
+            if r.status == 200:
+                break
+    except Exception:
+        time.sleep(0.5)
 
 # [3/4] VERIFY & WARM UP FLAGSHIP MODEL (Qwen 2.5 Coder 7B)
 print(f"📥 [3/4] Validating Flagship Model ({PRIMARY_MODEL})...")
@@ -181,11 +186,10 @@ def already_pulled(model: str) -> bool:
 def verify_and_pull_primary():
     need_pull = not already_pulled(PRIMARY_MODEL)
     if not need_pull:
-        # Test integrity with a 1-token dry run with GPU offload
         try:
             req = urllib.request.Request(
                 "http://127.0.0.1:11434/api/generate",
-                data=json.dumps({"model": PRIMARY_MODEL, "prompt": "1", "options": {"num_predict": 1, "num_gpu": 99}}).encode(),
+                data=json.dumps({"model": PRIMARY_MODEL, "prompt": "1", "options": {"num_predict": 1}}).encode(),
                 headers={"Content-Type": "application/json"}
             )
             with urllib.request.urlopen(req, timeout=25) as resp:
@@ -214,7 +218,7 @@ print(f"🔥 Locking {PRIMARY_MODEL} into Tesla T4 GPU VRAM...")
 try:
     req = urllib.request.Request(
         "http://127.0.0.1:11434/api/generate",
-        data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h", "options": {"num_gpu": 99}}).encode(),
+        data=json.dumps({"model": PRIMARY_MODEL, "prompt": "hi", "keep_alive": "24h"}).encode(),
         headers={"Content-Type": "application/json"}
     )
     with urllib.request.urlopen(req, timeout=60) as resp:
@@ -406,11 +410,8 @@ async def reverse_proxy_ollama(request: Request, path: str, _=Depends(require_ap
     if request.method == "POST" and (path == "api/chat" or path == "api/generate"):
         try:
             body_json = json.loads(req_body.decode())
-            req_model = body_json.get("model", "")
-            if not req_model or req_model != PRIMARY_MODEL:
-                if not already_pulled(req_model):
-                    body_json["model"] = PRIMARY_MODEL
-                    req_body = json.dumps(body_json).encode()
+            body_json["model"] = PRIMARY_MODEL
+            req_body = json.dumps(body_json).encode()
         except Exception: pass
 
     try:
