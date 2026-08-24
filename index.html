@@ -230,18 +230,21 @@
   <!-- MAIN CANVAS AREA -->
   <div class="flex-1 flex flex-col h-screen w-full min-w-0 bg-white relative overflow-hidden">
     
-    <!-- TOP HEADER (Exact Qwen Studio Minimalist Style) -->
-    <header class="bg-white px-5 sm:px-8 py-4 flex justify-between items-center z-10 shrink-0 select-none">
+    <!-- TOP HEADER (Unified Google Material 3 Tonal Header) -->
+    <header class="bg-white px-5 sm:px-8 py-3.5 flex justify-between items-center z-10 shrink-0 select-none">
       <div class="flex items-center gap-3">
-        <!-- Minimalist Model Selector -->
-        <div class="flex items-center gap-2 cursor-pointer select-none text-[15px] font-semibold text-gray-900 hover:text-gray-600 transition" onclick="toggleSettingsModal()">
-          <svg class="w-4 h-4 text-gray-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
-          <span id="current-model-display">Qwen3.7-Plus</span>
-          <svg class="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </div>
-
-        <!-- Hidden Discreet Status Badge -->
-        <span id="status-badge" class="hidden"></span>
+        <!-- Unified Google Material 3 Model & Status Chip -->
+        <button id="unified-model-pill" onclick="toggleSettingsModal()" 
+          class="flex items-center gap-2 bg-[#f1f3f4] hover:bg-[#e8eaed] active:bg-[#dadce0] border border-[#dadce0] px-3.5 py-1.5 rounded-full transition shadow-xs cursor-pointer select-none text-[#202124]" title="Click to configure Model and Colab GPU Backend">
+          <svg class="w-3.5 h-3.5 text-[#3c4043]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+          <span id="current-model-display" class="text-xs font-semibold text-[#202124]">Qwen3.7-Plus</span>
+          <span class="h-3 w-px bg-[#dadce0] mx-0.5"></span>
+          <span id="status-indicator" class="flex items-center gap-1.5 text-[11px] font-medium text-[#5f6368]">
+            <span id="status-dot" class="w-2 h-2 rounded-full bg-[#70757a] shrink-0"></span>
+            <span id="status-text">Offline</span>
+          </span>
+          <svg class="w-3 h-3 text-[#70757a] ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
       </div>
 
       <!-- Right Header Action (Single Clean Log in Button) -->
@@ -951,19 +954,23 @@
     }
 
     async function checkBackendStatus() {
-      const badge = document.getElementById("status-badge");
+      const dot = document.getElementById("status-dot");
+      const text = document.getElementById("status-text");
+      const indicator = document.getElementById("status-indicator");
       try {
-        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(5000) });
+        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(4000) });
         if (res.ok) {
           const data = await res.json();
-          badge.className = "text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 hidden sm:inline-flex items-center gap-1.5";
-          badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>T4 GPU (${data.session_remaining_minutes || 60}m)</span>`;
+          if (dot) dot.className = "w-2 h-2 rounded-full bg-[#1e8e3e] shrink-0";
+          if (text) text.textContent = `T4 (${data.session_remaining_minutes || 60}m)`;
+          if (indicator) indicator.className = "flex items-center gap-1.5 text-[11px] font-semibold text-[#1e8e3e]";
           return true;
         }
       } catch (e) {}
 
-      badge.className = "text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200 hidden sm:inline-flex items-center gap-1.5";
-      badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span><span>Offline</span>`;
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-[#70757a] shrink-0";
+      if (text) text.textContent = "Offline";
+      if (indicator) indicator.className = "flex items-center gap-1.5 text-[11px] font-medium text-[#70757a]";
       return false;
     }
 
