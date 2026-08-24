@@ -568,12 +568,8 @@
     function toggleModelDropdown() {
       const menu = document.getElementById("model-dropdown-menu");
       const arrow = document.getElementById("model-dropdown-arrow");
-      menu.classList.toggle("hidden");
-      if (!menu.classList.contains("hidden")) {
-        arrow.classList.add("rotate-180");
-      } else {
-        arrow.classList.remove("rotate-180");
-      }
+      if (menu) menu.classList.toggle("hidden");
+      if (arrow) arrow.classList.toggle("rotate-180");
     }
 
     function closeAllDropdowns() {
@@ -581,28 +577,25 @@
       const arrow = document.getElementById("model-dropdown-arrow");
       if (menu && !menu.classList.contains("hidden")) {
         menu.classList.add("hidden");
-        arrow.classList.remove("rotate-180");
       }
+      if (arrow) arrow.classList.remove("rotate-180");
     }
 
     function selectModel(tag, label) {
       modelName = tag;
       localStorage.setItem("ai_model_name", modelName);
-      document.getElementById("model-name-input").value = modelName;
-      document.getElementById("current-model-display").textContent = label;
+      const inputEl = document.getElementById("model-name-input");
+      if (inputEl) inputEl.value = modelName;
+      const dispEl = document.getElementById("current-model-display");
+      if (dispEl) dispEl.textContent = label;
       closeAllDropdowns();
     }
 
     function updateModelDisplayFromStorage() {
-      const map = {
-        "deepseek-r1:7b": "DeepSeek-R1 (7B)",
-        "qwen2.5:7b": "Qwen 2.5 (7B)",
-        "llava:7b": "LLaVA (Vision 7B)",
-        "llama3.1:8b": "Llama 3.1 (8B)",
-        "deepseek-r1:1.5b": "DeepSeek-R1 (1.5B)"
-      };
-      const label = map[modelName] || modelName;
-      document.getElementById("current-model-display").textContent = label;
+      const dispEl = document.getElementById("current-model-display");
+      if (dispEl) {
+        dispEl.textContent = "Qwen 2.5 Coder (7B)";
+      }
     }
 
     function getChatIdFromURL() {
@@ -660,22 +653,42 @@
       }
     }
 
-    document.getElementById("backend-url-input").value = backendUrl;
-    document.getElementById("backend-key-input").value = backendApiKey;
-    document.getElementById("model-name-input").value = modelName;
-    document.getElementById("allowed-email-input").value = allowedEmail;
-    updateModelDisplayFromStorage();
+    try {
+      const uEl = document.getElementById("backend-url-input");
+      if (uEl) uEl.value = backendUrl;
+      const kEl = document.getElementById("backend-key-input");
+      if (kEl) kEl.value = backendApiKey;
+      const mEl = document.getElementById("model-name-input");
+      if (mEl) mEl.value = modelName;
+      const eEl = document.getElementById("allowed-email-input");
+      if (eEl) eEl.value = allowedEmail;
+      updateModelDisplayFromStorage();
+    } catch(e) {}
+
+    // GLOBAL SAFETY DISMISSAL FOR AUTH LOADER
+    setTimeout(() => {
+      const loader = document.getElementById("auth-loading-screen");
+      if (loader && !loader.classList.contains("hidden")) {
+        loader.classList.add("hidden");
+      }
+    }, 1200);
 
     // PERSISTENT AUTHENTICATION
     function initFirebase() {
       try {
+        if (!window.firebase || !defaultFirebaseConfig.apiKey) {
+          const loader = document.getElementById("auth-loading-screen");
+          if (loader) loader.classList.add("hidden");
+          return;
+        }
         if (!firebase.apps.length) firebase.initializeApp(defaultFirebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
 
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
           auth.onAuthStateChanged(user => {
-            document.getElementById("auth-loading-screen").classList.add("hidden");
+            const loader = document.getElementById("auth-loading-screen");
+            if (loader) loader.classList.add("hidden");
             if (user) {
               if (allowedEmail && user.email.toLowerCase() !== allowedEmail.toLowerCase()) {
                 showAuthError(`Access Denied: ${user.email} is not authorized.`);
@@ -685,24 +698,35 @@
               if (!allowedEmail) {
                 allowedEmail = user.email.toLowerCase();
                 localStorage.setItem("ai_allowed_email", allowedEmail);
-                document.getElementById("allowed-email-input").value = allowedEmail;
+                const eEl = document.getElementById("allowed-email-input");
+                if (eEl) eEl.value = allowedEmail;
               }
               currentUser = user;
-              document.getElementById("auth-overlay").classList.add("hidden");
-              document.getElementById("user-name").textContent = user.displayName || user.email;
-              if (user.photoURL) document.getElementById("user-avatar").src = user.photoURL;
+              const overlay = document.getElementById("auth-overlay");
+              if (overlay) overlay.classList.add("hidden");
+              const nameEl = document.getElementById("user-name");
+              if (nameEl) nameEl.textContent = user.displayName || user.email;
+              if (user.photoURL) {
+                const avEl = document.getElementById("user-avatar");
+                if (avEl) avEl.src = user.photoURL;
+              }
               
               loadFirestoreConversations();
             } else {
               currentUser = null;
-              document.getElementById("auth-overlay").classList.remove("hidden");
+              const overlay = document.getElementById("auth-overlay");
+              if (overlay) overlay.classList.remove("hidden");
             }
           });
+        }).catch(() => {
+          const loader = document.getElementById("auth-loading-screen");
+          if (loader) loader.classList.add("hidden");
         });
 
       } catch (e) {
         console.warn("Firebase note:", e);
-        document.getElementById("auth-loading-screen").classList.add("hidden");
+        const loader = document.getElementById("auth-loading-screen");
+        if (loader) loader.classList.add("hidden");
       }
     }
     initFirebase();
