@@ -278,78 +278,11 @@
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
 
-        <!-- INTERACTIVE MODEL SELECTOR DROPDOWN -->
-        <div class="relative" onclick="event.stopPropagation()">
-          <button onclick="toggleModelDropdown()" id="model-selector-btn" class="flex items-center gap-2 bg-[#1e1f20] hover:bg-[#282a2c] border border-white/[0.08] hover:border-white/[0.16] h-8 px-3 rounded-xl text-xs font-medium text-white transition shadow-sm active:scale-95 cursor-pointer">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="current-model-display" class="font-medium">Qwen 2.5 Coder (7B)</span>
-            <svg class="w-3 h-3 text-m3-onSurfaceVariant transition-transform duration-200" id="model-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
-
-          <!-- Model Menu Options -->
-          <div id="model-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-72 bg-[#1e1f20] border border-white/10 rounded-2xl p-1.5 shadow-2xl z-50 space-y-1 backdrop-blur-xl">
-            <div class="text-[10px] uppercase font-bold text-m3-onSurfaceVariant/70 px-3 pt-2 pb-1 tracking-wider">Select AI Model</div>
-            
-            <button onclick="selectModel('qwen2.5-coder:7b', 'Qwen 2.5 Coder (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>Qwen 2.5 Coder (7B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal">🏆 Flagship</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Top-tier full-stack websites, UI & apps</div>
-              </div>
-            </button>
-
-            <button onclick="selectModel('deepseek-r1:7b', 'DeepSeek-R1 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>DeepSeek-R1 (7B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-normal">Reasoning</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Deep logic, math proofs & architecture</div>
-              </div>
-            </button>
-
-            <button onclick="selectModel('qwen2.5:7b', 'Qwen 2.5 (7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>Qwen 2.5 (7B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal">⚡ Instant</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Fast conversational & full coding (0s delay)</div>
-              </div>
-            </button>
-
-            <button onclick="selectModel('llava:7b', 'LLaVA (Vision 7B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>LLaVA (Vision 7B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 font-normal">👁️ Vision</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Image analysis, screenshots & diagram to code</div>
-              </div>
-            </button>
-
-            <button onclick="selectModel('deepseek-r1:1.5b', 'DeepSeek-R1 (1.5B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>DeepSeek-R1 (1.5B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-normal">⚡ Fast</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Lightweight instant reasoning (80 tok/s)</div>
-              </div>
-            </button>
-
-            <button onclick="selectModel('llama3.1:8b', 'Llama 3.1 (8B)')" class="w-full text-left p-2.5 rounded-xl hover:bg-[#282a2c] transition flex items-center justify-between group cursor-pointer">
-              <div>
-                <div class="font-medium text-xs text-m3-onSurface flex items-center gap-1.5">
-                  <span>Llama 3.1 (8B)</span>
-                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-normal">Chat</span>
-                </div>
-                <div class="text-[11px] text-m3-onSurfaceVariant mt-0.5">Meta's friendly general assistant</div>
-              </div>
-            </button>
-          </div>
+        <!-- ACTIVE FLAGSHIP MODEL BADGE -->
+        <div class="flex items-center gap-2 bg-[#1e1f20] border border-white/[0.08] h-8 px-3 rounded-xl text-xs font-medium text-white shadow-sm select-none">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-medium">Qwen 2.5 Coder (7B)</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-normal hidden sm:inline-block">🏆 Web & Apps</span>
         </div>
 
         <!-- GPU / System Health Badge -->
