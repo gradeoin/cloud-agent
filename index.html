@@ -1038,13 +1038,30 @@
       const dot = document.getElementById("status-dot");
       const text = document.getElementById("status-text");
       const indicator = document.getElementById("status-indicator");
+      const modelDisp = document.getElementById("current-model-display");
       try {
-        const res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(4000) });
-        if (res.ok) {
+        // 1. Check Colab GPU Backend
+        let res = await fetch(`${backendUrl}/api/health`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(2500) }).catch(() => null);
+        if (res && res.ok) {
           const data = await res.json();
           if (dot) dot.className = "w-2 h-2 rounded-full bg-[#1e8e3e] shrink-0";
-          if (text) text.textContent = `T4 (${data.session_remaining_minutes || 60}m)`;
+          if (text) text.textContent = `GPU (${data.session_remaining_minutes || 60}m)`;
           if (indicator) indicator.className = "flex items-center gap-1.5 text-[11px] font-semibold text-[#1e8e3e]";
+          if (modelDisp && data.model) modelDisp.textContent = data.model;
+          return true;
+        }
+
+        // 2. Check Direct Local / Portable Pen Drive Ollama
+        res = await fetch(`${backendUrl}/api/tags`, { method: "GET", headers: getAuthHeaders(), signal: AbortSignal.timeout(2500) }).catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json();
+          const firstModel = (data.models && data.models[0]) ? data.models[0].name : "llama3.2:3b";
+          if (dot) dot.className = "w-2 h-2 rounded-full bg-[#1e8e3e] shrink-0";
+          if (text) text.textContent = "Local AI";
+          if (indicator) indicator.className = "flex items-center gap-1.5 text-[11px] font-semibold text-[#1e8e3e]";
+          if (modelDisp) modelDisp.textContent = firstModel;
+          modelName = firstModel;
+          localStorage.setItem("ai_model_name", modelName);
           return true;
         }
       } catch (e) {}
